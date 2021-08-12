@@ -26,7 +26,15 @@ Notebook:
 
 [Laboratory of Decision Tree and Random Forest (`github/ysraell/random-forest-lab`)](https://github.com/ysraell/random-forest-lab). GitHub repository.
 
-# Development Framework
+### Notes
+
+- Python requirements in `requirements.txt`. Better for Python `>=3.7`. Run the follow command inside this repository:
+
+```bash
+$ pip3 install -r requirements.txt --no-cache-dir
+```
+
+### Development Framework (optional)
 
 ### [My data science Docker image](https://github.com/ysraell/my-ds).
 
