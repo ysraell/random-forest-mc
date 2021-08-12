@@ -36,6 +36,6 @@ $ pip3 install -r requirements.txt --no-cache-dir
 
 ### Development Framework (optional)
 
-### [My data science Docker image](https://github.com/ysraell/my-ds).
+- [My data science Docker image](https://github.com/ysraell/my-ds).
 
 With this image you can run all notebooks and scripts Python inside this repository.
