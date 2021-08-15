@@ -1,4 +1,10 @@
 # Credit Card Fraud Detection Project
+![](forest.svg)
+
+[![Python 3.7](https://img.shields.io/badge/Python-3.7-gree.svg)](https://www.python.org/downloads/release/python-370/)
+[![Python 3.8](https://img.shields.io/badge/Python-3.8-gree.svg)](https://www.python.org/downloads/release/python-380/)
+[![Python 3.9](https://img.shields.io/badge/Python-3.9-gree.svg)](https://www.python.org/downloads/release/python-390/)
+
 
 This project is about use Random Forest approach to credit card fraud detection. Based on [1], random forest approach have interesting results in this issue. Moreover, random forest approach offers opportunities for customization to achieve better results for issues with particularities. In this project, we have a customized method of Random Forest using a dynamic tree selection Monte Carlo based. The first implementation is found in [2] (using Common Lisp).
 
