@@ -37,3 +37,7 @@ $ pip3 install -r requirements.txt --no-cache-dir
 - [My data science Docker image](https://github.com/ysraell/my-ds).
 
 With this image you can run all notebooks and scripts Python inside this repository.
+
+### TODO:
+
+- Feature importance analysis comparing the customized and baseline models.
