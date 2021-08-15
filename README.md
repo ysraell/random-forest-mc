@@ -8,9 +8,7 @@ This project is about use Random Forest approach to credit card fraud detection.
 
 - **Feat. Analysis**: Transforming the data into representations for minor time and space complexity. [Notebook](./Feat_Eng.ipynb). 
 
-- **Baseline Prediction Model**: 
-
-Notebook: Experiments using [Random Forest from Scikit-Learn](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html). [Notebook](./Baseline_Model.ipynb).
+- **Baseline Prediction Model**: Experiments using [Random Forest from Scikit-Learn](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html). [Notebook](./Baseline_Model.ipynb).
 
 - **Customized Prediction Model**: Random forest custimized with a dynamic tree selection Monte Carlo based. [Notebook](./Customized_Model.ipynb).
 
