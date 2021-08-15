@@ -1,30 +1,24 @@
 # Credit Card Fraud Detection Project
 
-This project is...
+This project is about use Random Forest approach to credit card fraud detection. Based on [1], random forest approach have interesting results in this issue. Moreover, random forest approach offers opportunities for customization to achieve better results for issues with particularities. In this project, we have a customized method of Random Forest using a dynamic tree selection Monte Carlo based. The first implementation is found in [2] (using Common Lisp).
 
 ### Structure
 
-- **EDA**:
+- **EDA**: Using [Pandas Profiling](https://pandas-profiling.github.io/pandas-profiling/docs/master/index.html) for take a look into the data. [Notebook](./EDA.ipynb).
 
-[Notebook: EDA.](./EDA.ipynb)
-
-- **Feat. Analysis**: 
-
-Notebook: 
+- **Feat. Analysis**: Transforming the data into representations for minor time and space complexity. [Notebook](./Feat_Eng.ipynb). 
 
 - **Baseline Prediction Model**: 
 
-Notebook:
+Notebook: Experiments using [Random Forest from Scikit-Learn](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html). [Notebook](./Baseline_Model.ipynb).
 
-- **Customized Prediction Model**: 
-
-Notebook:
+- **Customized Prediction Model**: Random forest custimized with a dynamic tree selection Monte Carlo based. [Notebook](./Customized_Model.ipynb).
 
 # References
 
-[Le Borgne, Y.A., & Bontempi, G. (2021). Machine Learning for Credit Card Fraud Detection - Practical Handbook. Université Libre de Bruxelles](https://fraud-detection-handbook.github.io/fraud-detection-handbook/Foreword.html).
+[1] [Le Borgne, Y.A., & Bontempi, G. (2021). Machine Learning for Credit Card Fraud Detection - Practical Handbook. Université Libre de Bruxelles](https://fraud-detection-handbook.github.io/fraud-detection-handbook/Foreword.html).
 
-[Laboratory of Decision Tree and Random Forest (`github/ysraell/random-forest-lab`)](https://github.com/ysraell/random-forest-lab). GitHub repository.
+[2] [Laboratory of Decision Tree and Random Forest (`github/ysraell/random-forest-lab`)](https://github.com/ysraell/random-forest-lab). GitHub repository.
 
 ### Notes
 
