@@ -1,5 +1,5 @@
 # Credit Card Fraud Detection Project
-![](forest.svg)
+![](forest.png)
 
 [![Python 3.7](https://img.shields.io/badge/Python-3.7-gree.svg)](https://www.python.org/downloads/release/python-370/)
 [![Python 3.8](https://img.shields.io/badge/Python-3.8-gree.svg)](https://www.python.org/downloads/release/python-380/)
