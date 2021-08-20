@@ -1,12 +1,13 @@
-# Random Forest with Dyanmic Tree Selection Monte Carlo Based (RF-TSMC)
+# Random Forest with Dynamic Tree Selection Monte Carlo Based (RF-TSMC)
 ![](forest.png)
 
 [![Python 3.7](https://img.shields.io/badge/Python-3.7-gree.svg)](https://www.python.org/downloads/release/python-370/)
 [![Python 3.8](https://img.shields.io/badge/Python-3.8-gree.svg)](https://www.python.org/downloads/release/python-380/)
 [![Python 3.9](https://img.shields.io/badge/Python-3.9-gree.svg)](https://www.python.org/downloads/release/python-390/)
 
-
 This project is about use Random Forest approach using a dynamic tree selection Monte Carlo based. The first implementation is found in [2] (using Common Lisp).
+
+## Porject status: `work in progress`.
 
 # References
 
