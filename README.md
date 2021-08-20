@@ -6,7 +6,7 @@
 [![Python 3.9](https://img.shields.io/badge/Python-3.9-gree.svg)](https://www.python.org/downloads/release/python-390/)
 
 
-This project is about use Random Forest approach  using a dynamic tree selection Monte Carlo based. The first implementation is found in [2] (using Common Lisp).
+This project is about use Random Forest approach using a dynamic tree selection Monte Carlo based. The first implementation is found in [2] (using Common Lisp).
 
 # References
 

@@ -1,0 +1,31 @@
+[tool.poetry]
+name = "random-forest-mc"
+version = "0.0.1"
+description = "This project is about use Random Forest approach using a dynamic tree selection Monte Carlo based."
+authors = ["Israel Oliveira <israel.oliveira@gmail.com>"]
+
+license = "MIT"
+readme = "README.md"
+homepage = "https://github.com/ysraell/random-forest-mc"
+repository = "https://github.com/ysraell/random-forest-mc"
+keywords = ["random forest", "random"]
+classifiers = [
+    "Environment :: Console",
+    "Topic :: Software Development :: Documentation",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+include = [
+    "LICENSE",
+]
+
+[tool.poetry.dependencies]
+# Updated Python version
+python = ">=3.7.1"
+pandas = ">=1.3.2"
+
+[tool.poetry.dev-dependencies]
+pytest = "*"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
