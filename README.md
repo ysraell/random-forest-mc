@@ -67,9 +67,9 @@ $ pip3 install -r requirements.txt --no-cache-dir
 
 With this image you can run all notebooks and scripts Python inside this repository.
 
-### TODO v1:
+### TODO v0.1:
 
-- [Plus] Add a method to return the list of feaures and their degrees of importance.
+- Implement pre-commit.
 - Implement automated tests using the fallow datasets:
     - Titanic;
     - Credit Card Fraud;
@@ -78,7 +78,8 @@ With this image you can run all notebooks and scripts Python inside this reposit
     - and artificial with perfect classification.
 - Add parallel processing using or TQDM or csv2es style.
 
-### TODO v2:
+### TODO v0.2:
 
-- Multi class support.
+- Prediction with missing values: `useTree` must be functional and branching when missing value, combining classes at leaves with their probabilities.
+- [Plus] Add a method to return the list of feaures and their degrees of importance.
 

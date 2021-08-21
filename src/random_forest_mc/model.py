@@ -1,7 +1,8 @@
-from typing import Dict, TypeVar, Any, List
+from typing import Dict, Tuple, TypeVar, Any, List, Union, Tuple
 import pandas as pd
 import numpy as np
 from random import randint, sample
+from collections import defaultdict
 
 # a row of pd.DataFrame.iterrows() 
 dsRow = TypeVar('dsRow', pd.core.series.Series)
@@ -45,7 +46,7 @@ class RandomForestMC:
         self.dataset = None
         self.feat_types = ['numeric', 'categorical']
 
-    def process_dataset(self, dataset: pd.DataFrame):
+    def process_dataset(self, dataset: pd.DataFrame) -> None:
         feature_cols = [col for col in dataset.columns if col != self.target_col]
         numeric_cols = dataset.select_dtypes([np.number]).columns.to_list()
         categorical_cols = list(set(feature_cols)-set(numeric_cols))
@@ -61,31 +62,35 @@ class RandomForestMC:
         self.numeric_cols = numeric_cols
         self.feature_cols = feature_cols
         self.type_of_cols = type_of_cols
-        self.dataset = dataset
+        self.dataset = dataset.dropna()
         self.class_vals = dataset[self.target_col].unique().tolist() 
 
     # Splits the data to build the decision tree.
-    def split_train_val(self):
+    def split_train_val(self) -> Tuple[pd.DataFrame, pd.DataFrame]:
         idx_train = []
         idx_val = []
         for val in self.class_vals:
             idx_list = self.dataset.query(f'{self.target_col} == {val}').sample(n=self._N).index.to_list()
             idx_train.extend(idx_list[:self._N])
             idx_val.extend(idx_list[self._N:])
-        return idx_train, idx_val
+        
+        return (
+            self.dataset.loc[idx_train].reset_index(drop=True),
+            self.dataset.loc[idx_val].reset_index(drop=True)
+        )
 
     # Sample the features.
-    def sampleFeats(self):
+    def sampleFeats(self) -> List[str]:
         return sample(self.feature_cols, randint(self.min_feature, self.max_feature))
 
     # Set the leaf of the descion tree.
-    def genLeaf(self, ds):
+    def genLeaf(self, ds) -> TypeLeaf:
         return {
             'leaf' : ds[self.target_col].value_counts(normalize=True).to_dict()
         }
 
     # Splits the data during the tree's growth process.
-    def splitData(self, feat, ds: pd.DataFrame):
+    def splitData(self, feat, ds: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame, Union[int, float]]:
         if ds.shape[0] > 2:
 
             if feat in self.numeric_cols:
@@ -122,10 +127,10 @@ class RandomForestMC:
                     ds.loc[0].to_frame().T,
                     ds[feat].loc[1]
                 )
-    def plantTree(self, ds_train: pd.DataFrame, feature_list: List[str]):
+    def plantTree(self, ds_train: pd.DataFrame, feature_list: List[str]) -> TypeTree:
 
         # Functional process.          
-        def growTree(F: List[str], ds: pd.DataFrame):
+        def growTree(F: List[str], ds: pd.DataFrame) -> Union[TypeTree,TypeLeaf]:
 
             if ds[self.target_col].nunique() == 1:
                 return self.genLeaf(ds)
@@ -170,12 +175,12 @@ class RandomForestMC:
         return sorted(leaf.items(), key=lambda x: x[1], reverse=True)[0][0]
 
     # Generates the metric for validation process.
-    def validationTree(self, Tree: TypeTree, ds: pd.DataFrame):
+    def validationTree(self, Tree: TypeTree, ds: pd.DataFrame) -> float:
         y_pred = [self.maxProbClas(self.useTree(Tree, row)) for _,row in ds.iterrows()]
         y_val = ds[self.target_col].to_list()
         return sum([v == p for v,p in zip(y_val,y_pred)])/len(y_pred)
 
-    def fit(self, dataset: pd.DataFrame = None):
+    def fit(self, dataset: pd.DataFrame = None) -> None:
 
         if dataset is not None:
             self.process_dataset(dataset)
@@ -187,9 +192,7 @@ class RandomForestMC:
         Forest = []
         for t in range(self.n_trees):
             # Builds the decision tree
-            idx_train, idx_val = self.split_train_val()
-            ds_T = self.dataset.loc[idx_train].reset_index(drop=True)
-            ds_V = self.dataset.loc[idx_val].reset_index(drop=True)
+            ds_T, ds_V = self.split_train_val()
             Threshold_for_drop = self.th_start
             droped_trees = 0
             Pass = False
@@ -208,14 +211,22 @@ class RandomForestMC:
 
         self.Forest = Forest
 
-    def useForest(self, row: dsRow, soft_voting: bool = False):
+    def useForest(self, row: dsRow, soft_voting: bool = False) -> TypeLeaf:
         if soft_voting:
-            pass
+            class_probs = defaultdict(float)
+            pred_probs = [self.useTree(Tree, row) for Tree in self.Forest]
+            for predp in pred_probs:
+                for class_val,prob in predp.items():
+                    class_probs[class_val] += prob
+            return {class_val: class_probs[class_val]/len(pred_probs) for class_val in self.class_vals}
         else:
             y_pred = [self.maxProbClas(self.useTree(Tree, row)) for Tree in self.Forest]
-        #return (y_pred.count(0)/len(y_pred), y_pred.count(1)/len(y_pred))
+            return {class_val: y_pred.count(class_val)/len(y_pred) for class_val in self.class_vals}
 
-    def testForest(self, ds: pd.DataFrame):
+    def testForest(self, ds: pd.DataFrame) -> List[TypeClassVal]:
+        return [self.maxProbClas(self.useForest(row)) for _,row in ds.iterrows()]
+
+    def testForestProbs(self, ds: pd.DataFrame) -> List[TypeLeaf]:
         return [self.useForest(row) for _,row in ds.iterrows()]
 
 #EOF
