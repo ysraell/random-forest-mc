@@ -7,7 +7,7 @@
 
 This project is about use Random Forest approach for *multiclass classification* using a dynamic tree selection Monte Carlo based. The first implementation is found in [2] (using Common Lisp).
 
-## Project status: `Pre-Alpha`.
+#### Project status: `Pre-Alpha`.
 
 ## Fundamentals:
 
@@ -51,10 +51,10 @@ This project is about use Random Forest approach for *multiclass classification*
 
 ### Notes
 
-- Python requirements in `requirements.txt`. Better for Python `>=3.7`. Run the follow command inside this repository:
+- To install using pip directly from this repository:
 
 ```bash
-$ pip3 install -r requirements.txt --no-cache-dir
+$ pip3 install .
 ```
 
 ### Development Framework (optional)
@@ -65,7 +65,6 @@ With this image you can run all notebooks and scripts Python inside this reposit
 
 ### TODO v0.1:
 
-- Implement pre-commit.
 - Implement automated tests using the fallow datasets:
     - Titanic;
     - Credit Card Fraud;
