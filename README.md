@@ -76,10 +76,10 @@ With this image you can run all notebooks and scripts Python inside this reposit
     - Iris;
     - artificial with random data;
     - and artificial with perfect classification.
-- Add parallel processing using or TQDM or csv2es style.
 
 ### TODO v0.2:
 
+- Add parallel processing using or TQDM or csv2es style.
 - Prediction with missing values: `useTree` must be functional and branching when missing value, combining classes at leaves with their probabilities.
 - [Plus] Add a method to return the list of feaures and their degrees of importance.
 

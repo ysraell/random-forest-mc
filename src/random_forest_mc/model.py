@@ -1,3 +1,13 @@
+
+"""
+Forest of trees-based ensemble methods.
+
+Random forests: extremely randomized trees with dynamic tree selection Monte Carlo based.
+
+The module structure is the following:
+
+"""
+
 from typing import Dict, Tuple, TypeVar, Any, List, Union, Tuple
 import pandas as pd
 import numpy as np
@@ -192,6 +202,8 @@ class RandomForestMC:
         Forest = []
         for t in range(self.n_trees):
             # Builds the decision tree
+
+            # Parallelize this loops!!
             ds_T, ds_V = self.split_train_val()
             Threshold_for_drop = self.th_start
             droped_trees = 0
@@ -207,6 +219,7 @@ class RandomForestMC:
                 if droped_trees >= self.max_discard_trees:
                     Threshold_for_drop -= self.delta_th
                     droped_trees = 0
+
             Forest.append(Tree)
 
         self.Forest = Forest
@@ -223,10 +236,10 @@ class RandomForestMC:
             y_pred = [self.maxProbClas(self.useTree(Tree, row)) for Tree in self.Forest]
             return {class_val: y_pred.count(class_val)/len(y_pred) for class_val in self.class_vals}
 
-    def testForest(self, ds: pd.DataFrame) -> List[TypeClassVal]:
-        return [self.maxProbClas(self.useForest(row)) for _,row in ds.iterrows()]
+    def testForest(self, ds: pd.DataFrame, soft_voting: bool = False) -> List[TypeClassVal]:
+        return [self.maxProbClas(self.useForest(row, soft_voting)) for _,row in ds.iterrows()]
 
-    def testForestProbs(self, ds: pd.DataFrame) -> List[TypeLeaf]:
-        return [self.useForest(row) for _,row in ds.iterrows()]
+    def testForestProbs(self, ds: pd.DataFrame, soft_voting: bool = False) -> List[TypeLeaf]:
+        return [self.useForest(row, soft_voting) for _,row in ds.iterrows()]
 
 #EOF
