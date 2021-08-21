@@ -9,6 +9,12 @@ dsRow = TypeVar('dsRow', pd.core.series.Series)
 # A tree composed by a assimetric tree of dictionaries:
 TypeTree = TypeVar('TypeTree', Dict[Any]) 
 
+# Value type of classes
+TypeClassVal= TypeVar('TypeClassVal', Any)
+
+# Type of the leaf
+TypeLeaf = Dict[TypeClassVal, float]
+
 class DatasetNotFound(Exception):
     pass
 
@@ -150,17 +156,22 @@ class RandomForestMC:
         return growTree(feature_list, ds_train)
 
     @staticmethod
-    def useTree(Tree: TypeTree, row: dsRow):
+    def useTree(Tree: TypeTree, row: dsRow) -> TypeLeaf:
         while True:
             node = list(Tree.keys())[0]
             if node == 'leaf':
                 return Tree['leaf']
             val = row[node]
-            Tree = Tree[node]['split']['>='] if val >= Tree[node]['split']['split_val'] else Tree[node]['split']['<']
+            if Tree[node]['feat_type'] == 'numeric':
+                Tree = Tree[node]['split']['>='] if val >= Tree[node]['split']['split_val'] else Tree[node]['split']['<']
+            Tree = Tree[node]['split']['>='] if val == Tree[node]['split']['split_val'] else Tree[node]['split']['<']
+
+    def maxProbClas(leaf: TypeLeaf) -> TypeClassVal:
+        return sorted(leaf.items(), key=lambda x: x[1], reverse=True)[0][0]
 
     # Generates the metric for validation process.
     def validationTree(self, Tree: TypeTree, ds: pd.DataFrame):
-        y_pred = [self.useTree(Tree, row) for _,row in ds.iterrows()]
+        y_pred = [self.maxProbClas(self.useTree(Tree, row)) for _,row in ds.iterrows()]
         y_val = ds[self.target_col].to_list()
         return sum([v == p for v,p in zip(y_val,y_pred)])/len(y_pred)
 
@@ -197,9 +208,12 @@ class RandomForestMC:
 
         self.Forest = Forest
 
-    def useForest(self, row: dsRow):
-        y_pred = [self.useTree(Tree, row) for Tree in self.Forest]
-        return (y_pred.count(0)/len(y_pred), y_pred.count(1)/len(y_pred))
+    def useForest(self, row: dsRow, soft_voting: bool = False):
+        if soft_voting:
+            pass
+        else:
+            y_pred = [self.maxProbClas(self.useTree(Tree, row)) for Tree in self.Forest]
+        #return (y_pred.count(0)/len(y_pred), y_pred.count(1)/len(y_pred))
 
     def testForest(self, ds: pd.DataFrame):
         return [self.useForest(row) for _,row in ds.iterrows()]

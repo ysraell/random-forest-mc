@@ -69,9 +69,13 @@ With this image you can run all notebooks and scripts Python inside this reposit
 
 ### TODO v1:
 
-- Implement the code.
-    - [Plus] Add a method to return the list of feaures and their degrees of importance.
-- Set Poetry and publish to PyPI.
+- [Plus] Add a method to return the list of feaures and their degrees of importance.
+- Implement automated tests using the fallow datasets:
+    - Titanic;
+    - Credit Card Fraud;
+    - Iris;
+    - artificial with random data;
+    - and artificial with perfect classification.
 - Add parallel processing using or TQDM or csv2es style.
 
 ### TODO v2:
