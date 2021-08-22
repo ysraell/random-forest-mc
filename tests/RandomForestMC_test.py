@@ -10,7 +10,7 @@ sys.path.append("src/")
 def version_test():
     from random_forest_mc import __version__
 
-    assert __version__ == "0.1.0"
+    assert __version__ == "0.1.1"
 
 
 def test_LoadDicts():
