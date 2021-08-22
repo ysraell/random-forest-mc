@@ -12,21 +12,22 @@ from random import sample
 from typing import Any
 from typing import Dict
 from typing import List
+from typing import NewType
 from typing import Tuple
-from typing import TypeVar
 from typing import Union
 
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
 
 # a row of pd.DataFrame.iterrows()
-dsRow = TypeVar("dsRow", pd.core.series.Series)
+dsRow = NewType("dsRow", pd.core.series.Series)
 
 # A tree composed by a assimetric tree of dictionaries:
-TypeTree = TypeVar("TypeTree", Dict[Any])
+TypeTree = NewType("TypeTree", Dict)
 
 # Value type of classes
-TypeClassVal = TypeVar("TypeClassVal", Any)
+TypeClassVal = NewType("TypeClassVal", Any)
 
 # Type of the leaf
 TypeLeaf = Dict[TypeClassVal, float]
@@ -42,7 +43,7 @@ class RandomForestMC:
     def __init__(
         self,
         n_trees: int = 16,
-        target_col: str = "Class",
+        target_col: str = "target",
         batch_train_pclass: int = 10,
         batch_val_pclass: int = 10,
         max_discard_trees: int = 10,
@@ -65,6 +66,7 @@ class RandomForestMC:
         self.feat_types = ["numeric", "categorical"]
 
     def process_dataset(self, dataset: pd.DataFrame) -> None:
+        dataset[self.target_col] = dataset[self.target_col].astype(str)
         feature_cols = [col for col in dataset.columns if col != self.target_col]
         numeric_cols = dataset.select_dtypes([np.number]).columns.to_list()
         categorical_cols = list(set(feature_cols) - set(numeric_cols))
@@ -89,12 +91,12 @@ class RandomForestMC:
         idx_val = []
         for val in self.class_vals:
             idx_list = (
-                self.dataset.query(f"{self.target_col} == {val}")
+                self.dataset.query(f'{self.target_col} == "{val}"')
                 .sample(n=self._N)
                 .index.to_list()
             )
-            idx_train.extend(idx_list[: self._N])
-            idx_val.extend(idx_list[self._N :])
+            idx_train.extend(idx_list[: self.batch_train_pclass])
+            idx_val.extend(idx_list[self.batch_train_pclass :])
 
         return (
             self.dataset.loc[idx_train].reset_index(drop=True),
@@ -133,8 +135,8 @@ class RandomForestMC:
                 split_val = ds[[feat, self.target_col]].value_counts().index[0][0]
                 # '>=' : equal to split_val
                 # '<' : not equal to split_val
-                ds_a = ds.query(f"{feat} == {split_val}").reset_index(drop=True)
-                ds_b = ds.query(f"{feat} != {split_val}").reset_index(drop=True)
+                ds_a = ds.query(f'{feat} == "{split_val}"').reset_index(drop=True)
+                ds_b = ds.query(f'{feat} != "{split_val}"').reset_index(drop=True)
 
             return (ds_a, ds_b, split_val)
 
@@ -182,18 +184,20 @@ class RandomForestMC:
             if node == "leaf":
                 return Tree["leaf"]
             val = row[node]
-            if Tree[node]["feat_type"] == "numeric":
+            tree_node_split = Tree[node]["split"]
+            if tree_node_split["feat_type"] == "numeric":
                 Tree = (
-                    Tree[node]["split"][">="]
-                    if val >= Tree[node]["split"]["split_val"]
-                    else Tree[node]["split"]["<"]
+                    tree_node_split[">="]
+                    if val >= tree_node_split["split_val"]
+                    else tree_node_split["<"]
                 )
             Tree = (
-                Tree[node]["split"][">="]
-                if val == Tree[node]["split"]["split_val"]
-                else Tree[node]["split"]["<"]
+                tree_node_split[">="]
+                if val == tree_node_split["split_val"]
+                else tree_node_split["<"]
             )
 
+    @staticmethod
     def maxProbClas(leaf: TypeLeaf) -> TypeClassVal:
         return sorted(leaf.items(), key=lambda x: x[1], reverse=True)[0][0]
 
@@ -203,7 +207,9 @@ class RandomForestMC:
         y_val = ds[self.target_col].to_list()
         return sum([v == p for v, p in zip(y_val, y_pred)]) / len(y_pred)
 
-    def fit(self, dataset: pd.DataFrame = None) -> None:
+    def fit(
+        self, dataset: pd.DataFrame = None, disable_progress_bar: bool = False
+    ) -> None:
 
         if dataset is not None:
             self.process_dataset(dataset)
@@ -215,7 +221,11 @@ class RandomForestMC:
 
         # Builds the Forest (training step)
         Forest = []
-        for t in range(self.n_trees):
+        for t in tqdm(
+            range(self.n_trees),
+            disable=disable_progress_bar,
+            desc="Planting the forest",
+        ):
             # Builds the decision tree
 
             # Parallelize this loops!!

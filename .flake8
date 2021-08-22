@@ -3,7 +3,8 @@ exclude =
     .git,
     __pycache__,
     .pytest_cache,
-    *venv
+    *venv,
+    utils/
 per-file-ignores =
     tests/*:S101,S605,
     scripts/*.py:S605,S607
