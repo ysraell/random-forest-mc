@@ -2,7 +2,7 @@
 ![](forest.png)
 
 [![Python 3.7](https://img.shields.io/badge/Python->=3.7-gree.svg)](https://www.python.org/downloads/release/python-370/)
-[![Coverages](https://img.shields.io/badge/Coverage-100%-gree.svg)]()
+![](https://img.shields.io/badge/Coverage-100%25-green)
 
 This project is about use Random Forest approach for *multiclass classification* using a dynamic tree selection Monte Carlo based. The first implementation is found in [2] (using Common Lisp).
 
