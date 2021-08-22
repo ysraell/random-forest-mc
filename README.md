@@ -60,6 +60,10 @@ y_pred = cls.testForest(dataset, soft_voting=True)
 accuracy_soft = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
 ```
 
+### Notes:
+
+- Classes values must be converted to `str` before make predicts.
+
 ### LoadDicts:
 
 LoadDicts works loading all `JSON` files inside a given path, creating an object helper to use this files as dictionaries.
