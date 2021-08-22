@@ -266,6 +266,17 @@ importlib-metadata = {version = ">=0.12", markers = "python_version < \"3.8\""}
 dev = ["pre-commit", "tox"]
 
 [[package]]
+name = "poetry-version"
+version = "0.1.5"
+description = "Python library for extracting version from poetry pyproject.toml file"
+category = "main"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+
+[package.dependencies]
+tomlkit = ">=0.4.6,<0.6.0"
+
+[[package]]
 name = "pre-commit"
 version = "2.14.0"
 description = "A framework for managing and maintaining multi-language pre-commit hooks."
@@ -412,6 +423,14 @@ optional = false
 python-versions = ">=3.6"
 
 [[package]]
+name = "tomlkit"
+version = "0.5.11"
+description = "Style preserving TOML library"
+category = "main"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+
+[[package]]
 name = "tqdm"
 version = "4.62.1"
 description = "Fast, Extensible Progress Meter"
@@ -478,7 +497,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7.1,<3.11"
-content-hash = "742c83adee5225c2f99fa4c3943507fbf3dd0a888dac2a417a0c6acd17eba680"
+content-hash = "619a9612e5c917919352c072d7f145eaaf735c1ce9ae3558096f874d2253f882"
 
 [metadata.files]
 appdirs = [
@@ -672,6 +691,10 @@ pluggy = [
     {file = "pluggy-0.13.1-py2.py3-none-any.whl", hash = "sha256:966c145cd83c96502c3c3868f50408687b38434af77734af1e9ca461a4081d2d"},
     {file = "pluggy-0.13.1.tar.gz", hash = "sha256:15b2acde666561e1298d71b523007ed7364de07029219b604cf808bfa1c765b0"},
 ]
+poetry-version = [
+    {file = "poetry-version-0.1.5.tar.gz", hash = "sha256:f7d77b5c4f0761c5a5b9031f199c79c7f81d125676248053ea84e69ad79faa89"},
+    {file = "poetry_version-0.1.5-py2.py3-none-any.whl", hash = "sha256:ba259257640cd36c76375563a001b9e85c6f54d764cc56b3eed0f3b5cefb0317"},
+]
 pre-commit = [
     {file = "pre_commit-2.14.0-py2.py3-none-any.whl", hash = "sha256:ec3045ae62e1aa2eecfb8e86fa3025c2e3698f77394ef8d2011ce0aedd85b2d4"},
     {file = "pre_commit-2.14.0.tar.gz", hash = "sha256:2386eeb4cf6633712c7cc9ede83684d53c8cafca6b59f79c738098b51c6d206c"},
@@ -785,6 +808,10 @@ toml = [
 tomli = [
     {file = "tomli-1.2.1-py3-none-any.whl", hash = "sha256:8dd0e9524d6f386271a36b41dbf6c57d8e32fd96fd22b6584679dc569d20899f"},
     {file = "tomli-1.2.1.tar.gz", hash = "sha256:a5b75cb6f3968abb47af1b40c1819dc519ea82bcc065776a866e8d74c5ca9442"},
+]
+tomlkit = [
+    {file = "tomlkit-0.5.11-py2.py3-none-any.whl", hash = "sha256:4e1bd6c9197d984528f9ff0cc9db667c317d8881288db50db20eeeb0f6b0380b"},
+    {file = "tomlkit-0.5.11.tar.gz", hash = "sha256:f044eda25647882e5ef22b43a1688fb6ab12af2fc50e8456cdfc751c873101cf"},
 ]
 tqdm = [
     {file = "tqdm-4.62.1-py2.py3-none-any.whl", hash = "sha256:07856e19a1fe4d2d9621b539d3f072fa88c9c1ef1f3b7dd4d4953383134c3164"},
