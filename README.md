@@ -134,3 +134,7 @@ With this image you can run all notebooks and scripts Python inside this reposit
     - Data Imputation using the Forest.
 - [Plus] Add a method to return the list of feaures and their degrees of importance.
 - Docstring.
+
+### TODO V2.0:
+
+- Extender for predict by regression.
