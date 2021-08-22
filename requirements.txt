@@ -1,5 +1,0 @@
-numpy
-pandas
-pandas-profiling
-scikit-learn
-tqdm
