@@ -2,11 +2,78 @@
 ![](forest.png)
 
 [![Python 3.7](https://img.shields.io/badge/Python->=3.7-gree.svg)](https://www.python.org/downloads/release/python-370/)
-[![](https://img.shields.io/badge/Coverage-100%-gree.svg)](./htmlcov/index.html)
+[![Coverages](https://img.shields.io/badge/Coverage-100%-gree.svg)](./htmlcov/index.html)
 
 This project is about use Random Forest approach for *multiclass classification* using a dynamic tree selection Monte Carlo based. The first implementation is found in [2] (using Common Lisp).
 
 #### Development status: `Release Candidate`.
+
+## Install:
+
+Install using `pip`:
+
+```bash
+$ pip3 install random-forest-mc
+```
+
+Install from this repo:
+
+```bash
+$ git clone https://github.com/ysraell/random-forest-mc.git
+$ cd random-forest-mc
+$ pip3 install .
+```
+
+## Usage:
+
+Example of a full cycle using `titanic.csv`:
+
+```python
+import numpy as np
+import pandas as pd
+
+from random_forest_mc.model import RandomForestMC
+from random_forest_mc.utils import LoadDicts
+
+dicts = LoadDicts("tests/")
+dataset_dict = dicts.datasets_metadata
+ds_name = "titanic"
+params = dataset_dict[ds_name]
+dataset = (
+    pd.read_csv(params["csv_path"])[params["ds_cols"] + [params["target_col"]]]
+    .dropna()
+    .reset_index(drop=True)
+)
+dataset["Age"] = dataset["Age"].astype(np.uint8)
+dataset["SibSp"] = dataset["SibSp"].astype(np.uint8)
+dataset["Pclass"] = dataset["Pclass"].astype(str)
+dataset["Fare"] = dataset["Fare"].astype(np.uint32)
+cls = RandomForestMC(
+    n_trees=8, target_col=params["target_col"], max_discard_trees=4
+)
+cls.process_dataset(dataset)
+cls.fit()
+y_test = dataset[params["target_col"]].to_list()
+y_pred = cls.testForest(dataset)
+accuracy_hard = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
+y_pred = cls.testForest(dataset, soft_voting=True)
+accuracy_soft = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
+```
+
+### LoadDicts:
+
+LoadDicts works loading all `JSON` files inside a given path, creating an object helper to use this files as dictionaries.
+
+For example:
+```python
+>>> from random_forest_mc.utils import LoadDicts
+>>> # JSONs: path/data.json, path/metdada.json
+>>> dicts = LoadDicts("path/")
+>>> # you have: dicts.data and dicts.metdada as dictionaries
+>>> # And a list of dictionaries loaded in:
+>>> dicts.List
+["data", "metdada"]
+```
 
 ## Fundamentals:
 
@@ -47,14 +114,6 @@ This project is about use Random Forest approach for *multiclass classification*
 [2] [Laboratory of Decision Tree and Random Forest (`github/ysraell/random-forest-lab`)](https://github.com/ysraell/random-forest-lab). GitHub repository.
 
 [3] Credit Card Fraud Detection. Anonymized credit card transactions labeled as fraudulent or genuine. Kaggle. Access: <https://www.kaggle.com/mlg-ulb/creditcardfraud>.
-
-### Notes
-
-- To install using pip directly from this repository:
-
-```bash
-$ pip3 install .
-```
 
 ### Development Framework (optional)
 
