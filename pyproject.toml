@@ -10,8 +10,14 @@ homepage = "https://github.com/ysraell/random-forest-mc"
 repository = "https://github.com/ysraell/random-forest-mc"
 keywords = ["random forest", "random"]
 classifiers = [
-    "Development Status :: 4 - Beta",
-    "Topic :: Scientific/Engineering :: Artificial Intelligence"
+    "Development Status :: 5 - Production/Stable",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Human Machine Interfaces",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10"
 ]
 
 include = [
