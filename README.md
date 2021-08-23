@@ -138,3 +138,4 @@ With this image you can run all notebooks and scripts Python inside this reposit
 ### TODO V2.0:
 
 - Extender for predict by regression.
+- Refactor to use NumPy or built in Python features as core data operations.
