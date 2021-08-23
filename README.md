@@ -133,6 +133,7 @@ With this image you can run all notebooks and scripts Python inside this reposit
     - Prediction with missing values: `useTree` must be functional and branching when missing value, combining classes at leaves with their probabilities.
     - Data Imputation using the Forest.
 - [Plus] Add a method to return the list of feaures and their degrees of importance.
+- Set validation threshold reseting for each new tree optional pasing by parameter.
 - Docstring.
 
 ### TODO V2.0:
