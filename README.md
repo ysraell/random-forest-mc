@@ -6,7 +6,7 @@
 
 This project is about use Random Forest approach for *multiclass classification* using a dynamic tree selection Monte Carlo based. The first implementation is found in [2] (using Common Lisp).
 
-#### Development status: `Development and unstable, version 0.1.1.`.
+#### Development status: `WIP and unstable, version 0.1.1.`.
 
 ## Install:
 
