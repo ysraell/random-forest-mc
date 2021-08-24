@@ -20,6 +20,7 @@ from typing import Union
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
+from tqdm.contrib.concurrent import process_map
 from tqdm.contrib.concurrent import thread_map
 
 # a row of pd.DataFrame.iterrows()
@@ -117,7 +118,9 @@ class RandomForestMC:
 
     # Sample the features.
     def sampleFeats(self) -> List[str]:
-        return sample(self.feature_cols, randint(self.min_feature, self.max_feature))
+        return sample(
+            self.feature_cols, randint(self.min_feature, self.max_feature)  # noqa: S311
+        )
 
     # Set the leaf of the descion tree.
     def genLeaf(self, ds) -> TypeLeaf:
@@ -224,18 +227,18 @@ class RandomForestMC:
     ):  # _ argument is for compatible execution with thread_map
         ds_T, ds_V = self.split_train_val()
         Threshold_for_drop = self.th_start
-        droped_trees = 0
+        dropped_trees = 0
         # Only survived trees
         while True:
             F = self.sampleFeats()
             Tree = self.plantTree(ds_T, F)
             if self.validationTree(Tree, ds_V) < Threshold_for_drop:
-                droped_trees += 1
+                dropped_trees += 1
             else:
                 break
-            if droped_trees >= self.max_discard_trees:
+            if dropped_trees >= self.max_discard_trees:
                 Threshold_for_drop -= self.delta_th
-                droped_trees = 0
+                dropped_trees = 0
 
         return Tree, Threshold_for_drop
 
@@ -254,7 +257,7 @@ class RandomForestMC:
         # Builds the Forest (training step)
         Forest = []
         survived_scores = []
-        for t in tqdm(
+        for _ in tqdm(
             range(self.n_trees),
             disable=disable_progress_bar,
             desc="Planting the forest",
@@ -271,6 +274,7 @@ class RandomForestMC:
         dataset: Optional[pd.DataFrame] = None,
         disable_progress_bar: bool = False,
         max_workers: Optional[int] = None,
+        thread_parallel_method: bool = False,
     ):
 
         if dataset is not None:
@@ -282,16 +286,22 @@ class RandomForestMC:
             )
 
         # Builds the Forest (training step)
-        Forest_Threshold_for_drop = thread_map(
+        if thread_parallel_method:
+            func_map = thread_map
+        else:
+            func_map = process_map
+
+        out = func_map(
             self.survivedTree,
             range(0, self.n_trees),
             max_workers=max_workers,
             disable=disable_progress_bar,
             desc="Planting the forest",
         )
-        out = list(map(list, zip(*Forest_Threshold_for_drop)))
-        self.Forest.extend(out[0])
-        self.survived_scores.extend(out[1])
+
+        Tree_Threshold_for_drop_list = list(zip(*out))
+        self.Forest.extend(Tree_Threshold_for_drop_list[0])
+        self.survived_scores.extend(Tree_Threshold_for_drop_list[1])
 
     def useForest(self, row: dsRow, soft_voting: bool = False) -> TypeLeaf:
         if soft_voting:
