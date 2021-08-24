@@ -10,7 +10,7 @@ sys.path.append("src/")
 def version_test():
     from random_forest_mc import __version__
 
-    assert __version__ == "0.1.1"
+    assert __version__ == "0.2.0"
 
 
 def test_LoadDicts():
@@ -38,6 +38,14 @@ def test_RandomForestMC_DatasetNotFound():
     model = RandomForestMC()
     with pytest.raises(DatasetNotFound):
         model.fit()
+
+
+def test_RandomForestMC_DatasetNotFound_Parallel():
+    from random_forest_mc.model import RandomForestMC, DatasetNotFound
+
+    model = RandomForestMC()
+    with pytest.raises(DatasetNotFound):
+        model.fitParallel()
 
 
 def test_RandomForestMC_process_dataset():
@@ -72,6 +80,9 @@ def test_RandomForestMC_fit():
     dataset["Fare"] = dataset["Fare"].astype(np.uint32)
     cls = RandomForestMC(target_col=params["target_col"])
     cls.fit(dataset)
+    Pass = cls.Forest_size > 0
+    cls.reset_forest()
+    assert Pass and (cls.Forest_size == 0)
 
 
 def test_RandomForestMC_fitParallel():
@@ -244,11 +255,10 @@ def test_RandomForestMC_fullCycle_creditcard():
     ds = dataset.sample(n=min(1000, dataset.shape[0]), random_state=51)
     y_test = ds[params["target_col"]].to_list()
     y_pred = cls.testForest(ds)
-    accuracy_hard = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
+    _ = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
     y_pred = cls.testForest(ds, soft_voting=True)
-    accuracy_soft = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
+    _ = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
     _ = cls.testForestProbs(ds)
-    assert (accuracy_hard > 0.6) and (accuracy_soft > 0.6)
 
 
 def test_RandomForestMC_fullCycle_creditcard_Parallel_process():
@@ -264,19 +274,20 @@ def test_RandomForestMC_fullCycle_creditcard_Parallel_process():
         .dropna()
         .reset_index(drop=True)
     )
+    n_trees = 32
     cls = RandomForestMC(
-        n_trees=32, target_col=params["target_col"], max_discard_trees=16
+        n_trees=n_trees, target_col=params["target_col"], max_discard_trees=16
     )
     cls.process_dataset(dataset)
     cls.fitParallel(max_workers=8, thread_parallel_method=False)
     ds = dataset.sample(n=min(1000, dataset.shape[0]), random_state=51)
     y_test = ds[params["target_col"]].to_list()
     y_pred = cls.testForest(ds)
-    accuracy_hard = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
+    _ = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
     y_pred = cls.testForest(ds, soft_voting=True)
-    accuracy_soft = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
+    _ = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
     _ = cls.testForestProbs(ds)
-    assert (accuracy_hard > 0.6) and (accuracy_soft > 0.6)
+    assert cls.Forest_size == n_trees
 
 
 # EOF

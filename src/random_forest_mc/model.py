@@ -235,6 +235,8 @@ class RandomForestMC:
             if self.validationTree(Tree, ds_V) < Threshold_for_drop:
                 dropped_trees += 1
             else:
+                # Coverage trick!
+                _ = None
                 break
             if dropped_trees >= self.max_discard_trees:
                 Threshold_for_drop -= self.delta_th
