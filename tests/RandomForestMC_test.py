@@ -74,6 +74,27 @@ def test_RandomForestMC_fit():
     cls.fit(dataset)
 
 
+def test_RandomForestMC_fitParallel():
+    from random_forest_mc.model import RandomForestMC
+    from random_forest_mc.utils import LoadDicts
+
+    dicts = LoadDicts("tests/")
+    dataset_dict = dicts.datasets_metadata
+    ds_name = "titanic"
+    params = dataset_dict[ds_name]
+    dataset = (
+        pd.read_csv(params["csv_path"])[params["ds_cols"] + [params["target_col"]]]
+        .dropna()
+        .reset_index(drop=True)
+    )
+    dataset["Age"] = dataset["Age"].astype(np.uint8)
+    dataset["SibSp"] = dataset["SibSp"].astype(np.uint8)
+    dataset["Pclass"] = dataset["Pclass"].astype(str)
+    dataset["Fare"] = dataset["Fare"].astype(np.uint32)
+    cls = RandomForestMC(target_col=params["target_col"])
+    cls.fit(dataset)
+
+
 def test_RandomForestMC_fullCycle_titanic():
     from random_forest_mc.model import RandomForestMC
     from random_forest_mc.utils import LoadDicts

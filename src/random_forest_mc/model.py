@@ -13,12 +13,14 @@ from typing import Any
 from typing import Dict
 from typing import List
 from typing import NewType
+from typing import Optional
 from typing import Tuple
 from typing import Union
 
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
+from tqdm.contrib.concurrent import thread_map
 
 # a row of pd.DataFrame.iterrows()
 dsRow = NewType("dsRow", pd.core.series.Series)
@@ -49,8 +51,8 @@ class RandomForestMC:
         max_discard_trees: int = 10,
         delta_th: float = 0.1,
         th_start: float = 0.9,
-        min_feature: int = None,
-        max_feature: int = None,
+        min_feature: Optional[int] = None,
+        max_feature: Optional[int] = None,
     ) -> None:
         self.target_col = target_col
         self.batch_train_pclass = batch_train_pclass
@@ -64,6 +66,16 @@ class RandomForestMC:
         self.n_trees = n_trees
         self.dataset = None
         self.feat_types = ["numeric", "categorical"]
+        self.Forest = []
+        self.survived_scores = []
+
+    def reset_forest(self):
+        self.Forest = []
+        self.survived_scores = []
+
+    @property
+    def Forest_size(self):
+        return len(self.Forest)
 
     def process_dataset(self, dataset: pd.DataFrame) -> None:
         dataset[self.target_col] = dataset[self.target_col].astype(str)
@@ -207,8 +219,28 @@ class RandomForestMC:
         y_val = ds[self.target_col].to_list()
         return sum([v == p for v, p in zip(y_val, y_pred)]) / len(y_pred)
 
+    def survivedTree(
+        self, _=None
+    ):  # _ argument is for compatible execution with thread_map
+        ds_T, ds_V = self.split_train_val()
+        Threshold_for_drop = self.th_start
+        droped_trees = 0
+        # Only survived trees
+        while True:
+            F = self.sampleFeats()
+            Tree = self.plantTree(ds_T, F)
+            if self.validationTree(Tree, ds_V) < Threshold_for_drop:
+                droped_trees += 1
+            else:
+                break
+            if droped_trees >= self.max_discard_trees:
+                Threshold_for_drop -= self.delta_th
+                droped_trees = 0
+
+        return Tree, Threshold_for_drop
+
     def fit(
-        self, dataset: pd.DataFrame = None, disable_progress_bar: bool = False
+        self, dataset: Optional[pd.DataFrame] = None, disable_progress_bar: bool = False
     ) -> None:
 
         if dataset is not None:
@@ -221,33 +253,45 @@ class RandomForestMC:
 
         # Builds the Forest (training step)
         Forest = []
+        survived_scores = []
         for t in tqdm(
             range(self.n_trees),
             disable=disable_progress_bar,
             desc="Planting the forest",
         ):
-            # Builds the decision tree
-
-            # Parallelize this loops!!
-            ds_T, ds_V = self.split_train_val()
-            Threshold_for_drop = self.th_start
-            droped_trees = 0
-            Pass = False
-            # Only survived trees
-            while not Pass:
-                F = self.sampleFeats()
-                Tree = self.plantTree(ds_T, F)
-                if self.validationTree(Tree, ds_V) < Threshold_for_drop:
-                    droped_trees += 1
-                else:
-                    Pass = True
-                if droped_trees >= self.max_discard_trees:
-                    Threshold_for_drop -= self.delta_th
-                    droped_trees = 0
-
+            Tree, Threshold_for_drop = self.survivedTree()
             Forest.append(Tree)
+            survived_scores.append(Threshold_for_drop)
 
-        self.Forest = Forest
+        self.Forest.extend(Forest)
+        self.survived_scores.extend(survived_scores)
+
+    def fitParallel(
+        self,
+        dataset: Optional[pd.DataFrame] = None,
+        disable_progress_bar: bool = False,
+        max_workers: Optional[int] = None,
+    ):
+
+        if dataset is not None:
+            self.process_dataset(dataset)
+
+        if self.dataset is None:
+            raise DatasetNotFound(
+                "Dataset not found! Please, give a dataset for functions fit() or process_dataset()."
+            )
+
+        # Builds the Forest (training step)
+        Forest_Threshold_for_drop = thread_map(
+            self.survivedTree,
+            range(0, self.n_trees),
+            max_workers=max_workers,
+            disable=disable_progress_bar,
+            desc="Planting the forest",
+        )
+        out = list(map(list, zip(*Forest_Threshold_for_drop)))
+        self.Forest.extend(out[0])
+        self.survived_scores.extend(out[1])
 
     def useForest(self, row: dsRow, soft_voting: bool = False) -> TypeLeaf:
         if soft_voting:

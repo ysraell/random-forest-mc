@@ -113,6 +113,8 @@ For example:
 
     - the survived trees have a potential information about feature importance.
 
+    - Robust for mssing values in categorical features during prediction process.
+
 ### References
 
 [2] [Laboratory of Decision Tree and Random Forest (`github/ysraell/random-forest-lab`)](https://github.com/ysraell/random-forest-lab). GitHub repository.
@@ -127,7 +129,6 @@ With this image you can run all notebooks and scripts Python inside this reposit
 
 ### TODO v1.0:
 
-- Validate the inherent treatment for new categorical values.
 - Add parallel processing using or TQDM or csv2es style.
 - Mssing data issue:
     - Prediction with missing values: `useTree` must be functional and branching when missing value, combining classes at leaves with their probabilities.
@@ -139,3 +140,4 @@ With this image you can run all notebooks and scripts Python inside this reposit
 
 - Extender for predict by regression.
 - Refactor to use NumPy or built in Python features as core data operations.
+- Add new class derived with a weighted tree voting using survived scores.
