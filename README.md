@@ -52,7 +52,7 @@ cls = RandomForestMC(
     n_trees=8, target_col=params["target_col"], max_discard_trees=4
 )
 cls.process_dataset(dataset)
-cls.fit()
+cls.fit() # or with cls.fitParallel(max_workers=8)
 y_test = dataset[params["target_col"]].to_list()
 y_pred = cls.testForest(dataset)
 accuracy_hard = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
@@ -136,9 +136,9 @@ With this image you can run all notebooks and scripts Python inside this reposit
 - [Plus] Add a method to return the list of feaures and their degrees of importance.
 - Set validation threshold reseting for each new tree optional pasing by parameter.
 - Docstring.
+- Add new a predition weighted tree voting using survived scores.
 
 ### TODO V2.0:
 
 - Extender for predict by regression.
 - Refactor to use NumPy or built in Python features as core data operations.
-- Add new class derived with a weighted tree voting using survived scores.
