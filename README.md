@@ -1,12 +1,13 @@
 # Random Forest with Dynamic Tree Selection Monte Carlo Based (RF-TSMC)
 ![](forest.png)
 
-[![Python 3.7](https://img.shields.io/badge/Python->=3.7-gree.svg)](https://www.python.org/downloads/release/python-370/)
+<a href="https://pypi.org/project/random-forest-mc"><img src="https://img.shields.io/pypi/pyversions/random-forest-mc" alt="Python versions"></a>
+<a href="https://pypi.org/project/random-forest-mc"><img src="https://img.shields.io/pypi/v/random-forest-mc?color=blue" alt="PyPI version"></a>
 ![](https://img.shields.io/badge/Coverage-100%25-green)
+![](https://img.shields.io/badge/Status-Unstable-red)
+![](https://img.shields.io/badge/Dev--status-WIP-orange)
 
 This project is about use Random Forest approach for *multiclass classification* using a dynamic tree selection Monte Carlo based. The first implementation is found in [2] (using Common Lisp).
-
-#### Development status: `WIP and unstable, version 0.1.1`.
 
 ## Install:
 
