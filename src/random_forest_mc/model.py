@@ -206,11 +206,12 @@ class RandomForestMC:
                     if val >= tree_node_split["split_val"]
                     else tree_node_split["<"]
                 )
-            Tree = (
-                tree_node_split[">="]
-                if val == tree_node_split["split_val"]
-                else tree_node_split["<"]
-            )
+            else:
+                Tree = (
+                    tree_node_split[">="]
+                    if val == tree_node_split["split_val"]
+                    else tree_node_split["<"]
+                )
 
     @staticmethod
     def maxProbClas(leaf: TypeLeaf) -> TypeClassVal:
