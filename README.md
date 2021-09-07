@@ -132,7 +132,6 @@ With this image you can run all notebooks and scripts Python inside this reposit
 
 ### TODO v1.0:
 
-- Add parallel processing using or TQDM or csv2es style.
 - Mssing data issue:
     - Prediction with missing values: `useTree` must be functional and branching when missing value, combining classes at leaves with their probabilities.
     - Data Imputation using the Forest.
