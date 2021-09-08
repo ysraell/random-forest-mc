@@ -4,8 +4,8 @@
 <a href="https://pypi.org/project/random-forest-mc"><img src="https://img.shields.io/pypi/pyversions/random-forest-mc" alt="Python versions"></a>
 <a href="https://pypi.org/project/random-forest-mc"><img src="https://img.shields.io/pypi/v/random-forest-mc?color=blue" alt="PyPI version"></a>
 ![](https://img.shields.io/badge/Coverage-100%25-green)
-![](https://img.shields.io/badge/Status-stable-green)
-![](https://img.shields.io/badge/Dev--Status-WIP-orange)
+![](https://img.shields.io/badge/Status-Stable-green)
+![](https://img.shields.io/badge/Dev--status-WIP-orange)
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/ysraell/random-forest-mc.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/ysraell/random-forest-mc/alerts/)
 [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/ysraell/random-forest-mc.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/ysraell/random-forest-mc/context:python)
 
@@ -66,6 +66,7 @@ accuracy_soft = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
 ### Notes:
 
 - Classes values must be converted to `str` before make predicts.
+- `fit` always add new trees (keep the trees generated before).
 
 ### LoadDicts:
 
