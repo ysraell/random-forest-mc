@@ -6,6 +6,7 @@ Random forests: extremely randomized trees with dynamic tree selection Monte Car
 The module structure is the following:
 
 """
+import logging as log
 from collections import defaultdict
 from random import randint
 from random import sample
@@ -54,7 +55,10 @@ class RandomForestMC:
         th_start: float = 0.9,
         min_feature: Optional[int] = None,
         max_feature: Optional[int] = None,
+        th_decease_verbose=False,
     ) -> None:
+        if th_decease_verbose:
+            log.basicConfig(level=log.INFO)
         self.target_col = target_col
         self.batch_train_pclass = batch_train_pclass
         self.batch_val_pclass = batch_val_pclass
@@ -241,6 +245,7 @@ class RandomForestMC:
                 break
             if dropped_trees >= self.max_discard_trees:
                 Threshold_for_drop -= self.delta_th
+                log.info("New threshold for drop: {:.4f}".format(Threshold_for_drop))
                 dropped_trees = 0
 
         return Tree, Threshold_for_drop
