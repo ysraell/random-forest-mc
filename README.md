@@ -133,16 +133,11 @@ With this image you can run all notebooks and scripts Python inside this reposit
 
 ### TODO v1.0:
 
-- Save/load models (forests).
-- Merge/split forests.
-- Check for duplicated trees (with checksum).
 - Mssing data issue:
     - Prediction with missing values: `useTree` must be functional and branching when missing value, combining classes at leaves with their probabilities.
     - Data Imputation using the Forest.
 - [Plus] Add a method to return the list of feaures and their degrees of importance.
-- Set validation threshold reseting for each new tree optional pasing by parameter.
 - Docstring.
-- Add new a prediction weighted tree voting using survived scores.
 
 ### TODO v1.1:
 
