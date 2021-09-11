@@ -141,6 +141,10 @@ With this image you can run all notebooks and scripts Python inside this reposit
 - Docstring.
 - Add new a predition weighted tree voting using survived scores.
 
+### TODO v1.1:
+
+- Automated tests using GitHub Actions.
+
 ### TODO V2.0:
 
 - Extender for predict by regression.
