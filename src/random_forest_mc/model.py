@@ -21,9 +21,12 @@ from typing import Union
 
 import numpy as np
 import pandas as pd
+import poetry_version
 from tqdm import tqdm
 from tqdm.contrib.concurrent import process_map
 from tqdm.contrib.concurrent import thread_map
+
+__version__ = poetry_version.extract(source_file=__file__)
 
 # a row of pd.DataFrame.iterrows()
 dsRow = NewType("dsRow", pd.core.series.Series)
@@ -52,13 +55,18 @@ class RandomForestMC:
         max_discard_trees: int = 10,
         delta_th: float = 0.1,
         th_start: float = 0.9,
+        get_best_tree: bool = False,
         min_feature: Optional[int] = None,
         max_feature: Optional[int] = None,
         th_decease_verbose=False,
     ) -> None:
+        self.__version__ = __version__
+        self.version = __version__
+        self.model_version = __version__
         if th_decease_verbose:
             log.basicConfig(level=log.INFO)
         self.target_col = target_col
+        self.get_best_tree = get_best_tree
         self.batch_train_pclass = batch_train_pclass
         self.batch_val_pclass = batch_val_pclass
         self._N = batch_train_pclass + batch_val_pclass
@@ -90,7 +98,22 @@ class RandomForestMC:
             "class_vals",
             "Forest",
             "survived_scores",
+            "version",
         ]
+        self.soft_voting = False
+        self.weighted_tree = False
+
+    def __repr__(self) -> str:
+        txt = "RandomForestMC(len(Forest)={},n_trees={},model_version={},module_version={})"
+        return txt.format(
+            len(self.Forest), self.n_trees, self.model_version, self.version
+        )
+
+    def setSoftVoting(self, set: bool = True) -> None:
+        self.soft_voting = set
+
+    def setWeightedTrees(self, set: bool = True) -> None:
+        self.weighted_tree = set
 
     def reset_forest(self) -> None:
         self.Forest = []
@@ -102,6 +125,7 @@ class RandomForestMC:
     def dict2model(self, dict_model: dict) -> None:
         for attr in self.attr_to_save:
             setattr(self, attr, dict_model[attr])
+        self.version = self.__version__
 
     def addTrees(self, Forest_Score: List[Tuple[TypeTree, float]]) -> None:
         for Tree, survived_score in Forest_Score:
@@ -279,20 +303,33 @@ class RandomForestMC:
         Threshold_for_drop = self.th_start
         dropped_trees = 0
         # Only survived trees
+        max_th_val = 0.0
+        max_Tree = None
         while True:
             F = self.sampleFeats()
             Tree = self.plantTree(ds_T, F)
-            if self.validationTree(Tree, ds_V) < Threshold_for_drop:
+            th_val = self.validationTree(Tree, ds_V)
+            if th_val < Threshold_for_drop:
                 dropped_trees += 1
+                if self.get_best_tree:
+                    if max_th_val < th_val:
+                        max_Tree = Tree
+                        max_th_val = th_val
             else:
                 # Coverage trick!
                 _ = None
                 break
             if dropped_trees >= self.max_discard_trees:
-                Threshold_for_drop -= self.delta_th
+                if self.get_best_tree:
+                    Tree = max_Tree
+                    Threshold_for_drop = max_th_val
+                    break
+                else:
+                    Threshold_for_drop -= self.delta_th
                 log.info("New threshold for drop: {:.4f}".format(Threshold_for_drop))
                 dropped_trees = 0
 
+        log.info("Got best tree: {:.4f}".format(Threshold_for_drop))
         return Tree, Threshold_for_drop
 
     def fit(
@@ -356,11 +393,9 @@ class RandomForestMC:
         self.Forest.extend(Tree_Threshold_for_drop_list[0])
         self.survived_scores.extend(Tree_Threshold_for_drop_list[1])
 
-    def useForest(
-        self, row: dsRow, soft_voting: bool = False, weighted_tree: bool = False
-    ) -> TypeLeaf:
-        if soft_voting:
-            if weighted_tree:
+    def useForest(self, row: dsRow) -> TypeLeaf:
+        if self.soft_voting:
+            if self.weighted_tree:
                 class_probs = defaultdict(float)
                 pred_probs = [
                     (self.useTree(Tree, row), score)
@@ -384,7 +419,7 @@ class RandomForestMC:
                     for class_val in self.class_vals
                 }
         else:
-            if weighted_tree:
+            if self.weighted_tree:
                 y_pred_score = [
                     (self.maxProbClas(self.useTree(Tree, row)), score)
                     for Tree, score in zip(self.Forest, self.survived_scores)
@@ -405,20 +440,11 @@ class RandomForestMC:
                     for class_val in self.class_vals
                 }
 
-    def testForest(
-        self, ds: pd.DataFrame, soft_voting: bool = False, weighted_tree: bool = False
-    ) -> List[TypeClassVal]:
-        return [
-            self.maxProbClas(self.useForest(row, soft_voting, weighted_tree))
-            for _, row in ds.iterrows()
-        ]
+    def testForest(self, ds: pd.DataFrame) -> List[TypeClassVal]:
+        return [self.maxProbClas(self.useForest(row)) for _, row in ds.iterrows()]
 
-    def testForestProbs(
-        self, ds: pd.DataFrame, soft_voting: bool = False, weighted_tree: bool = False
-    ) -> List[TypeLeaf]:
-        return [
-            self.useForest(row, soft_voting, weighted_tree) for _, row in ds.iterrows()
-        ]
+    def testForestProbs(self, ds: pd.DataFrame) -> List[TypeLeaf]:
+        return [self.useForest(row) for _, row in ds.iterrows()]
 
 
 # EOF

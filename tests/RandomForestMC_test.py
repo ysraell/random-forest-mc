@@ -8,10 +8,10 @@ sys.path.append("src/")
 path_dict = "/tmp/model_dict.json"
 
 
-def version_test():
+def test_version():
     from random_forest_mc import __version__
 
-    assert __version__ == "0.2.0"
+    assert __version__ == "0.3.0"
 
 
 def test_LoadDicts():
@@ -30,7 +30,11 @@ def test_LoadDicts_content():
 def test_RandomForestMC():
     from random_forest_mc.model import RandomForestMC
 
-    _ = RandomForestMC()
+    cls = RandomForestMC()
+    txt = "RandomForestMC(len(Forest)={},n_trees={},model_version={},module_version={})"
+    assert cls.__repr__() == txt.format(
+        len(cls.Forest), cls.n_trees, cls.model_version, cls.version
+    )
 
 
 def test_RandomForestMC_DatasetNotFound():
@@ -79,11 +83,85 @@ def test_RandomForestMC_fit():
     dataset["SibSp"] = dataset["SibSp"].astype(np.uint8)
     dataset["Pclass"] = dataset["Pclass"].astype(str)
     dataset["Fare"] = dataset["Fare"].astype(np.uint32)
-    cls = RandomForestMC(target_col=params["target_col"], th_decease_verbose=True)
+    cls = RandomForestMC(
+        target_col=params["target_col"], max_discard_trees=20, th_decease_verbose=True
+    )
     cls.fit(dataset)
-    Pass = cls.Forest_size > 0
-    cls.reset_forest()
-    assert Pass and (cls.Forest_size == 0)
+
+
+def test_RandomForestMC_fitParallel():
+    from random_forest_mc.model import RandomForestMC
+    from random_forest_mc.utils import LoadDicts
+
+    dicts = LoadDicts("tests/")
+    dataset_dict = dicts.datasets_metadata
+    ds_name = "titanic"
+    params = dataset_dict[ds_name]
+    dataset = (
+        pd.read_csv(params["csv_path"])[params["ds_cols"] + [params["target_col"]]]
+        .dropna()
+        .reset_index(drop=True)
+    )
+    dataset["Age"] = dataset["Age"].astype(np.uint8)
+    dataset["SibSp"] = dataset["SibSp"].astype(np.uint8)
+    dataset["Pclass"] = dataset["Pclass"].astype(str)
+    dataset["Fare"] = dataset["Fare"].astype(np.uint32)
+    cls = RandomForestMC(
+        target_col=params["target_col"], max_discard_trees=20, th_decease_verbose=True
+    )
+    cls.fitParallel(dataset=dataset, max_workers=4, thread_parallel_method=False)
+
+
+def test_RandomForestMC_fit_get_best_tree():
+    from random_forest_mc.model import RandomForestMC
+    from random_forest_mc.utils import LoadDicts
+
+    dicts = LoadDicts("tests/")
+    dataset_dict = dicts.datasets_metadata
+    ds_name = "titanic"
+    params = dataset_dict[ds_name]
+    dataset = (
+        pd.read_csv(params["csv_path"])[params["ds_cols"] + [params["target_col"]]]
+        .dropna()
+        .reset_index(drop=True)
+    )
+    dataset["Age"] = dataset["Age"].astype(np.uint8)
+    dataset["SibSp"] = dataset["SibSp"].astype(np.uint8)
+    dataset["Pclass"] = dataset["Pclass"].astype(str)
+    dataset["Fare"] = dataset["Fare"].astype(np.uint32)
+    cls = RandomForestMC(
+        target_col=params["target_col"],
+        get_best_tree=True,
+        max_discard_trees=20,
+        th_decease_verbose=True,
+    )
+    cls.fit(dataset)
+
+
+def test_RandomForestMC_fitParallel_get_best_tree():
+    from random_forest_mc.model import RandomForestMC
+    from random_forest_mc.utils import LoadDicts
+
+    dicts = LoadDicts("tests/")
+    dataset_dict = dicts.datasets_metadata
+    ds_name = "titanic"
+    params = dataset_dict[ds_name]
+    dataset = (
+        pd.read_csv(params["csv_path"])[params["ds_cols"] + [params["target_col"]]]
+        .dropna()
+        .reset_index(drop=True)
+    )
+    dataset["Age"] = dataset["Age"].astype(np.uint8)
+    dataset["SibSp"] = dataset["SibSp"].astype(np.uint8)
+    dataset["Pclass"] = dataset["Pclass"].astype(str)
+    dataset["Fare"] = dataset["Fare"].astype(np.uint32)
+    cls = RandomForestMC(
+        target_col=params["target_col"],
+        get_best_tree=True,
+        max_discard_trees=20,
+        th_decease_verbose=True,
+    )
+    cls.fitParallel(dataset=dataset, max_workers=4, thread_parallel_method=False)
 
 
 def test_RandomForestMC_save_load_model():
@@ -156,27 +234,6 @@ def test_RandomForestMC_addTree_dorpduplicated():
     )
 
 
-def test_RandomForestMC_fitParallel():
-    from random_forest_mc.model import RandomForestMC
-    from random_forest_mc.utils import LoadDicts
-
-    dicts = LoadDicts("tests/")
-    dataset_dict = dicts.datasets_metadata
-    ds_name = "titanic"
-    params = dataset_dict[ds_name]
-    dataset = (
-        pd.read_csv(params["csv_path"])[params["ds_cols"] + [params["target_col"]]]
-        .dropna()
-        .reset_index(drop=True)
-    )
-    dataset["Age"] = dataset["Age"].astype(np.uint8)
-    dataset["SibSp"] = dataset["SibSp"].astype(np.uint8)
-    dataset["Pclass"] = dataset["Pclass"].astype(str)
-    dataset["Fare"] = dataset["Fare"].astype(np.uint32)
-    cls = RandomForestMC(target_col=params["target_col"])
-    cls.fitParallel(dataset=dataset, max_workers=4, thread_parallel_method=False)
-
-
 def test_RandomForestMC_fullCycle_titanic():
     from random_forest_mc.model import RandomForestMC
     from random_forest_mc.utils import LoadDicts
@@ -201,13 +258,21 @@ def test_RandomForestMC_fullCycle_titanic():
     cls.fit()
     ds = dataset.sample(n=min(1000, dataset.shape[0]), random_state=51)
     y_test = ds[params["target_col"]].to_list()
+    cls.setSoftVoting(False)
+    cls.setWeightedTrees(False)
     y_pred = cls.testForest(ds)
     accuracy_hard = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
-    y_pred = cls.testForest(ds, soft_voting=True)
+    cls.setSoftVoting(True)
+    cls.setWeightedTrees(False)
+    y_pred = cls.testForest(ds)
     accuracy_soft = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
-    y_pred = cls.testForest(ds, weighted_tree=True)
+    cls.setSoftVoting(False)
+    cls.setWeightedTrees(True)
+    y_pred = cls.testForest(ds)
     accuracy_hard_weighted = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
-    y_pred = cls.testForest(ds, soft_voting=True, weighted_tree=True)
+    cls.setSoftVoting(True)
+    cls.setWeightedTrees(True)
+    y_pred = cls.testForest(ds)
     accuracy_soft_weighted = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
     _ = cls.testForestProbs(ds)
     assert all(
@@ -244,13 +309,21 @@ def test_RandomForestMC_fullCycle_titanic_Parallel_thread():
     cls.fitParallel(max_workers=4, thread_parallel_method=True)
     ds = dataset.sample(n=min(1000, dataset.shape[0]), random_state=51)
     y_test = ds[params["target_col"]].to_list()
+    cls.setSoftVoting(False)
+    cls.setWeightedTrees(False)
     y_pred = cls.testForest(ds)
     accuracy_hard = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
-    y_pred = cls.testForest(ds, soft_voting=True)
+    cls.setSoftVoting(True)
+    cls.setWeightedTrees(False)
+    y_pred = cls.testForest(ds)
     accuracy_soft = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
-    y_pred = cls.testForest(ds, weighted_tree=True)
+    cls.setSoftVoting(False)
+    cls.setWeightedTrees(True)
+    y_pred = cls.testForest(ds)
     accuracy_hard_weighted = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
-    y_pred = cls.testForest(ds, soft_voting=True, weighted_tree=True)
+    cls.setSoftVoting(True)
+    cls.setWeightedTrees(True)
+    y_pred = cls.testForest(ds)
     accuracy_soft_weighted = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
     _ = cls.testForestProbs(ds)
     assert all(
@@ -287,13 +360,21 @@ def test_RandomForestMC_fullCycle_titanic_Parallel_process():
     cls.fitParallel(max_workers=4, thread_parallel_method=False)
     ds = dataset.sample(n=min(1000, dataset.shape[0]), random_state=51)
     y_test = ds[params["target_col"]].to_list()
+    cls.setSoftVoting(False)
+    cls.setWeightedTrees(False)
     y_pred = cls.testForest(ds)
     accuracy_hard = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
-    y_pred = cls.testForest(ds, soft_voting=True)
+    cls.setSoftVoting(True)
+    cls.setWeightedTrees(False)
+    y_pred = cls.testForest(ds)
     accuracy_soft = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
-    y_pred = cls.testForest(ds, weighted_tree=True)
+    cls.setSoftVoting(False)
+    cls.setWeightedTrees(True)
+    y_pred = cls.testForest(ds)
     accuracy_hard_weighted = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
-    y_pred = cls.testForest(ds, soft_voting=True, weighted_tree=True)
+    cls.setSoftVoting(True)
+    cls.setWeightedTrees(True)
+    y_pred = cls.testForest(ds)
     accuracy_soft_weighted = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
     _ = cls.testForestProbs(ds)
     assert all(
@@ -330,12 +411,31 @@ def test_RandomForestMC_fullCycle_iris():
     cls.fit()
     ds = dataset.sample(n=min(1000, dataset.shape[0]), random_state=51)
     y_test = ds[params["target_col"]].to_list()
+    cls.setSoftVoting(False)
+    cls.setWeightedTrees(False)
     y_pred = cls.testForest(ds)
     accuracy_hard = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
-    y_pred = cls.testForest(ds, soft_voting=True)
+    cls.setSoftVoting(True)
+    cls.setWeightedTrees(False)
+    y_pred = cls.testForest(ds)
     accuracy_soft = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
+    cls.setSoftVoting(False)
+    cls.setWeightedTrees(True)
+    y_pred = cls.testForest(ds)
+    accuracy_hard_weighted = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
+    cls.setSoftVoting(True)
+    cls.setWeightedTrees(True)
+    y_pred = cls.testForest(ds)
+    accuracy_soft_weighted = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
     _ = cls.testForestProbs(ds)
-    assert (accuracy_hard > 0.3) and (accuracy_soft > 0.3)
+    assert all(
+        [
+            (accuracy_hard > 0.3),
+            (accuracy_soft > 0.3),
+            (accuracy_hard_weighted > 0.3),
+            (accuracy_soft_weighted > 0.3),
+        ]
+    )
 
 
 def test_RandomForestMC_fullCycle_creditcard():
@@ -359,8 +459,6 @@ def test_RandomForestMC_fullCycle_creditcard():
     ds = dataset.sample(n=min(1000, dataset.shape[0]), random_state=51)
     y_test = ds[params["target_col"]].to_list()
     y_pred = cls.testForest(ds)
-    _ = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
-    y_pred = cls.testForest(ds, soft_voting=True)
     _ = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
     _ = cls.testForestProbs(ds)
 
@@ -387,8 +485,6 @@ def test_RandomForestMC_fullCycle_creditcard_Parallel_process():
     ds = dataset.sample(n=min(1000, dataset.shape[0]), random_state=51)
     y_test = ds[params["target_col"]].to_list()
     y_pred = cls.testForest(ds)
-    _ = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
-    y_pred = cls.testForest(ds, soft_voting=True)
     _ = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
     _ = cls.testForestProbs(ds)
     assert cls.Forest_size == n_trees
