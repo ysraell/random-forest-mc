@@ -112,7 +112,7 @@ def test_RandomForestMC_fitParallel():
     cls.fitParallel(dataset=dataset, max_workers=4, thread_parallel_method=False)
 
 
-def test_RandomForestMC_fit_get_best_tree():
+def test_RandomForestMC_fit_get_best_tree_False():
     from random_forest_mc.model import RandomForestMC
     from random_forest_mc.utils import LoadDicts
 
@@ -131,14 +131,14 @@ def test_RandomForestMC_fit_get_best_tree():
     dataset["Fare"] = dataset["Fare"].astype(np.uint32)
     cls = RandomForestMC(
         target_col=params["target_col"],
-        get_best_tree=True,
+        get_best_tree=False,
         max_discard_trees=20,
         th_decease_verbose=True,
     )
     cls.fit(dataset)
 
 
-def test_RandomForestMC_fitParallel_get_best_tree():
+def test_RandomForestMC_fitParallel_get_best_tree_False():
     from random_forest_mc.model import RandomForestMC
     from random_forest_mc.utils import LoadDicts
 
@@ -157,7 +157,7 @@ def test_RandomForestMC_fitParallel_get_best_tree():
     dataset["Fare"] = dataset["Fare"].astype(np.uint32)
     cls = RandomForestMC(
         target_col=params["target_col"],
-        get_best_tree=True,
+        get_best_tree=False,
         max_discard_trees=20,
         th_decease_verbose=True,
     )

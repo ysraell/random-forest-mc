@@ -55,7 +55,7 @@ class RandomForestMC:
         max_discard_trees: int = 10,
         delta_th: float = 0.1,
         th_start: float = 0.9,
-        get_best_tree: bool = False,
+        get_best_tree: bool = True,
         min_feature: Optional[int] = None,
         max_feature: Optional[int] = None,
         th_decease_verbose=False,

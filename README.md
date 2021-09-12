@@ -57,10 +57,25 @@ cls = RandomForestMC(
 cls.process_dataset(dataset)
 cls.fit() # or with cls.fitParallel(max_workers=8)
 y_test = dataset[params["target_col"]].to_list()
+cls.setWeightedTrees(True) # predictions weighted by survive scores
 y_pred = cls.testForest(dataset)
 accuracy_hard = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
-y_pred = cls.testForest(dataset, soft_voting=True)
+cls.setSoftVoting(True) # for predicitons using soft voting strategy
+y_pred = cls.testForest(dataset)
 accuracy_soft = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
+
+# Saving model:
+ModelDict = cls.model2dict()
+dump_file_json(path_dict, ModelDict)
+del ModelDict
+
+# Lading model
+ModelDict = load_file_json(path_dict)
+cls = RandomForestMC()
+cls.dict2model(ModelDict)
+# Beofre run fit again, load dataset.
+cls.process_dataset(dataset)
+
 ```
 
 ### Notes:
@@ -134,8 +149,10 @@ With this image you can run all notebooks and scripts Python inside this reposit
 ### TODO v1.0:
 
 - Mssing data issue:
-    - Prediction with missing values: `useTree` must be functional and branching when missing value, combining classes at leaves with their probabilities.
-    - Data Imputation using the Forest.
+    - Data Imputation using the Forest (with and without true label).
+    - Prediction with missing values, approaches:
+        - *A*) only for numeric feature, `useTree` must be functional and branching when missing value, combining classes at leaves with their probabilities (duplicate the tree in each node with missing value)), for categorical features, use the default value branching already implemented and working well.
+        - *B*) Use imputation data before prediction.
 - [Plus] Add a method to return the list of feaures and their degrees of importance.
 - Docstring.
 
