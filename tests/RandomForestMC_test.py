@@ -11,7 +11,7 @@ path_dict = "/tmp/model_dict.json"
 def test_version():
     from random_forest_mc import __version__
 
-    assert __version__ == "0.3.0"
+    assert __version__ == "0.3.1"
 
 
 def test_LoadDicts():

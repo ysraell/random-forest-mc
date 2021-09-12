@@ -21,10 +21,11 @@ from typing import Union
 
 import numpy as np
 import pandas as pd
-from config import __version__
 from tqdm import tqdm
 from tqdm.contrib.concurrent import process_map
 from tqdm.contrib.concurrent import thread_map
+
+from .__init__ import __version__
 
 
 # a row of pd.DataFrame.iterrows()
@@ -128,6 +129,7 @@ class RandomForestMC:
     def dict2model(self, dict_model: dict) -> None:
         for attr in self.attr_to_save:
             setattr(self, attr, dict_model[attr])
+        self.model_version = self.version
         self.version = self.__version__
 
     def addTrees(self, Forest_Score: List[Tuple[TypeTree, float]]) -> None:
