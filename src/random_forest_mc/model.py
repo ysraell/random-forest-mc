@@ -21,12 +21,11 @@ from typing import Union
 
 import numpy as np
 import pandas as pd
-import poetry_version
+from config import __version__
 from tqdm import tqdm
 from tqdm.contrib.concurrent import process_map
 from tqdm.contrib.concurrent import thread_map
 
-__version__ = poetry_version.extract(source_file=__file__)
 
 # a row of pd.DataFrame.iterrows()
 dsRow = NewType("dsRow", pd.core.series.Series)
@@ -85,7 +84,6 @@ class RandomForestMC:
         self.class_vals = None
         self.reset_forest()
         self.attr_to_save = [
-            "target_col",
             "batch_train_pclass",
             "batch_val_pclass",
             "_N",
@@ -99,6 +97,11 @@ class RandomForestMC:
             "Forest",
             "survived_scores",
             "version",
+            "numeric_cols",
+            "feature_cols",
+            "type_of_cols",
+            "target_col",
+            "class_vals",
         ]
         self.soft_voting = False
         self.weighted_tree = False

@@ -73,7 +73,7 @@ del ModelDict
 ModelDict = load_file_json(path_dict)
 cls = RandomForestMC()
 cls.dict2model(ModelDict)
-# Beofre run fit again, load dataset.
+# Beofre run fit again, load dataset. Check if the features are the same!
 cls.process_dataset(dataset)
 
 ```
@@ -145,6 +145,10 @@ For example:
 - [My data science Docker image](https://github.com/ysraell/my-ds).
 
 With this image you can run all notebooks and scripts Python inside this repository.
+
+### Bug list:
+
+*01.120921*) Attributes `__version__` and  `version` is `None`.
 
 ### TODO v1.0:
 

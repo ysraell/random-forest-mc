@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "random-forest-mc"
-version = "0.3.0"
+version = "0.3.1"
 description = "This project is about use Random Forest approach using a dynamic tree selection Monte Carlo based."
 authors = ["Israel Oliveira <israel.oliveira@gmail.com>"]
 

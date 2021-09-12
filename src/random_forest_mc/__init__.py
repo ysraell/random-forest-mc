@@ -1,3 +1,3 @@
-import poetry_version
+from config import __version__  # noqa: F401
 
-__version__ = poetry_version.extract(source_file=__file__)
+# EOF
