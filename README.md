@@ -146,10 +146,6 @@ For example:
 
 With this image you can run all notebooks and scripts Python inside this repository.
 
-### Bug list:
-
-*01.120921*) Attributes `__version__` and  `version` is `None`.
-
 ### TODO v1.0:
 
 - Mssing data issue:
