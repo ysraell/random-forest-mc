@@ -451,5 +451,28 @@ class RandomForestMC:
     def testForestProbs(self, ds: pd.DataFrame) -> List[TypeLeaf]:
         return [self.useForest(row) for _, row in ds.iterrows()]
 
+    def featForestCount(self) -> Dict[str, float]:
+        ntrees = len(self.Forest)
+        return {
+            feat: sum([f"'{feat}'" in str(Tree) for Tree in self.Forest]) / ntrees
+            for feat in self.feature_cols
+        }
+
+    def featScoreMean(self):
+        return {
+            feat: np.mean(
+                list(
+                    filter(
+                        lambda num: num != 0,
+                        [
+                            (f"'{feat}'" in str(Tree)) * score
+                            for Tree, score in zip(self.Forest, self.survived_scores)
+                        ],
+                    )
+                )
+            )
+            for feat in self.feature_cols
+        }
+
 
 # EOF
