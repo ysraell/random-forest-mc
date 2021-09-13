@@ -477,13 +477,14 @@ class RandomForestMC:
 
     def featPairCount(self, disable_progress_bar=False) -> Dict[Tuple[str, str], float]:
         pair_count = defaultdict(int)
+        ntrees = len(self.Forest)
         for Tree in tqdm(
             self.Forest, disable=disable_progress_bar, desc="Counting pair occurences"
         ):
             for pair in combinations(self.feature_cols, 2):
-                pair_count[pair] += 1 * (
+                pair_count[pair] += (
                     f"'{pair[0]}'" in str(Tree) and f"'{pair[1]}'" in str(Tree)
-                )
+                ) / ntrees
         return dict(pair_count)
 
     def featCorrDataFrame(self) -> pd.DataFrame:
