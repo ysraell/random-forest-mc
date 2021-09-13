@@ -9,6 +9,7 @@ The module structure is the following:
 import logging as log
 from collections import defaultdict
 from hashlib import md5
+from itertools import combinations
 from random import randint
 from random import sample
 from typing import Any
@@ -458,21 +459,47 @@ class RandomForestMC:
             for feat in self.feature_cols
         }
 
-    def featScoreMean(self):
+    # Hadouken!!
+    def featScoreMean(self) -> Dict[str, float]:
         return {
             feat: np.mean(
-                list(
-                    filter(
-                        lambda num: num != 0,
-                        [
-                            (f"'{feat}'" in str(Tree)) * score
-                            for Tree, score in zip(self.Forest, self.survived_scores)
-                        ],
-                    )
-                )
+                [
+                    x
+                    for x in [
+                        (f"'{feat}'" in str(Tree)) * score
+                        for Tree, score in zip(self.Forest, self.survived_scores)
+                    ]
+                    if x > 0
+                ]
             )
             for feat in self.feature_cols
         }
+
+    def featPairCount(self, disable_progress_bar=False) -> Dict[Tuple[str, str], float]:
+        pair_count = defaultdict(int)
+        for Tree in tqdm(
+            self.Forest, disable=disable_progress_bar, desc="Counting pair occurences"
+        ):
+            for pair in combinations(self.feature_cols, 2):
+                pair_count[pair] += 1 * (
+                    f"'{pair[0]}'" in str(Tree) and f"'{pair[1]}'" in str(Tree)
+                )
+        return dict(pair_count)
+
+    def featCorrDataFrame(self) -> pd.DataFrame:
+        N = len(self.feature_cols)
+        matrix = np.zeros((N, N), dtype=np.float16)
+
+        for feat, count in self.featForestCount().items():
+            idx = self.feature_cols.index(feat)
+            matrix[idx][idx] = count
+
+        for pair, count in self.featPairCount().items():
+            idxa = self.feature_cols.index(pair[0])
+            idxb = self.feature_cols.index(pair[1])
+            matrix[idxa][idxb], matrix[idxb][idxa] = count, count
+
+        return pd.DataFrame(matrix, index=self.feature_cols, columns=self.feature_cols)
 
 
 # EOF
