@@ -334,6 +334,20 @@ toml = "*"
 testing = ["argcomplete", "hypothesis (>=3.56)", "mock", "nose", "requests", "xmlschema"]
 
 [[package]]
+name = "pytest-check"
+version = "1.0.4"
+description = "A pytest plugin that allows multiple failures per test."
+category = "dev"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+pytest = ">=6.0.0"
+
+[package.extras]
+test = ["tox"]
+
+[[package]]
 name = "pytest-cov"
 version = "2.12.1"
 description = "Pytest plugin for measuring coverage."
@@ -475,7 +489,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7.1,<3.11"
-content-hash = "a49166f162458240e38b7009e3a10f5be840c23614a62a847e0c1a6667f5468c"
+content-hash = "182a546fd629fd390f54fffc0f34fa62d6d1407c7600f5da7c1b6b5ee9a267bb"
 
 [metadata.files]
 atomicwrites = [
@@ -690,6 +704,10 @@ pyparsing = [
 pytest = [
     {file = "pytest-6.2.5-py3-none-any.whl", hash = "sha256:7310f8d27bc79ced999e760ca304d69f6ba6c6649c0b60fb0e04a4a77cacc134"},
     {file = "pytest-6.2.5.tar.gz", hash = "sha256:131b36680866a76e6781d13f101efb86cf674ebb9762eb70d3082b6f29889e89"},
+]
+pytest-check = [
+    {file = "pytest_check-1.0.4-py3-none-any.whl", hash = "sha256:aacc9500178611f8ad075a7c46ce8de8ac34f05270eee28f223fb0c8622fbfbe"},
+    {file = "pytest_check-1.0.4.tar.gz", hash = "sha256:c93eee5a98bcd28634a4ec657ab62c46d25fa384300811e5a925d9c4d98b9540"},
 ]
 pytest-cov = [
     {file = "pytest-cov-2.12.1.tar.gz", hash = "sha256:261ceeb8c227b726249b376b8526b600f38667ee314f910353fa318caa01f4d7"},

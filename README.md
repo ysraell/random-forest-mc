@@ -76,8 +76,15 @@ cls.dict2model(ModelDict)
 # Beofre run fit again, load dataset. Check if the features are the same!
 cls.process_dataset(dataset)
 
+# Feature counting (how much features in each tree):
+cls.featCount()
+(
+    (3.5, 0.5, 3, 4),  # (mean, std, min, max)
+    [3, 4, 3, 4, 3, 4] # List of counting of features in each tree.
+)
+
 # Feature importance:
-cls.featForestCount()
+cls.featImportance()
 {
     'feat 1': 0.900000,
     'feat 2': 0.804688,
@@ -86,7 +93,7 @@ cls.featForestCount()
 }
 
 # Permutation feature importance:
-cls.featPairCount()
+cls.featPairImportance()
 {
     ('feat 1', 'feat 2'): 0.12,
     ('feat 1', 'feat 3'): 0.13,

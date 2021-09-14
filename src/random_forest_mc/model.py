@@ -164,7 +164,7 @@ class RandomForestMC:
         type_of_cols.update({col: "categorical" for col in categorical_cols})
 
         if self.min_feature is None:
-            self.min_feature = len(feature_cols) // 2
+            self.min_feature = 2
 
         if self.max_feature is None:
             self.max_feature = len(feature_cols)
@@ -206,7 +206,7 @@ class RandomForestMC:
     # Splits the data during the tree's growth process.
     def splitData(
         self, feat, ds: pd.DataFrame
-    ) -> Tuple[pd.DataFrame, pd.DataFrame, Union[int, float]]:
+    ) -> Tuple[pd.DataFrame, pd.DataFrame, Union[int, float, str]]:
         if ds.shape[0] > 2:
 
             if feat in self.numeric_cols:
@@ -452,7 +452,14 @@ class RandomForestMC:
     def testForestProbs(self, ds: pd.DataFrame) -> List[TypeLeaf]:
         return [self.useForest(row) for _, row in ds.iterrows()]
 
-    def featForestCount(self) -> Dict[str, float]:
+    def featCount(self) -> Tuple[Tuple[float, float, int, int], List[int]]:
+        out = [
+            len([feat for feat in self.feature_cols if f"'{feat}'" in str(Tree)])
+            for Tree in self.Forest
+        ]
+        return (np.mean(out), np.std(out), min(out), max(out)), out
+
+    def featImportance(self) -> Dict[str, float]:
         ntrees = len(self.Forest)
         return {
             feat: sum([f"'{feat}'" in str(Tree) for Tree in self.Forest]) / ntrees
@@ -475,7 +482,9 @@ class RandomForestMC:
             for feat in self.feature_cols
         }
 
-    def featPairCount(self, disable_progress_bar=False) -> Dict[Tuple[str, str], float]:
+    def featPairImportance(
+        self, disable_progress_bar=False
+    ) -> Dict[Tuple[str, str], float]:
         pair_count = defaultdict(int)
         ntrees = len(self.Forest)
         for Tree in tqdm(
@@ -491,11 +500,11 @@ class RandomForestMC:
         N = len(self.feature_cols)
         matrix = np.zeros((N, N), dtype=np.float16)
 
-        for feat, count in self.featForestCount().items():
+        for feat, count in self.featImportance().items():
             idx = self.feature_cols.index(feat)
             matrix[idx][idx] = count
 
-        for pair, count in self.featPairCount().items():
+        for pair, count in self.featPairImportance().items():
             idxa = self.feature_cols.index(pair[0])
             idxb = self.feature_cols.index(pair[1])
             matrix[idxa][idxb], matrix[idxb][idxa] = count, count

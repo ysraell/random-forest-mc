@@ -3,6 +3,7 @@ import sys
 import numpy as np
 import pandas as pd
 import pytest
+import pytest_check as check
 
 sys.path.append("src/")
 path_dict = "/tmp/model_dict.json"
@@ -11,7 +12,7 @@ path_dict = "/tmp/model_dict.json"
 def test_version():
     from random_forest_mc import __version__
 
-    assert __version__ == "0.3.2"
+    assert __version__ == "0.3.3"
 
 
 # @pytest.mark.skip()
@@ -140,44 +141,40 @@ def test_RandomForestMC_fitParallel_featImportance():
     dataset["Fare"] = dataset["Fare"].astype(np.uint32)
     cls = RandomForestMC(target_col=params["target_col"], max_discard_trees=8)
     cls.fitParallel(dataset=dataset, max_workers=4, thread_parallel_method=False)
-    featForestCount = cls.featForestCount()
+    featCount_stats, featCount_list = cls.featCount()
+    featImportance = cls.featImportance()
     featScoreMean = cls.featScoreMean()
-    featPairCount = cls.featPairCount()
+    featPairImportance = cls.featPairImportance()
     featCorrDataFrame = cls.featCorrDataFrame()
-    assert all(
-        [
-            isinstance(featForestCount, dict),
-            isinstance(featScoreMean, dict),
-            isinstance(featPairCount, dict),
-            isinstance(featCorrDataFrame, pd.DataFrame),
+    check.is_instance(featCount_stats, tuple)
+    check.is_instance(featCount_list, list)
+    check.is_instance(featImportance, dict)
+    check.is_instance(featScoreMean, dict)
+    check.is_instance(featPairImportance, dict)
+    check.is_instance(featCorrDataFrame, pd.DataFrame)
+    check.is_true(all([isinstance(val, float) for val in featCount_stats[:2]]))
+    check.is_true(all([isinstance(val, int) for val in featCount_stats[2:]]))
+    check.is_true(all([isinstance(count, int) for count in featCount_list]))
+    for feat, count in featImportance.items():
+        check.is_true(
+            all([isinstance(feat, str), isinstance(count, float), count <= 1])
+        )
+    for feat, count in featScoreMean.items():
+        check.is_true(
+            all([isinstance(feat, str), isinstance(count, float), count <= 1])
+        )
+    for pair, count in featPairImportance.items():
+        check.is_true(
             all(
                 [
-                    all([isinstance(feat, str), isinstance(count, float), count <= 1])
-                    for feat, count in featForestCount.items()
+                    isinstance(pair, tuple),
+                    isinstance(pair[0], str),
+                    isinstance(pair[1], str),
+                    isinstance(count, float),
+                    count <= 1,
                 ]
-            ),
-            all(
-                [
-                    all([isinstance(feat, str), isinstance(count, float), count <= 1])
-                    for feat, count in featScoreMean.items()
-                ]
-            ),
-            all(
-                [
-                    all(
-                        [
-                            isinstance(pair, tuple),
-                            isinstance(pair[0], str),
-                            isinstance(pair[1], str),
-                            isinstance(count, float),
-                            count <= 1,
-                        ]
-                    )
-                    for pair, count in featPairCount.items()
-                ]
-            ),
-        ]
-    )
+            )
+        )
 
 
 # @pytest.mark.skip()
@@ -263,9 +260,8 @@ def test_RandomForestMC_save_load_model():
     cls = RandomForestMC(target_col=params["target_col"])
     cls.process_dataset(dataset)
     cls.dict2model(ModelDict)
-    assert (cls.Forest_size == Forest_size) and (
-        sum(cls.survived_scores) == sum_survived_scores
-    )
+    check.equal(cls.Forest_size, Forest_size)
+    check.almost_equal(sum(cls.survived_scores), sum_survived_scores)
 
 
 # @pytest.mark.skip()
@@ -296,14 +292,10 @@ def test_RandomForestMC_addTree_dorpduplicated():
     Forest_sizex2 = cls.Forest_size
     sum_survived_scoresx2 = round(sum(cls.survived_scores), 1)
     cls.drop_duplicated_trees()
-    assert all(
-        [
-            (cls.Forest_size == Forest_size),
-            (round(sum(cls.survived_scores), 1) == sum_survived_scores),
-            ((2 * cls.Forest_size) == Forest_sizex2),
-            (round(2 * sum(cls.survived_scores), 1) == sum_survived_scoresx2),
-        ]
-    )
+    check.equal(cls.Forest_size, Forest_size)
+    check.almost_equal(sum(cls.survived_scores), sum_survived_scores)
+    check.equal(2 * cls.Forest_size, Forest_sizex2)
+    check.almost_equal(2 * sum(cls.survived_scores), sum_survived_scoresx2)
 
 
 # @pytest.mark.skip()
@@ -348,14 +340,10 @@ def test_RandomForestMC_fullCycle_titanic():
     y_pred = cls.testForest(ds)
     accuracy_soft_weighted = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
     _ = cls.testForestProbs(ds)
-    assert all(
-        [
-            (accuracy_hard > 0.6),
-            (accuracy_soft > 0.6),
-            (accuracy_hard_weighted > 0.6),
-            (accuracy_soft_weighted > 0.6),
-        ]
-    )
+    check.greater(accuracy_hard, 0.6)
+    check.greater(accuracy_soft, 0.6)
+    check.greater(accuracy_hard_weighted, 0.6)
+    check.greater(accuracy_soft_weighted, 0.6)
 
 
 # @pytest.mark.skip()
@@ -400,14 +388,10 @@ def test_RandomForestMC_fullCycle_titanic_Parallel_thread():
     y_pred = cls.testForest(ds)
     accuracy_soft_weighted = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
     _ = cls.testForestProbs(ds)
-    assert all(
-        [
-            (accuracy_hard > 0.6),
-            (accuracy_soft > 0.6),
-            (accuracy_hard_weighted > 0.6),
-            (accuracy_soft_weighted > 0.6),
-        ]
-    )
+    check.greater(accuracy_hard, 0.6)
+    check.greater(accuracy_soft, 0.6)
+    check.greater(accuracy_hard_weighted, 0.6)
+    check.greater(accuracy_soft_weighted, 0.6)
 
 
 # @pytest.mark.skip()
@@ -452,14 +436,10 @@ def test_RandomForestMC_fullCycle_titanic_Parallel_process():
     y_pred = cls.testForest(ds)
     accuracy_soft_weighted = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
     _ = cls.testForestProbs(ds)
-    assert all(
-        [
-            (accuracy_hard > 0.6),
-            (accuracy_soft > 0.6),
-            (accuracy_hard_weighted > 0.6),
-            (accuracy_soft_weighted > 0.6),
-        ]
-    )
+    check.greater(accuracy_hard, 0.6)
+    check.greater(accuracy_soft, 0.6)
+    check.greater(accuracy_hard_weighted, 0.6)
+    check.greater(accuracy_soft_weighted, 0.6)
 
 
 # @pytest.mark.skip()
@@ -504,14 +484,10 @@ def test_RandomForestMC_fullCycle_iris():
     y_pred = cls.testForest(ds)
     accuracy_soft_weighted = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
     _ = cls.testForestProbs(ds)
-    assert all(
-        [
-            (accuracy_hard > 0.3),
-            (accuracy_soft > 0.3),
-            (accuracy_hard_weighted > 0.3),
-            (accuracy_soft_weighted > 0.3),
-        ]
-    )
+    check.greater(accuracy_hard, 0.6)
+    check.greater(accuracy_soft, 0.6)
+    check.greater(accuracy_hard_weighted, 0.6)
+    check.greater(accuracy_soft_weighted, 0.6)
 
 
 # @pytest.mark.skip()
@@ -565,7 +541,7 @@ def test_RandomForestMC_fullCycle_creditcard_Parallel_process():
     y_pred = cls.testForest(ds)
     _ = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
     _ = cls.testForestProbs(ds)
-    assert cls.Forest_size == n_trees
+    check.equal(cls.Forest_size, n_trees)
 
 
 # EOF
