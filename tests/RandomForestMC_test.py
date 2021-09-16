@@ -15,14 +15,14 @@ def test_version():
     assert __version__ == "0.3.4"
 
 
-# @pytest.mark.skip()
+@pytest.mark.skip()
 def test_LoadDicts():
     from random_forest_mc.utils import LoadDicts
 
     _ = LoadDicts("tests/")
 
 
-# @pytest.mark.skip()
+@pytest.mark.skip()
 def test_LoadDicts_content():
     from random_forest_mc.utils import LoadDicts
 
@@ -30,7 +30,7 @@ def test_LoadDicts_content():
     assert "datasets_metadata" in dicts.List
 
 
-# @pytest.mark.skip()
+@pytest.mark.skip()
 def test_RandomForestMC():
     from random_forest_mc.model import RandomForestMC
 
@@ -41,7 +41,7 @@ def test_RandomForestMC():
     )
 
 
-# @pytest.mark.skip()
+@pytest.mark.skip()
 def test_RandomForestMC_DatasetNotFound():
     from random_forest_mc.model import RandomForestMC, DatasetNotFound
 
@@ -50,7 +50,7 @@ def test_RandomForestMC_DatasetNotFound():
         model.fit()
 
 
-# @pytest.mark.skip()
+@pytest.mark.skip()
 def test_RandomForestMC_DatasetNotFound_Parallel():
     from random_forest_mc.model import RandomForestMC, DatasetNotFound
 
@@ -59,7 +59,7 @@ def test_RandomForestMC_DatasetNotFound_Parallel():
         model.fitParallel()
 
 
-# @pytest.mark.skip()
+@pytest.mark.skip()
 def test_RandomForestMC_process_dataset():
     from random_forest_mc.model import RandomForestMC
     from random_forest_mc.utils import LoadDicts
@@ -73,7 +73,7 @@ def test_RandomForestMC_process_dataset():
     cls.process_dataset(dataset)
 
 
-# @pytest.mark.skip()
+@pytest.mark.skip()
 def test_RandomForestMC_fit():
     from random_forest_mc.model import RandomForestMC
     from random_forest_mc.utils import LoadDicts
@@ -97,7 +97,7 @@ def test_RandomForestMC_fit():
     cls.fit(dataset)
 
 
-# @pytest.mark.skip()
+@pytest.mark.skip()
 def test_RandomForestMC_fitParallel():
     from random_forest_mc.model import RandomForestMC
     from random_forest_mc.utils import LoadDicts
@@ -121,7 +121,7 @@ def test_RandomForestMC_fitParallel():
     cls.fitParallel(dataset=dataset, max_workers=4, thread_parallel_method=False)
 
 
-# @pytest.mark.skip()
+@pytest.mark.skip()
 def test_RandomForestMC_fitParallel_featImportance():
     from random_forest_mc.model import RandomForestMC
     from random_forest_mc.utils import LoadDicts
@@ -178,6 +178,67 @@ def test_RandomForestMC_fitParallel_featImportance():
 
 
 # @pytest.mark.skip()
+def test_RandomForestMC_fitParallel_sampleClassFeatImportance():
+    from random_forest_mc.model import RandomForestMC
+    from random_forest_mc.utils import LoadDicts
+
+    dicts = LoadDicts("tests/")
+    dataset_dict = dicts.datasets_metadata
+    ds_name = "titanic"
+    params = dataset_dict[ds_name]
+    target_col = params["target_col"]
+    dataset = (
+        pd.read_csv(params["csv_path"])[params["ds_cols"] + [params["target_col"]]]
+        .dropna()
+        .reset_index(drop=True)
+    )
+    dataset["Age"] = dataset["Age"].astype(np.uint8)
+    dataset["SibSp"] = dataset["SibSp"].astype(np.uint8)
+    dataset["Pclass"] = dataset["Pclass"].astype(str)
+    dataset["Fare"] = dataset["Fare"].astype(np.uint32)
+    cls = RandomForestMC(target_col=target_col, max_discard_trees=8)
+    cls.fitParallel(dataset=dataset, max_workers=4, thread_parallel_method=False)
+    for row, Class in [
+        (dataset.query(f'{target_col} == "1"').reset_index(drop=True).loc[0], "1"),
+        (dataset.query(f'{target_col} == "0"').reset_index(drop=True).loc[0], "0"),
+    ]:
+        featCount_stats, featCount_list = cls.sampleClassFeatCount(row, Class)
+        featImportance = cls.sampleClassFeatImportance(row, Class)
+        featScoreMean = cls.sampleClassFeatScoreMean(row, Class)
+        featPairImportance = cls.sampleClassFeatPairImportance(row, Class)
+        featCorrDataFrame = cls.sampleClassFeatCorrDataFrame(row, Class)
+        check.is_instance(featCount_stats, tuple)
+        check.is_instance(featCount_list, list)
+        check.is_instance(featImportance, dict)
+        check.is_instance(featScoreMean, dict)
+        check.is_instance(featPairImportance, dict)
+        check.is_instance(featCorrDataFrame, pd.DataFrame)
+        check.is_true(all([isinstance(val, float) for val in featCount_stats[:2]]))
+        check.is_true(all([isinstance(val, int) for val in featCount_stats[2:]]))
+        check.is_true(all([isinstance(count, int) for count in featCount_list]))
+        for feat, count in featImportance.items():
+            check.is_true(
+                all([isinstance(feat, str), isinstance(count, float), count <= 1])
+            )
+        for feat, count in featScoreMean.items():
+            check.is_true(
+                all([isinstance(feat, str), isinstance(count, float), count <= 1])
+            )
+        for pair, count in featPairImportance.items():
+            check.is_true(
+                all(
+                    [
+                        isinstance(pair, tuple),
+                        isinstance(pair[0], str),
+                        isinstance(pair[1], str),
+                        isinstance(count, float),
+                        count <= 1,
+                    ]
+                )
+            )
+
+
+@pytest.mark.skip()
 def test_RandomForestMC_fit_get_best_tree_False():
     from random_forest_mc.model import RandomForestMC
     from random_forest_mc.utils import LoadDicts
@@ -204,7 +265,7 @@ def test_RandomForestMC_fit_get_best_tree_False():
     cls.fit(dataset)
 
 
-# @pytest.mark.skip()
+@pytest.mark.skip()
 def test_RandomForestMC_fitParallel_get_best_tree_False():
     from random_forest_mc.model import RandomForestMC
     from random_forest_mc.utils import LoadDicts
@@ -231,7 +292,7 @@ def test_RandomForestMC_fitParallel_get_best_tree_False():
     cls.fitParallel(dataset=dataset, max_workers=4, thread_parallel_method=False)
 
 
-# @pytest.mark.skip()
+@pytest.mark.skip()
 def test_RandomForestMC_save_load_model():
     from random_forest_mc.model import RandomForestMC
     from random_forest_mc.utils import LoadDicts, dump_file_json, load_file_json
@@ -264,7 +325,7 @@ def test_RandomForestMC_save_load_model():
     check.almost_equal(sum(cls.survived_scores), sum_survived_scores)
 
 
-# @pytest.mark.skip()
+@pytest.mark.skip()
 def test_RandomForestMC_addTree_dorpduplicated():
     from random_forest_mc.model import RandomForestMC
     from random_forest_mc.utils import LoadDicts
@@ -298,7 +359,7 @@ def test_RandomForestMC_addTree_dorpduplicated():
     check.almost_equal(2 * sum(cls.survived_scores), sum_survived_scoresx2)
 
 
-# @pytest.mark.skip()
+@pytest.mark.skip()
 def test_RandomForestMC_fullCycle_titanic():
     from random_forest_mc.model import RandomForestMC
     from random_forest_mc.utils import LoadDicts
@@ -346,7 +407,7 @@ def test_RandomForestMC_fullCycle_titanic():
     check.greater(accuracy_soft_weighted, 0.6)
 
 
-# @pytest.mark.skip()
+@pytest.mark.skip()
 def test_RandomForestMC_fullCycle_titanic_Parallel_thread():
     from random_forest_mc.model import RandomForestMC
     from random_forest_mc.utils import LoadDicts
@@ -394,7 +455,7 @@ def test_RandomForestMC_fullCycle_titanic_Parallel_thread():
     check.greater(accuracy_soft_weighted, 0.6)
 
 
-# @pytest.mark.skip()
+@pytest.mark.skip()
 def test_RandomForestMC_fullCycle_titanic_Parallel_process():
     from random_forest_mc.model import RandomForestMC
     from random_forest_mc.utils import LoadDicts
@@ -442,7 +503,7 @@ def test_RandomForestMC_fullCycle_titanic_Parallel_process():
     check.greater(accuracy_soft_weighted, 0.6)
 
 
-# @pytest.mark.skip()
+@pytest.mark.skip()
 def test_RandomForestMC_fullCycle_iris():
     from random_forest_mc.model import RandomForestMC
     from random_forest_mc.utils import LoadDicts
@@ -490,7 +551,7 @@ def test_RandomForestMC_fullCycle_iris():
     check.greater(accuracy_soft_weighted, 0.6)
 
 
-# @pytest.mark.skip()
+@pytest.mark.skip()
 def test_RandomForestMC_fullCycle_creditcard():
     from random_forest_mc.model import RandomForestMC
     from random_forest_mc.utils import LoadDicts
@@ -516,7 +577,7 @@ def test_RandomForestMC_fullCycle_creditcard():
     _ = cls.testForestProbs(ds)
 
 
-# @pytest.mark.skip()
+@pytest.mark.skip()
 def test_RandomForestMC_fullCycle_creditcard_Parallel_process():
     from random_forest_mc.model import RandomForestMC
     from random_forest_mc.utils import LoadDicts
