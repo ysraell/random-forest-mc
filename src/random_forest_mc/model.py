@@ -141,7 +141,9 @@ class RandomForestMC:
     def drop_duplicated_trees(self) -> None:
         conds = (
             pd.DataFrame(
-                [md5(str(Tree).encode("utf-8")).hexdigest() for Tree in self.Forest]
+                [
+                    md5(str(Tree).encode("utf-8")).hexdigest() for Tree in self.Forest
+                ]  # noqa: S303
             )
             .duplicated()
             .to_list()
@@ -452,29 +454,58 @@ class RandomForestMC:
     def testForestProbs(self, ds: pd.DataFrame) -> List[TypeLeaf]:
         return [self.useForest(row) for _, row in ds.iterrows()]
 
-    def featCount(self) -> Tuple[Tuple[float, float, int, int], List[int]]:
-        out = [
-            len([feat for feat in self.feature_cols if f"'{feat}'" in str(Tree)])
+    def tree2feats(self, Tree) -> List[str]:
+        return [feat for feat in self.feature_cols if f"'{feat}'" in str(Tree)]
+
+    def sampleClass2trees(self, row: dsRow, Class: TypeClassVal) -> List[TypeTree]:
+        return [
+            Tree
             for Tree in self.Forest
+            if self.maxProbClas(self.useTree(Tree, row)) == Class
         ]
+
+    def featCount(
+        self, Forest: Optional[List[TypeTree]] = None
+    ) -> Tuple[Tuple[float, float, int, int], List[int]]:
+        if Forest is None:
+            Forest = self.Forest
+        out = [len(self.tree2feats(Tree)) for Tree in Forest]
         return (np.mean(out), np.std(out), min(out), max(out)), out
 
-    def featImportance(self) -> Dict[str, float]:
-        ntrees = len(self.Forest)
+    def sampleClassFeatCount(
+        self, row: dsRow, Class: TypeClassVal
+    ) -> Tuple[Tuple[float, float, int, int], List[int]]:
+        return self.featCount(self.sampleClass2trees(row=row, Class=Class))
+
+    def featImportance(
+        self, Forest: Optional[List[TypeTree]] = None
+    ) -> Dict[str, float]:
+        if Forest is None:
+            Forest = self.Forest
+        n_trees = len(Forest)
         return {
-            feat: sum([f"'{feat}'" in str(Tree) for Tree in self.Forest]) / ntrees
+            feat: sum([f"'{feat}'" in str(Tree) for Tree in Forest]) / n_trees
             for feat in self.feature_cols
         }
 
-    # Hadouken!!
-    def featScoreMean(self) -> Dict[str, float]:
+    def sampleClassFeatImportance(
+        self, row: dsRow, Class: TypeClassVal
+    ) -> Dict[str, float]:
+        return self.featImportance(self.sampleClass2trees(row=row, Class=Class))
+
+    def featScoreMean(
+        self, Forest: Optional[List[TypeTree]] = None
+    ) -> Dict[str, float]:
+        if Forest is None:
+            Forest = self.Forest
+        # Hadouken!!
         return {
             feat: np.mean(
                 [
                     x
                     for x in [
                         (f"'{feat}'" in str(Tree)) * score
-                        for Tree, score in zip(self.Forest, self.survived_scores)
+                        for Tree, score in zip(Forest, self.survived_scores)
                     ]
                     if x > 0
                 ]
@@ -482,34 +513,53 @@ class RandomForestMC:
             for feat in self.feature_cols
         }
 
+    def sampleClassFeatScoreMean(
+        self, row: dsRow, Class: TypeClassVal
+    ) -> Dict[str, float]:
+        return self.featScoreMean(self.sampleClass2trees(row=row, Class=Class))
+
     def featPairImportance(
-        self, disable_progress_bar=False
+        self, disable_progress_bar=False, Forest: Optional[List[TypeTree]] = None
     ) -> Dict[Tuple[str, str], float]:
+        if Forest is None:
+            Forest = self.Forest
         pair_count = defaultdict(int)
-        ntrees = len(self.Forest)
+        n_trees = len(Forest)
         for Tree in tqdm(
-            self.Forest, disable=disable_progress_bar, desc="Counting pair occurences"
+            Forest, disable=disable_progress_bar, desc="Counting pair occurences"
         ):
             for pair in combinations(self.feature_cols, 2):
                 pair_count[pair] += (
                     f"'{pair[0]}'" in str(Tree) and f"'{pair[1]}'" in str(Tree)
-                ) / ntrees
+                ) / n_trees
         return dict(pair_count)
 
-    def featCorrDataFrame(self) -> pd.DataFrame:
+    def sampleClassFeatPairImportance(
+        self, row: dsRow, Class: TypeClassVal
+    ) -> Dict[Tuple[str, str], float]:
+        return self.featPairImportance(self.sampleClass2trees(row=row, Class=Class))
+
+    def featCorrDataFrame(
+        self, Forest: Optional[List[TypeTree]] = None
+    ) -> pd.DataFrame:
         N = len(self.feature_cols)
         matrix = np.zeros((N, N), dtype=np.float16)
 
-        for feat, count in self.featImportance().items():
+        for feat, count in self.featImportance(Forest=Forest).items():
             idx = self.feature_cols.index(feat)
             matrix[idx][idx] = count
 
-        for pair, count in self.featPairImportance().items():
+        for pair, count in self.featPairImportance(Forest=Forest).items():
             idxa = self.feature_cols.index(pair[0])
             idxb = self.feature_cols.index(pair[1])
             matrix[idxa][idxb], matrix[idxb][idxa] = count, count
 
         return pd.DataFrame(matrix, index=self.feature_cols, columns=self.feature_cols)
+
+    def sampleClassFeatCorrDataFrame(
+        self, row: dsRow, Class: TypeClassVal
+    ) -> pd.DataFrame:
+        return self.featCorrDataFrame(self.sampleClass2trees(row=row, Class=Class))
 
 
 # EOF

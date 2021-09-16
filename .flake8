@@ -9,7 +9,7 @@ per-file-ignores =
     tests/*:S101,S605,
     scripts/*.py:S605,S607
 select = B,B9,BLK,C,E,F,I,S,W
-ignore = B008, E203, E501, W503, E231
+ignore = B008, E203, E501, W503, E231, S303
 max-line-length = 160
 import-order-style = google
 max-complexity = 10
