@@ -42,6 +42,7 @@ dicts = LoadDicts("tests/")
 dataset_dict = dicts.datasets_metadata
 ds_name = "titanic"
 params = dataset_dict[ds_name]
+target_col = params["target_col"]
 dataset = (
     pd.read_csv(params["csv_path"])[params["ds_cols"] + [params["target_col"]]]
     .dropna()
@@ -52,7 +53,7 @@ dataset["SibSp"] = dataset["SibSp"].astype(np.uint8)
 dataset["Pclass"] = dataset["Pclass"].astype(str)
 dataset["Fare"] = dataset["Fare"].astype(np.uint32)
 cls = RandomForestMC(
-    n_trees=8, target_col=params["target_col"], max_discard_trees=4
+    n_trees=8, target_col=target_col, max_discard_trees=4
 )
 cls.process_dataset(dataset)
 cls.fit() # or with cls.fitParallel(max_workers=8)
@@ -76,15 +77,16 @@ cls.dict2model(ModelDict)
 # Beofre run fit again, load dataset. Check if the features are the same!
 cls.process_dataset(dataset)
 
+row = dataset.loc[0]
 # Feature counting (how much features in each tree):
-cls.featCount()
+cls.featCount() # or cls.sampleClassFeatCount(row, row[target_col])
 (
     (3.5, 0.5, 3, 4),  # (mean, std, min, max)
     [3, 4, 3, 4, 3, 4] # List of counting of features in each tree.
 )
 
 # Feature importance:
-cls.featImportance()
+cls.featImportance() # or cls.sampleClassFeatImportance(row, row[target_col])
 {
     'feat 1': 0.900000,
     'feat 2': 0.804688,
@@ -93,7 +95,7 @@ cls.featImportance()
 }
 
 # Permutation feature importance:
-cls.featPairImportance()
+cls.featPairImportance() # or cls.sampleClassFeatPairImportance(row, row[target_col])
 {
     ('feat 1', 'feat 2'): 0.12,
     ('feat 1', 'feat 3'): 0.13,
@@ -102,7 +104,7 @@ cls.featPairImportance()
 }
 
 # Permutation feature importance in matrix (dataframe):
-cls.featCorrDataFrame()
+cls.featCorrDataFrame() # or cls.sampleClassFeatCorrDataFrame(row, row[target_col])
                feat 1     feat 2     feat 3
 feat 1       0.900000   0.120000   0.130000
 feat 2       0.120000   0.804688   0.230000
@@ -184,7 +186,6 @@ With this image you can run all notebooks and scripts Python inside this reposit
     - Prediction with missing values, approaches:
         - *A*) only for numeric feature, `useTree` must be functional and branching when missing value, combining classes at leaves with their probabilities (duplicate the tree in each node with missing value)), for categorical features, use the default value branching already implemented and working well.
         - *B*) Use imputation data before prediction.
-- Feature importance for a given sample considering (*A*) a given class and (*B*) the predicted class.
 - Docstring.
 
 ### TODO v1.1:
