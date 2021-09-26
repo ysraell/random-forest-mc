@@ -70,11 +70,11 @@ ModelDict = cls.model2dict()
 dump_file_json(path_dict, ModelDict)
 del ModelDict
 
-# Lading model
+# Loading model
 ModelDict = load_file_json(path_dict)
 cls = RandomForestMC()
 cls.dict2model(ModelDict)
-# Beofre run fit again, load dataset. Check if the features are the same!
+# Before run fit again, load dataset. Check if the features are the same!
 cls.process_dataset(dataset)
 
 row = dataset.loc[0]
@@ -196,3 +196,4 @@ With this image you can run all notebooks and scripts Python inside this reposit
 
 - Extender for predict by regression.
 - Refactor to use NumPy or built in Python features as core data operations.
+- Tree management framework: to remove or add new trees, version management for set of trees.
