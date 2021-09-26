@@ -35,5 +35,8 @@ class LoadDicts:
             self.Dict[name] = load_file_json(path_json)
             setattr(self, name, self.Dict[name])
 
+    def __repr__(self) -> str:
+        return "LoadDicts: {}".format(", ".join(self.List))
+
 
 # EOF
