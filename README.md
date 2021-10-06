@@ -186,6 +186,7 @@ With this image you can run all notebooks and scripts Python inside this reposit
     - Prediction with missing values, approaches:
         - *A*) only for numeric feature, `useTree` must be functional and branching when missing value, combining classes at leaves with their probabilities (duplicate the tree in each node with missing value)), for categorical features, use the default value branching already implemented and working well.
         - *B*) Use imputation data before prediction.
+- Add parameter for limit depth, min sample to leaf, min feature completed rotated.
 - Docstring.
 
 ### TODO v1.1:
