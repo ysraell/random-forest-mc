@@ -188,6 +188,7 @@ With this image you can run all notebooks and scripts Python inside this reposit
         - *B*) Use imputation data before prediction.
 - Add parameter for limit depth, min sample to leaf, min feature completed cycles.
 - Add parameter for active validation score (like loss) for each set of a given number of trees generated.
+- Add a set of functions for generate perfomance metrics: like trees generation/validation time.
 - Docstring.
 
 ### TODO v1.1:
