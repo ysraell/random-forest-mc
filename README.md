@@ -179,6 +179,9 @@ For example:
 
 With this image you can run all notebooks and scripts Python inside this repository.
 
+### BUGS:
+- Fix automated version collect from `pyproject.toml`.
+
 ### TODO v1.0:
 
 - Mssing data issue:
