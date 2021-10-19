@@ -19,7 +19,8 @@ def test_version():
 def test_LoadDicts():
     from random_forest_mc.utils import LoadDicts
 
-    _ = LoadDicts("tests/")
+    dicts = LoadDicts("tests/")
+    _ = str(dicts)
 
 
 # @pytest.mark.skip()
@@ -91,6 +92,7 @@ def test_RandomForestMC_fit():
     dataset["SibSp"] = dataset["SibSp"].astype(np.uint8)
     dataset["Pclass"] = dataset["Pclass"].astype(str)
     dataset["Fare"] = dataset["Fare"].astype(np.uint32)
+    dataset.insert(len(dataset.columns), "coqluna_vazia", "None")
     cls = RandomForestMC(
         target_col=params["target_col"], max_discard_trees=20, th_decease_verbose=True
     )
@@ -115,6 +117,7 @@ def test_RandomForestMC_fitParallel():
     dataset["SibSp"] = dataset["SibSp"].astype(np.uint8)
     dataset["Pclass"] = dataset["Pclass"].astype(str)
     dataset["Fare"] = dataset["Fare"].astype(np.uint32)
+    dataset.insert(len(dataset.columns), "coqluna_vazia", "None")
     cls = RandomForestMC(
         target_col=params["target_col"], max_discard_trees=20, th_decease_verbose=True
     )

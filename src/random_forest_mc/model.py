@@ -190,19 +190,25 @@ class RandomForestMC:
             idx_train.extend(idx_list[: self.batch_train_pclass])
             idx_val.extend(idx_list[self.batch_train_pclass :])
 
-        return (
+        ds_T, ds_V = (
             self.dataset.loc[idx_train].reset_index(drop=True),
             self.dataset.loc[idx_val].reset_index(drop=True),
         )
+        for col in self.feature_cols:
+            if ds_T[col].nunique() == 1:
+                # Coverage trick!
+                _ = None
+                ds_T.drop(columns=col, inplace=True)
+        return ds_T, ds_V
 
     # Sample the features.
-    def sampleFeats(self) -> List[str]:
-        return sample(
-            self.feature_cols, randint(self.min_feature, self.max_feature)  # noqa: S311
-        )
+    def sampleFeats(self, feature_cols: List[str]) -> List[str]:
+        feature_cols.remove(self.target_col)
+        n_samples = randint(self.min_feature, self.max_feature)  # noqa: S311
+        return sample(feature_cols, min(len(feature_cols), n_samples))
 
     # Set the leaf of the descion tree.
-    def genLeaf(self, ds) -> TypeLeaf:
+    def genLeaf(self, ds: pd.DataFrame) -> TypeLeaf:
         return {"leaf": ds[self.target_col].value_counts(normalize=True).to_dict()}
 
     # Splits the data during the tree's growth process.
@@ -314,7 +320,7 @@ class RandomForestMC:
         max_th_val = 0.0
         max_Tree = None
         while True:
-            F = self.sampleFeats()
+            F = self.sampleFeats(ds_T.columns.tolist())
             Tree = self.plantTree(ds_T, F)
             th_val = self.validationTree(Tree, ds_V)
             if th_val < Threshold_for_drop:
