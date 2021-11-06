@@ -182,6 +182,10 @@ With this image you can run all notebooks and scripts Python inside this reposit
 ### BUGS:
 - Fix automated version collect from `pyproject.toml`.
 
+### TODO Utils:
+
+- Add methods from [scikit-survival](https://scikit-survival.readthedocs.io/en/stable/user_guide/random-survival-forest.html) for comparison.
+
 ### TODO v1.0:
 
 - Mssing data issue:
