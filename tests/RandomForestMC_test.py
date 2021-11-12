@@ -12,7 +12,7 @@ path_dict = "/tmp/model_dict.json"
 def test_version():
     from random_forest_mc import __version__
 
-    assert __version__ == "0.3.5"
+    assert __version__ == "0.3.6"
 
 
 # @pytest.mark.skip()
@@ -92,10 +92,29 @@ def test_RandomForestMC_fit():
     dataset["SibSp"] = dataset["SibSp"].astype(np.uint8)
     dataset["Pclass"] = dataset["Pclass"].astype(str)
     dataset["Fare"] = dataset["Fare"].astype(np.uint32)
-    dataset.insert(len(dataset.columns), "coqluna_vazia", "None")
     cls = RandomForestMC(
-        target_col=params["target_col"], max_discard_trees=20, th_decease_verbose=True
+        target_col=params["target_col"],
+        max_discard_trees=20,
+        th_decease_verbose=True,
+        temporal_features=True,
     )
+    cls.process_dataset(dataset)
+    check.is_false(cls.temporal_features)
+    dataset.insert(len(dataset.columns), "coqluna_vazia", "None")
+    columns = {
+        col: f"{col}_{i}"
+        for i, col in enumerate(dataset.columns)
+        if col != params["target_col"]
+    }
+    dataset = dataset.rename(columns=columns)
+    cls = RandomForestMC(
+        target_col=params["target_col"],
+        max_discard_trees=20,
+        th_decease_verbose=True,
+        temporal_features=True,
+    )
+    cls.process_dataset(dataset)
+    check.is_true(cls.temporal_features)
     cls.fit(dataset)
 
 

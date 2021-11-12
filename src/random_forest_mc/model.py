@@ -59,7 +59,8 @@ class RandomForestMC:
         get_best_tree: bool = True,
         min_feature: Optional[int] = None,
         max_feature: Optional[int] = None,
-        th_decease_verbose=False,
+        th_decease_verbose: bool = False,
+        temporal_features: bool = False,
     ) -> None:
         self.__version__ = __version__
         self.version = __version__
@@ -76,6 +77,7 @@ class RandomForestMC:
         self.th_start = th_start
         self.delta_th = delta_th
         self.max_discard_trees = max_discard_trees
+        self.temporal_features = temporal_features
         self.n_trees = n_trees
         self.dataset = None
         self.feat_types = ["numeric", "categorical"]
@@ -138,6 +140,9 @@ class RandomForestMC:
             self.survived_scores.append(survived_score)
             self.Forest.append(Tree)
 
+    def validFeaturesTemporal(self):
+        return all([x.split("_")[-1].isnumeric() for x in self.feature_cols])
+
     def drop_duplicated_trees(self) -> None:
         conds = (
             pd.DataFrame(
@@ -177,6 +182,12 @@ class RandomForestMC:
         self.dataset = dataset.dropna()
         self.class_vals = dataset[self.target_col].unique().tolist()
 
+        if self.temporal_features and (not self.validFeaturesTemporal()):
+            self.temporal_features = False
+            log.warning(
+                "Temporal features ordering disable: you do not have all orderable features!"
+            )
+
     # Splits the data to build the decision tree.
     def split_train_val(self) -> Tuple[pd.DataFrame, pd.DataFrame]:
         idx_train = []
@@ -205,7 +216,10 @@ class RandomForestMC:
     def sampleFeats(self, feature_cols: List[str]) -> List[str]:
         feature_cols.remove(self.target_col)
         n_samples = randint(self.min_feature, self.max_feature)  # noqa: S311
-        return sample(feature_cols, min(len(feature_cols), n_samples))
+        out = sample(feature_cols, min(len(feature_cols), n_samples))
+        if not self.temporal_features:
+            return out
+        return sorted(out, key=lambda x: int(x.split("_")[-1]))
 
     # Set the leaf of the descion tree.
     def genLeaf(self, ds: pd.DataFrame) -> TypeLeaf:
