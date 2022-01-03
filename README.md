@@ -193,7 +193,8 @@ With this image you can run all notebooks and scripts Python inside this reposit
     - Data Imputation using the Forest (with and without true label).
     - Prediction with missing values, approaches:
         - *A*) only for numeric feature, `useTree` must be functional and branching when missing value, combining classes at leaves with their probabilities (duplicate the tree in each node with missing value)), for categorical features, use the default value branching already implemented and working well.
-        - *B*) Use imputation data before prediction.
+        - *B*) Use imputation data before prediction. Different from *A*, choose the value with the higher probability.
+	- *C*) (User) Set a default value for each feature a priori. When facing a missing value, use the given default value.
 - Add parameter for limit depth, min sample to leaf, min feature completed cycles.
 - Add parameter for active validation score (like loss) for each set of a given number of trees generated.
 - Add a set of functions for generate perfomance metrics: like trees generation/validation time.
