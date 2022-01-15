@@ -61,6 +61,7 @@ class RandomForestMC:
         max_feature: Optional[int] = None,
         th_decease_verbose: bool = False,
         temporal_features: bool = False,
+        split_with_replace: bool = False,
     ) -> None:
         self.__version__ = __version__
         self.version = __version__
@@ -79,6 +80,7 @@ class RandomForestMC:
         self.max_discard_trees = max_discard_trees
         self.temporal_features = temporal_features
         self.n_trees = n_trees
+        self.split_train_val_replace = split_with_replace
         self.dataset = None
         self.feat_types = ["numeric", "categorical"]
         self.numeric_cols = None
@@ -188,6 +190,10 @@ class RandomForestMC:
                 "Temporal features ordering disable: you do not have all orderable features!"
             )
 
+        if not self.split_train_val_replace:
+            min_class = self.dataset[self.target_col].value_counts().min()
+            self._N = min(self._N, min_class)
+
     # Splits the data to build the decision tree.
     def split_train_val(self) -> Tuple[pd.DataFrame, pd.DataFrame]:
         idx_train = []
@@ -195,7 +201,7 @@ class RandomForestMC:
         for val in self.class_vals:
             idx_list = (
                 self.dataset.query(f'{self.target_col} == "{val}"')
-                .sample(n=self._N)
+                .sample(n=self._N, replace=self.split_train_val_replace)
                 .index.to_list()
             )
             idx_train.extend(idx_list[: self.batch_train_pclass])
