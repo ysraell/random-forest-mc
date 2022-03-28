@@ -1,4 +1,4 @@
-# Random Forest with Dynamic Tree Selection Monte Carlo Based (RF-TSMC)
+# Random Forest with Tree Selection Monte Carlo Based (RF-TSMC)
 ![](forest.png)
 
 <a href="https://pypi.org/project/random-forest-mc"><img src="https://img.shields.io/pypi/pyversions/random-forest-mc" alt="Python versions"></a>
