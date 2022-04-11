@@ -199,6 +199,7 @@ With this image you can run all notebooks and scripts Python inside this reposit
 - Find out how prevent the follow error msg: `cannot take a larger sample than population when 'replace=false'`. It's maybe interesting to have duplicate rows because during the growing the tree we may consider a different structure of decision reusing values (feature). In fact, the algorithm will prevent the creation of a duplicated decision node. We may set as a input parameter (boolean), or in the same way but with a third parameter to change to `True` when we got a error. Consider a possible performance decreasing this third parameter (using `try` may works?).
 - Add parameter for active validation score (like loss) for each set of a given number of trees generated.
 - Add a set of functions for generate perfomance metrics: like trees generation/validation time.
+- Review the usage of `defaultdict` and try use `dict.setdefault`.
 - Docstring.
 
 ### TODO v1.1:
