@@ -219,3 +219,8 @@ def __call__(row_or_matrix: dsRow | pd.DataFrame, prob_output: bool = False) -> 
 - Extender for predict by regression.
 - Refactor to use NumPy or built in Python features as core data operations.
 - Tree management framework: to remove or add new trees, version management for set of trees.
+
+### TODO Extras:
+ - Develop a Scikit-Learn full compatible model. Ref.: <https://scikit-learn.org/stable/developers/develop.html>.
+ - Write and publish a article.
+ - Read the Scikit-learn governance and decision-making (https://scikit-learn.org/stable/governance.html#governance).
