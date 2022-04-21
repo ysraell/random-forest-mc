@@ -189,6 +189,14 @@ With this image you can run all notebooks and scripts Python inside this reposit
 
 ### TODO v1.0:
 
+- Discover how automate the unit tests for test with each compatible minor version.
+- Turn the model (object instance from the class of the model) callable: def inside the `__call__` to use `useForest`, `testForest` and `testForestProbs`, in the follow terms:
+```python
+def __call__(row_or_matrix: dsRow | pd.DataFrame, prob_output: bool = False) -> TypeLeaf | List[TypeClassVal] | List[TypeLeaf]:
+    '''
+    *Attention*: take care that type hints are backward compatible with version `3.7`.
+    '''
+```
 - Mssing data issue:
     - Data Imputation using the Forest (with and without true label).
     - Prediction with missing values, approaches:
