@@ -114,9 +114,7 @@ class RandomForestMC:
 
     def __repr__(self) -> str:
         txt = "RandomForestMC(len(Forest)={},n_trees={},model_version={},module_version={})"
-        return txt.format(
-            len(self.Forest), self.n_trees, self.model_version, self.version
-        )
+        return txt.format(len(self.Forest), self.n_trees, self.model_version, self.version)
 
     def setSoftVoting(self, set: bool = True) -> None:
         self.soft_voting = set
@@ -147,18 +145,12 @@ class RandomForestMC:
 
     def drop_duplicated_trees(self) -> None:
         conds = (
-            pd.DataFrame(
-                [
-                    md5(str(Tree).encode("utf-8")).hexdigest() for Tree in self.Forest
-                ]  # noqa: S303
-            )
+            pd.DataFrame([md5(str(Tree).encode("utf-8")).hexdigest() for Tree in self.Forest])  # noqa: S303
             .duplicated()
             .to_list()
         )
         self.Forest = [Tree for Tree, cond in zip(self.Forest, conds) if cond]
-        self.survived_scores = [
-            score for score, cond in zip(self.survived_scores, conds) if cond
-        ]
+        self.survived_scores = [score for score, cond in zip(self.survived_scores, conds) if cond]
 
     @property
     def Forest_size(self) -> int:
@@ -186,9 +178,7 @@ class RandomForestMC:
 
         if self.temporal_features and (not self.validFeaturesTemporal()):
             self.temporal_features = False
-            log.warning(
-                "Temporal features ordering disable: you do not have all orderable features!"
-            )
+            log.warning("Temporal features ordering disable: you do not have all orderable features!")
 
         if not self.split_train_val_replace:
             min_class = self.dataset[self.target_col].value_counts().min()
@@ -232,9 +222,7 @@ class RandomForestMC:
         return {"leaf": ds[self.target_col].value_counts(normalize=True).to_dict()}
 
     # Splits the data during the tree's growth process.
-    def splitData(
-        self, feat, ds: pd.DataFrame
-    ) -> Tuple[pd.DataFrame, pd.DataFrame, Union[int, float, str]]:
+    def splitData(self, feat, ds: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame, Union[int, float, str]]:
         if ds.shape[0] > 2:
 
             if feat in self.numeric_cols:
@@ -306,17 +294,9 @@ class RandomForestMC:
             val = row[node]
             tree_node_split = Tree[node]["split"]
             if tree_node_split["feat_type"] == "numeric":
-                Tree = (
-                    tree_node_split[">="]
-                    if val >= tree_node_split["split_val"]
-                    else tree_node_split["<"]
-                )
+                Tree = tree_node_split[">="] if val >= tree_node_split["split_val"] else tree_node_split["<"]
             else:
-                Tree = (
-                    tree_node_split[">="]
-                    if val == tree_node_split["split_val"]
-                    else tree_node_split["<"]
-                )
+                Tree = tree_node_split[">="] if val == tree_node_split["split_val"] else tree_node_split["<"]
 
     @staticmethod
     def maxProbClas(leaf: TypeLeaf) -> TypeClassVal:
@@ -328,11 +308,8 @@ class RandomForestMC:
         y_val = ds[self.target_col].to_list()
         return sum([v == p for v, p in zip(y_val, y_pred)]) / len(y_pred)
 
-    def survivedTree(
-        self, _=None
-    ) -> Tuple[
-        TypeTree, float
-    ]:  # _ argument is for compatible execution with thread_map
+    # _ argument is for compatible execution with thread_map
+    def survivedTree(self, _=None) -> Tuple[TypeTree, float]:
         ds_T, ds_V = self.split_train_val()
         Threshold_for_drop = self.th_start
         dropped_trees = 0
@@ -366,17 +343,13 @@ class RandomForestMC:
         log.info("Got best tree: {:.4f}".format(Threshold_for_drop))
         return Tree, Threshold_for_drop
 
-    def fit(
-        self, dataset: Optional[pd.DataFrame] = None, disable_progress_bar: bool = False
-    ) -> None:
+    def fit(self, dataset: Optional[pd.DataFrame] = None, disable_progress_bar: bool = False) -> None:
 
         if dataset is not None:
             self.process_dataset(dataset)
 
         if self.dataset is None:
-            raise DatasetNotFound(
-                "Dataset not found! Please, give a dataset for functions fit() or process_dataset()."
-            )
+            raise DatasetNotFound("Dataset not found! Please, give a dataset for functions fit() or process_dataset().")
 
         # Builds the Forest (training step)
         Forest = []
@@ -405,9 +378,7 @@ class RandomForestMC:
             self.process_dataset(dataset)
 
         if self.dataset is None:
-            raise DatasetNotFound(
-                "Dataset not found! Please, give a dataset for functions fit() or process_dataset()."
-            )
+            raise DatasetNotFound("Dataset not found! Please, give a dataset for functions fit() or process_dataset().")
 
         # Builds the Forest (training step)
         if thread_parallel_method:
@@ -432,26 +403,19 @@ class RandomForestMC:
             if self.weighted_tree:
                 class_probs = defaultdict(float)
                 pred_probs = [
-                    (self.useTree(Tree, row), score)
-                    for Tree, score in zip(self.Forest, self.survived_scores)
+                    (self.useTree(Tree, row), score) for Tree, score in zip(self.Forest, self.survived_scores)
                 ]
                 for (predp, score) in pred_probs:
                     for class_val, prob in predp.items():
                         class_probs[class_val] += prob * score
-                return {
-                    class_val: class_probs[class_val] / sum(self.survived_scores)
-                    for class_val in self.class_vals
-                }
+                return {class_val: class_probs[class_val] / sum(self.survived_scores) for class_val in self.class_vals}
             else:
                 class_probs = defaultdict(float)
                 pred_probs = [self.useTree(Tree, row) for Tree in self.Forest]
                 for predp in pred_probs:
                     for class_val, prob in predp.items():
                         class_probs[class_val] += prob
-                return {
-                    class_val: class_probs[class_val] / len(pred_probs)
-                    for class_val in self.class_vals
-                }
+                return {class_val: class_probs[class_val] / len(pred_probs) for class_val in self.class_vals}
         else:
             if self.weighted_tree:
                 y_pred_score = [
@@ -461,18 +425,10 @@ class RandomForestMC:
                 class_scores = defaultdict(float)
                 for class_val, score in y_pred_score:
                     class_scores[class_val] += score
-                return {
-                    class_val: class_scores[class_val] / sum(self.survived_scores)
-                    for class_val in self.class_vals
-                }
+                return {class_val: class_scores[class_val] / sum(self.survived_scores) for class_val in self.class_vals}
             else:
-                y_pred = [
-                    self.maxProbClas(self.useTree(Tree, row)) for Tree in self.Forest
-                ]
-                return {
-                    class_val: y_pred.count(class_val) / len(y_pred)
-                    for class_val in self.class_vals
-                }
+                y_pred = [self.maxProbClas(self.useTree(Tree, row)) for Tree in self.Forest]
+                return {class_val: y_pred.count(class_val) / len(y_pred) for class_val in self.class_vals}
 
     def testForest(self, ds: pd.DataFrame) -> List[TypeClassVal]:
         return [self.maxProbClas(self.useForest(row)) for _, row in ds.iterrows()]
@@ -484,44 +440,27 @@ class RandomForestMC:
         return [feat for feat in self.feature_cols if f"'{feat}'" in str(Tree)]
 
     def sampleClass2trees(self, row: dsRow, Class: TypeClassVal) -> List[TypeTree]:
-        return [
-            Tree
-            for Tree in self.Forest
-            if self.maxProbClas(self.useTree(Tree, row)) == Class
-        ]
+        return [Tree for Tree in self.Forest if self.maxProbClas(self.useTree(Tree, row)) == Class]
 
-    def featCount(
-        self, Forest: Optional[List[TypeTree]] = None
-    ) -> Tuple[Tuple[float, float, int, int], List[int]]:
+    def featCount(self, Forest: Optional[List[TypeTree]] = None) -> Tuple[Tuple[float, float, int, int], List[int]]:
         if Forest is None:
             Forest = self.Forest
         out = [len(self.tree2feats(Tree)) for Tree in Forest]
         return (np.mean(out), np.std(out), min(out), max(out)), out
 
-    def sampleClassFeatCount(
-        self, row: dsRow, Class: TypeClassVal
-    ) -> Tuple[Tuple[float, float, int, int], List[int]]:
+    def sampleClassFeatCount(self, row: dsRow, Class: TypeClassVal) -> Tuple[Tuple[float, float, int, int], List[int]]:
         return self.featCount(self.sampleClass2trees(row=row, Class=Class))
 
-    def featImportance(
-        self, Forest: Optional[List[TypeTree]] = None
-    ) -> Dict[str, float]:
+    def featImportance(self, Forest: Optional[List[TypeTree]] = None) -> Dict[str, float]:
         if Forest is None:
             Forest = self.Forest
         n_trees = len(Forest)
-        return {
-            feat: sum([f"'{feat}'" in str(Tree) for Tree in Forest]) / n_trees
-            for feat in self.feature_cols
-        }
+        return {feat: sum([f"'{feat}'" in str(Tree) for Tree in Forest]) / n_trees for feat in self.feature_cols}
 
-    def sampleClassFeatImportance(
-        self, row: dsRow, Class: TypeClassVal
-    ) -> Dict[str, float]:
+    def sampleClassFeatImportance(self, row: dsRow, Class: TypeClassVal) -> Dict[str, float]:
         return self.featImportance(self.sampleClass2trees(row=row, Class=Class))
 
-    def featScoreMean(
-        self, Forest: Optional[List[TypeTree]] = None
-    ) -> Dict[str, float]:
+    def featScoreMean(self, Forest: Optional[List[TypeTree]] = None) -> Dict[str, float]:
         if Forest is None:
             Forest = self.Forest
         # Hadouken!!
@@ -529,19 +468,14 @@ class RandomForestMC:
             feat: np.mean(
                 [
                     x
-                    for x in [
-                        (f"'{feat}'" in str(Tree)) * score
-                        for Tree, score in zip(Forest, self.survived_scores)
-                    ]
+                    for x in [(f"'{feat}'" in str(Tree)) * score for Tree, score in zip(Forest, self.survived_scores)]
                     if x > 0
                 ]
             )
             for feat in self.feature_cols
         }
 
-    def sampleClassFeatScoreMean(
-        self, row: dsRow, Class: TypeClassVal
-    ) -> Dict[str, float]:
+    def sampleClassFeatScoreMean(self, row: dsRow, Class: TypeClassVal) -> Dict[str, float]:
         return self.featScoreMean(self.sampleClass2trees(row=row, Class=Class))
 
     def featPairImportance(
@@ -551,23 +485,15 @@ class RandomForestMC:
             Forest = self.Forest
         pair_count = defaultdict(int)
         n_trees = len(Forest)
-        for Tree in tqdm(
-            Forest, disable=disable_progress_bar, desc="Counting pair occurences"
-        ):
+        for Tree in tqdm(Forest, disable=disable_progress_bar, desc="Counting pair occurences"):
             for pair in combinations(self.feature_cols, 2):
-                pair_count[pair] += (
-                    f"'{pair[0]}'" in str(Tree) and f"'{pair[1]}'" in str(Tree)
-                ) / n_trees
+                pair_count[pair] += (f"'{pair[0]}'" in str(Tree) and f"'{pair[1]}'" in str(Tree)) / n_trees
         return dict(pair_count)
 
-    def sampleClassFeatPairImportance(
-        self, row: dsRow, Class: TypeClassVal
-    ) -> Dict[Tuple[str, str], float]:
+    def sampleClassFeatPairImportance(self, row: dsRow, Class: TypeClassVal) -> Dict[Tuple[str, str], float]:
         return self.featPairImportance(self.sampleClass2trees(row=row, Class=Class))
 
-    def featCorrDataFrame(
-        self, Forest: Optional[List[TypeTree]] = None
-    ) -> pd.DataFrame:
+    def featCorrDataFrame(self, Forest: Optional[List[TypeTree]] = None) -> pd.DataFrame:
         N = len(self.feature_cols)
         matrix = np.zeros((N, N), dtype=np.float16)
 
@@ -582,9 +508,7 @@ class RandomForestMC:
 
         return pd.DataFrame(matrix, index=self.feature_cols, columns=self.feature_cols)
 
-    def sampleClassFeatCorrDataFrame(
-        self, row: dsRow, Class: TypeClassVal
-    ) -> pd.DataFrame:
+    def sampleClassFeatCorrDataFrame(self, row: dsRow, Class: TypeClassVal) -> pd.DataFrame:
         return self.featCorrDataFrame(self.sampleClass2trees(row=row, Class=Class))
 
 
