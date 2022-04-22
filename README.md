@@ -189,8 +189,9 @@ With this image you can run all notebooks and scripts Python inside this reposit
 
 ### TODO v1.0:
 
+- Add typy check at pre-commit.
 - Discover how automate the unit tests for test with each compatible minor version.
-- Turn the model (object instance from the class of the model) callable: def inside the `__call__` to use `useForest`, `testForest` and `testForestProbs`, in the follow terms:
+- Turn the model (object instance from the class of the model) callable: define inside the `__call__` to use `useForest`, `testForest` and `testForestProbs`, in the follow terms:
 ```python
 def __call__(row_or_matrix: dsRow | pd.DataFrame, prob_output: bool = False) -> TypeLeaf | List[TypeClassVal] | List[TypeLeaf]:
     '''
