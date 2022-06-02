@@ -189,6 +189,11 @@ With this image you can run all notebooks and scripts Python inside this reposit
 
 ### TODO v1.0:
 
+- New feature (new class): create new forests from a cross merging between other forests, with proportionalities as input parameters:
+    - by randomness;
+    - by optimization, based on a GA and MC approaches, using a given test dataset;
+    - by the sorting of the scores already avaliable.
+    - Design as a subclass of the `RandomForestMC` for optimization approaches and a function for randomness and sorted merging.
 - Add `__len__` and `__getitem__` considering a tree as a item.
 - Add `__contains__` hashing the trees.
 - Add typy check at pre-commit.
