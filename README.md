@@ -189,6 +189,7 @@ With this image you can run all notebooks and scripts Python inside this reposit
 
 ### TODO v1.0:
 
+- Add `__len__` and `__getitem__` considering a tree as a item.
 - Add typy check at pre-commit.
 - Discover how automate the unit tests for test with each compatible minor version.
 - Turn the model (object instance from the class of the model) callable: define inside the `__call__` to use `useForest`, `testForest` and `testForestProbs`, in the follow terms:
