@@ -196,6 +196,7 @@ With this image you can run all notebooks and scripts Python inside this reposit
     - Design as a subclass of the `RandomForestMC` for optimization approaches and a function for randomness and sorted merging.
 - Create a notebook with [Memray](https://github.com/bloomberg/memray) applied to the model with different datasets.
 - Add `__len__` and `__getitem__` considering a tree as a item, `__contains__` hashing the trees. Consider extend the model's classe using `list`.
+- Create a base-class for load model and predict only. The current class extending from the base with training step and explanable fatures.
 - Add typy check at pre-commit.
 - Discover how automate the unit tests for test with each compatible minor version.
 - Turn the model (object instance from the class of the model) callable: define inside the `__call__` to use `useForest`, `testForest` and `testForestProbs`, in the follow terms:
