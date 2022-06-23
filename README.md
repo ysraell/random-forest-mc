@@ -37,7 +37,7 @@ import numpy as np
 import pandas as pd
 
 from random_forest_mc.model import RandomForestMC
-from random_forest_mc.utils import LoadDicts
+from random_forest_mc.utils import LoadDicts, load_file_json, dump_file_json
 
 dicts = LoadDicts("tests/")
 dataset_dict = dicts.datasets_metadata
