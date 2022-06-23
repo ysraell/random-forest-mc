@@ -109,7 +109,7 @@ cls.featCorrDataFrame() # or cls.sampleClassFeatCorrDataFrame(row, row[target_co
                feat 1     feat 2     feat 3
 feat 1       0.900000   0.120000   0.130000
 feat 2       0.120000   0.804688   0.230000
-feat 3       0.130000   0.000000   0.398438
+feat 3       0.130000   0.230000   0.398438
 ```
 
 ### Notes:
