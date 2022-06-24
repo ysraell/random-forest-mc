@@ -189,6 +189,7 @@ With this image you can run all notebooks and scripts Python inside this reposit
 
 ### TODO v1.0:
 
+- DRY: `DatasetNotFound` msg.
 - New feature (new class): create new forests from a cross merging between other forests, with proportionalities as input parameters:
     - by randomness;
     - by optimization, based on a GA and MC approaches, using a given test dataset;
