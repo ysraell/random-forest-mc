@@ -224,6 +224,7 @@ def __call__(row_or_matrix: dsRow | pd.DataFrame, prob_output: bool = False) -> 
 - Add parameter for active validation score (like loss) for each set of a given number of trees generated.
 - Add a set of functions for generate perfomance metrics: like trees generation/validation time.
 - Review the usage of `defaultdict` and try use `dict.setdefault`.
+- Review the use of the threshold (TH) for validation process. How we could set the dynamic portion? How spread the TH? The set of rows, for a set of rounds, not reaching the TH, drop and get next? Dynamicaly decreasing the TH for each N sets of rows without sucess?
 - Docstring.
 
 ### TODO v1.1:
