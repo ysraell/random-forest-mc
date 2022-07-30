@@ -7,9 +7,14 @@ The module structure is the following:
 
 """
 import logging as log
-from collections import defaultdict, UserList
+import re
+from collections import defaultdict
+from collections import UserDict
+from collections import UserList
 from hashlib import md5
 from itertools import combinations
+from itertools import count
+from numbers import Real
 from random import randint
 from random import sample
 from typing import Any
@@ -28,6 +33,9 @@ from tqdm.contrib.concurrent import thread_map
 
 from .__init__ import __version__
 
+# For extract the feature names from the tree-dict.
+re_patter_feature_name = "\'[\w\s]+\'\:"
+re_feat_name = re.compile(re_patter_feature_name)
 
 # a row of pd.DataFrame.iterrows()
 dsRow = NewType("dsRow", pd.core.series.Series)
@@ -45,6 +53,39 @@ TypeLeaf = Dict[TypeClassVal, float]
 class DatasetNotFound(Exception):
     pass
 
+class DecisionTreeMC(UserDict):
+    def __init__(self, data: dict, survived_score: Optional[Real] = None, features: Optional[List[str]] = None):
+        self.data = data
+        self.survived_score = survived_score
+        self.features = features
+        self.module_version = __version__
+    def __str__(self) -> str:
+        return str(self.data)
+    def __repr__(self) -> str:
+        txt = "DecisionTreeMC(survived_score={},module_version={})"
+        return txt.format(self.module_version, self.module_version)
+    def __call__(self, row: dsRow) -> TypeLeaf:
+        return self.useTree(row)
+    def useTree(self, row: dsRow) -> TypeLeaf:
+        Tree = self.data.copy()
+        while True:
+            node = list(Tree.keys())[0]
+            if node == "leaf":
+                return Tree["leaf"]
+            val = row[node]
+            tree_node_split = Tree[node]["split"]
+            if tree_node_split["feat_type"] == "numeric":
+                Tree = (
+                    tree_node_split[">="]
+                    if val >= tree_node_split["split_val"]
+                    else tree_node_split["<"]
+                )
+            else:
+                Tree = (
+                    tree_node_split[">="]
+                    if val == tree_node_split["split_val"]
+                    else tree_node_split["<"]
+                )
 
 class RandomForestMC(UserList):
     def __init__(
@@ -160,7 +201,7 @@ class RandomForestMC(UserList):
 
     @property
     def Forest_size(self) -> int:
-        return len(self.data)
+        return len(self)
 
     def process_dataset(self, dataset: pd.DataFrame) -> None:
         dataset[self.target_col] = dataset[self.target_col].astype(str)
@@ -262,7 +303,7 @@ class RandomForestMC(UserList):
             ds = ds.sort_values(feat).reset_index(drop=True)
             return (ds.loc[1].to_frame().T, ds.loc[0].to_frame().T, ds[feat].loc[1])
 
-    def plantTree(self, ds_train: pd.DataFrame, feature_list: List[str]) -> TypeTree:
+    def plantTree(self, ds_train: pd.DataFrame, feature_list: List[str]) -> DecisionTreeMC:
 
         # Functional process.
         def growTree(F: List[str], ds: pd.DataFrame) -> Union[TypeTree, TypeLeaf]:
@@ -293,28 +334,7 @@ class RandomForestMC(UserList):
                 }
             }
 
-        return growTree(feature_list, ds_train)
-
-    @staticmethod
-    def useTree(Tree: TypeTree, row: dsRow) -> TypeLeaf:
-        while True:
-            node = list(Tree.keys())[0]
-            if node == "leaf":
-                return Tree["leaf"]
-            val = row[node]
-            tree_node_split = Tree[node]["split"]
-            if tree_node_split["feat_type"] == "numeric":
-                Tree = (
-                    tree_node_split[">="]
-                    if val >= tree_node_split["split_val"]
-                    else tree_node_split["<"]
-                )
-            else:
-                Tree = (
-                    tree_node_split[">="]
-                    if val == tree_node_split["split_val"]
-                    else tree_node_split["<"]
-                )
+        return DecisionTreeMC(growTree(feature_list, ds_train))
 
     @staticmethod
     def maxProbClas(leaf: TypeLeaf) -> TypeClassVal:
@@ -322,15 +342,15 @@ class RandomForestMC(UserList):
 
     # Generates the metric for validation process.
     def validationTree(self, Tree: TypeTree, ds: pd.DataFrame) -> float:
-        y_pred = [self.maxProbClas(self.useTree(Tree, row)) for _, row in ds.iterrows()]
+        y_pred = [self.maxProbClas(Tree(row)) for _, row in ds.iterrows()]
         y_val = ds[self.target_col].to_list()
         return sum([v == p for v, p in zip(y_val, y_pred)]) / len(y_pred)
 
     # _ argument is for compatible execution with thread_map
-    def survivedTree(self, _=None) -> Tuple[TypeTree, float]:
+    def survivedTree(self, _=None) -> DecisionTreeMC:
         ds_T, ds_V = self.split_train_val()
         Threshold_for_drop = self.th_start
-        dropped_trees = 0
+        dropped_trees_counter = count(1)
         # Only survived trees
         max_th_val = 0.0
         max_Tree = None
@@ -339,7 +359,6 @@ class RandomForestMC(UserList):
             Tree = self.plantTree(ds_T, F)
             th_val = self.validationTree(Tree, ds_V)
             if th_val < Threshold_for_drop:
-                dropped_trees += 1
                 if self.get_best_tree:
                     if max_th_val < th_val:
                         max_Tree = Tree
@@ -348,7 +367,7 @@ class RandomForestMC(UserList):
                 # Coverage trick!
                 _ = None
                 break
-            if dropped_trees >= self.max_discard_trees:
+            if next(dropped_trees_counter) >= self.max_discard_trees:
                 if self.get_best_tree:
                     Tree = max_Tree
                     Threshold_for_drop = max_th_val
@@ -356,10 +375,11 @@ class RandomForestMC(UserList):
                 else:
                     Threshold_for_drop -= self.delta_th
                 log.info("New threshold for drop: {:.4f}".format(Threshold_for_drop))
-                dropped_trees = 0
 
         log.info("Got best tree: {:.4f}".format(Threshold_for_drop))
-        return Tree, Threshold_for_drop
+        Tree.survived_score = Threshold_for_drop
+        Tree.features = self.tree2feats(Tree)
+        return Tree
 
     def fit(
         self, dataset: Optional[pd.DataFrame] = None, disable_progress_bar: bool = False
@@ -381,9 +401,9 @@ class RandomForestMC(UserList):
             disable=disable_progress_bar,
             desc="Planting the forest",
         ):
-            Tree, Threshold_for_drop = self.survivedTree()
+            Tree = self.survivedTree()
             Forest.append(Tree)
-            survived_scores.append(Threshold_for_drop)
+            survived_scores.append(Tree.survived_score)
 
         self.data.extend(Forest)
         self.survived_scores.extend(survived_scores)
@@ -410,7 +430,7 @@ class RandomForestMC(UserList):
         else:
             func_map = process_map
 
-        out = func_map(
+        Tree_list = func_map(
             self.survivedTree,
             range(0, self.n_trees),
             max_workers=max_workers,
@@ -418,16 +438,15 @@ class RandomForestMC(UserList):
             desc="Planting the forest",
         )
 
-        Tree_Threshold_for_drop_list = list(zip(*out))
-        self.data.extend(Tree_Threshold_for_drop_list[0])
-        self.survived_scores.extend(Tree_Threshold_for_drop_list[1])
+        self.data.extend(Tree_list)
+        self.survived_scores.extend([Tree.survide_score for Tree in Tree_list])
 
     def useForest(self, row: dsRow) -> TypeLeaf:
         if self.soft_voting:
             if self.weighted_tree:
                 class_probs = defaultdict(float)
                 pred_probs = [
-                    (self.useTree(Tree, row), score)
+                    (Tree(row), score)
                     for Tree, score in zip(self.data, self.survived_scores)
                 ]
                 for (predp, score) in pred_probs:
@@ -439,7 +458,7 @@ class RandomForestMC(UserList):
                 }
             else:
                 class_probs = defaultdict(float)
-                pred_probs = [self.useTree(Tree, row) for Tree in self.data]
+                pred_probs = [Tree(row) for Tree in self.data]
                 for predp in pred_probs:
                     for class_val, prob in predp.items():
                         class_probs[class_val] += prob
@@ -450,7 +469,7 @@ class RandomForestMC(UserList):
         else:
             if self.weighted_tree:
                 y_pred_score = [
-                    (self.maxProbClas(self.useTree(Tree, row)), score)
+                    (self.maxProbClas(Tree(row)), score)
                     for Tree, score in zip(self.data, self.survived_scores)
                 ]
                 class_scores = defaultdict(float)
@@ -462,7 +481,7 @@ class RandomForestMC(UserList):
                 }
             else:
                 y_pred = [
-                    self.maxProbClas(self.useTree(Tree, row)) for Tree in self.data
+                    self.maxProbClas(Tree(row)) for Tree in self.data
                 ]
                 return {
                     class_val: y_pred.count(class_val) / len(y_pred)
@@ -476,13 +495,16 @@ class RandomForestMC(UserList):
         return [self.useForest(row) for _, row in ds.iterrows()]
 
     def tree2feats(self, Tree) -> List[str]:
-        return [feat for feat in self.feature_cols if f"'{feat}'" in str(Tree)]
+        set_keys = set(re_feat_name.findall(str(Tree)))
+        set_feat_keys = set([f"'{f}':" for f in self.feature_cols])
+        found_feat_keys = set_keys.intersection(set_feat_keys)
+        return [feat.replace('\'','').replace(':','') for feat in found_feat_keys]
 
     def sampleClass2trees(self, row: dsRow, Class: TypeClassVal) -> List[TypeTree]:
         return [
             Tree
             for Tree in self.data
-            if self.maxProbClas(self.useTree(Tree, row)) == Class
+            if self.maxProbClas(Tree(row)) == Class
         ]
 
     def featCount(
