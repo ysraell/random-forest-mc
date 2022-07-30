@@ -37,7 +37,9 @@ def test_RandomForestMC():
 
     cls = RandomForestMC()
     txt = "RandomForestMC(len(Forest)={},n_trees={},model_version={},module_version={})"
-    assert cls.__repr__() == txt.format(len(cls.Forest), cls.n_trees, cls.model_version, cls.version)
+    assert cls.__repr__() == txt.format(
+        len(cls.Forest), cls.n_trees, cls.model_version, cls.version
+    )
 
 
 # @pytest.mark.skip()
@@ -82,7 +84,9 @@ def test_RandomForestMC_fit():
     ds_name = "titanic"
     params = dataset_dict[ds_name]
     dataset = (
-        pd.read_csv(params["csv_path"])[params["ds_cols"] + [params["target_col"]]].dropna().reset_index(drop=True)
+        pd.read_csv(params["csv_path"])[params["ds_cols"] + [params["target_col"]]]
+        .dropna()
+        .reset_index(drop=True)
     )
     dataset["Age"] = dataset["Age"].astype(np.uint8)
     dataset["SibSp"] = dataset["SibSp"].astype(np.uint8)
@@ -97,7 +101,11 @@ def test_RandomForestMC_fit():
     cls.process_dataset(dataset)
     check.is_false(cls.temporal_features)
     dataset.insert(len(dataset.columns), "coqluna_vazia", "None")
-    columns = {col: f"{col}_{i}" for i, col in enumerate(dataset.columns) if col != params["target_col"]}
+    columns = {
+        col: f"{col}_{i}"
+        for i, col in enumerate(dataset.columns)
+        if col != params["target_col"]
+    }
     dataset = dataset.rename(columns=columns)
     cls = RandomForestMC(
         target_col=params["target_col"],
@@ -120,14 +128,18 @@ def test_RandomForestMC_fitParallel():
     ds_name = "titanic"
     params = dataset_dict[ds_name]
     dataset = (
-        pd.read_csv(params["csv_path"])[params["ds_cols"] + [params["target_col"]]].dropna().reset_index(drop=True)
+        pd.read_csv(params["csv_path"])[params["ds_cols"] + [params["target_col"]]]
+        .dropna()
+        .reset_index(drop=True)
     )
     dataset["Age"] = dataset["Age"].astype(np.uint8)
     dataset["SibSp"] = dataset["SibSp"].astype(np.uint8)
     dataset["Pclass"] = dataset["Pclass"].astype(str)
     dataset["Fare"] = dataset["Fare"].astype(np.uint32)
     dataset.insert(len(dataset.columns), "coqluna_vazia", "None")
-    cls = RandomForestMC(target_col=params["target_col"], max_discard_trees=20, th_decease_verbose=True)
+    cls = RandomForestMC(
+        target_col=params["target_col"], max_discard_trees=20, th_decease_verbose=True
+    )
     cls.fitParallel(dataset=dataset, max_workers=4, thread_parallel_method=False)
 
 
@@ -141,7 +153,9 @@ def test_RandomForestMC_fitParallel_featImportance():
     ds_name = "titanic"
     params = dataset_dict[ds_name]
     dataset = (
-        pd.read_csv(params["csv_path"])[params["ds_cols"] + [params["target_col"]]].dropna().reset_index(drop=True)
+        pd.read_csv(params["csv_path"])[params["ds_cols"] + [params["target_col"]]]
+        .dropna()
+        .reset_index(drop=True)
     )
     dataset["Age"] = dataset["Age"].astype(np.uint8)
     dataset["SibSp"] = dataset["SibSp"].astype(np.uint8)
@@ -164,9 +178,13 @@ def test_RandomForestMC_fitParallel_featImportance():
     check.is_true(all([isinstance(val, int) for val in featCount_stats[2:]]))
     check.is_true(all([isinstance(count, int) for count in featCount_list]))
     for feat, count in featImportance.items():
-        check.is_true(all([isinstance(feat, str), isinstance(count, float), count <= 1]))
+        check.is_true(
+            all([isinstance(feat, str), isinstance(count, float), count <= 1])
+        )
     for feat, count in featScoreMean.items():
-        check.is_true(all([isinstance(feat, str), isinstance(count, float), count <= 1]))
+        check.is_true(
+            all([isinstance(feat, str), isinstance(count, float), count <= 1])
+        )
     for pair, count in featPairImportance.items():
         check.is_true(
             all(
@@ -192,7 +210,9 @@ def test_RandomForestMC_fitParallel_sampleClassFeatImportance():
     params = dataset_dict[ds_name]
     target_col = params["target_col"]
     dataset = (
-        pd.read_csv(params["csv_path"])[params["ds_cols"] + [params["target_col"]]].dropna().reset_index(drop=True)
+        pd.read_csv(params["csv_path"])[params["ds_cols"] + [params["target_col"]]]
+        .dropna()
+        .reset_index(drop=True)
     )
     dataset["Age"] = dataset["Age"].astype(np.uint8)
     dataset["SibSp"] = dataset["SibSp"].astype(np.uint8)
@@ -219,9 +239,13 @@ def test_RandomForestMC_fitParallel_sampleClassFeatImportance():
         check.is_true(all([isinstance(val, int) for val in featCount_stats[2:]]))
         check.is_true(all([isinstance(count, int) for count in featCount_list]))
         for feat, count in featImportance.items():
-            check.is_true(all([isinstance(feat, str), isinstance(count, float), count <= 1]))
+            check.is_true(
+                all([isinstance(feat, str), isinstance(count, float), count <= 1])
+            )
         for feat, count in featScoreMean.items():
-            check.is_true(all([isinstance(feat, str), isinstance(count, float), count <= 1]))
+            check.is_true(
+                all([isinstance(feat, str), isinstance(count, float), count <= 1])
+            )
         for pair, count in featPairImportance.items():
             check.is_true(
                 all(
@@ -246,7 +270,9 @@ def test_RandomForestMC_fit_get_best_tree_False():
     ds_name = "titanic"
     params = dataset_dict[ds_name]
     dataset = (
-        pd.read_csv(params["csv_path"])[params["ds_cols"] + [params["target_col"]]].dropna().reset_index(drop=True)
+        pd.read_csv(params["csv_path"])[params["ds_cols"] + [params["target_col"]]]
+        .dropna()
+        .reset_index(drop=True)
     )
     dataset["Age"] = dataset["Age"].astype(np.uint8)
     dataset["SibSp"] = dataset["SibSp"].astype(np.uint8)
@@ -271,7 +297,9 @@ def test_RandomForestMC_fitParallel_get_best_tree_False():
     ds_name = "titanic"
     params = dataset_dict[ds_name]
     dataset = (
-        pd.read_csv(params["csv_path"])[params["ds_cols"] + [params["target_col"]]].dropna().reset_index(drop=True)
+        pd.read_csv(params["csv_path"])[params["ds_cols"] + [params["target_col"]]]
+        .dropna()
+        .reset_index(drop=True)
     )
     dataset["Age"] = dataset["Age"].astype(np.uint8)
     dataset["SibSp"] = dataset["SibSp"].astype(np.uint8)
@@ -296,7 +324,9 @@ def test_RandomForestMC_save_load_model():
     ds_name = "titanic"
     params = dataset_dict[ds_name]
     dataset = (
-        pd.read_csv(params["csv_path"])[params["ds_cols"] + [params["target_col"]]].dropna().reset_index(drop=True)
+        pd.read_csv(params["csv_path"])[params["ds_cols"] + [params["target_col"]]]
+        .dropna()
+        .reset_index(drop=True)
     )
     dataset["Age"] = dataset["Age"].astype(np.uint8)
     dataset["SibSp"] = dataset["SibSp"].astype(np.uint8)
@@ -327,7 +357,9 @@ def test_RandomForestMC_addTree_dorpduplicated():
     ds_name = "titanic"
     params = dataset_dict[ds_name]
     dataset = (
-        pd.read_csv(params["csv_path"])[params["ds_cols"] + [params["target_col"]]].dropna().reset_index(drop=True)
+        pd.read_csv(params["csv_path"])[params["ds_cols"] + [params["target_col"]]]
+        .dropna()
+        .reset_index(drop=True)
     )
     dataset["Age"] = dataset["Age"].astype(np.uint8)
     dataset["SibSp"] = dataset["SibSp"].astype(np.uint8)
@@ -337,12 +369,16 @@ def test_RandomForestMC_addTree_dorpduplicated():
     cls.fit(dataset)
     Forest_size = cls.Forest_size
     sum_survived_scores = round(sum(cls.survived_scores), 1)
-    cls.addTrees([(Tree, score) for Tree, score in zip(cls.Forest, cls.survived_scores)])
+    cls.addTrees(
+        [(Tree, score) for Tree, score in zip(cls.Forest, cls.survived_scores)]
+    )
     Forest_sizex2 = cls.Forest_size
     sum_survived_scoresx2 = round(sum(cls.survived_scores), 1)
     cls.drop_duplicated_trees()
     check.equal(cls.Forest_size, Forest_size)
-    check.almost_equal(round(sum(cls.survived_scores), 1), round(sum_survived_scores, 1))
+    check.almost_equal(
+        round(sum(cls.survived_scores), 1), round(sum_survived_scores, 1)
+    )
     check.equal(2 * cls.Forest_size, Forest_sizex2)
     check.almost_equal(2 * sum(cls.survived_scores), sum_survived_scoresx2)
 
@@ -357,13 +393,17 @@ def test_RandomForestMC_fullCycle_titanic():
     ds_name = "titanic"
     params = dataset_dict[ds_name]
     dataset = (
-        pd.read_csv(params["csv_path"])[params["ds_cols"] + [params["target_col"]]].dropna().reset_index(drop=True)
+        pd.read_csv(params["csv_path"])[params["ds_cols"] + [params["target_col"]]]
+        .dropna()
+        .reset_index(drop=True)
     )
     dataset["Age"] = dataset["Age"].astype(np.uint8)
     dataset["SibSp"] = dataset["SibSp"].astype(np.uint8)
     dataset["Pclass"] = dataset["Pclass"].astype(str)
     dataset["Fare"] = dataset["Fare"].astype(np.uint32)
-    cls = RandomForestMC(n_trees=32, target_col=params["target_col"], max_discard_trees=16)
+    cls = RandomForestMC(
+        n_trees=32, target_col=params["target_col"], max_discard_trees=16
+    )
     cls.process_dataset(dataset)
     cls.fit()
     ds = dataset.sample(n=min(1000, dataset.shape[0]), random_state=51)
@@ -401,13 +441,17 @@ def test_RandomForestMC_fullCycle_titanic_Parallel_thread():
     ds_name = "titanic"
     params = dataset_dict[ds_name]
     dataset = (
-        pd.read_csv(params["csv_path"])[params["ds_cols"] + [params["target_col"]]].dropna().reset_index(drop=True)
+        pd.read_csv(params["csv_path"])[params["ds_cols"] + [params["target_col"]]]
+        .dropna()
+        .reset_index(drop=True)
     )
     dataset["Age"] = dataset["Age"].astype(np.uint8)
     dataset["SibSp"] = dataset["SibSp"].astype(np.uint8)
     dataset["Pclass"] = dataset["Pclass"].astype(str)
     dataset["Fare"] = dataset["Fare"].astype(np.uint32)
-    cls = RandomForestMC(n_trees=32, target_col=params["target_col"], max_discard_trees=16)
+    cls = RandomForestMC(
+        n_trees=32, target_col=params["target_col"], max_discard_trees=16
+    )
     cls.process_dataset(dataset)
     cls.fitParallel(max_workers=4, thread_parallel_method=True)
     ds = dataset.sample(n=min(1000, dataset.shape[0]), random_state=51)
@@ -445,13 +489,17 @@ def test_RandomForestMC_fullCycle_titanic_Parallel_process():
     ds_name = "titanic"
     params = dataset_dict[ds_name]
     dataset = (
-        pd.read_csv(params["csv_path"])[params["ds_cols"] + [params["target_col"]]].dropna().reset_index(drop=True)
+        pd.read_csv(params["csv_path"])[params["ds_cols"] + [params["target_col"]]]
+        .dropna()
+        .reset_index(drop=True)
     )
     dataset["Age"] = dataset["Age"].astype(np.uint8)
     dataset["SibSp"] = dataset["SibSp"].astype(np.uint8)
     dataset["Pclass"] = dataset["Pclass"].astype(str)
     dataset["Fare"] = dataset["Fare"].astype(np.uint32)
-    cls = RandomForestMC(n_trees=32, target_col=params["target_col"], max_discard_trees=16)
+    cls = RandomForestMC(
+        n_trees=32, target_col=params["target_col"], max_discard_trees=16
+    )
     cls.process_dataset(dataset)
     cls.fitParallel(max_workers=4, thread_parallel_method=False)
     ds = dataset.sample(n=min(1000, dataset.shape[0]), random_state=51)
@@ -489,11 +537,17 @@ def test_RandomForestMC_fullCycle_iris():
     ds_name = "iris"
     params = dataset_dict[ds_name]
     dataset = (
-        pd.read_csv(params["csv_path"])[params["ds_cols"] + [params["target_col"]]].dropna().reset_index(drop=True)
+        pd.read_csv(params["csv_path"])[params["ds_cols"] + [params["target_col"]]]
+        .dropna()
+        .reset_index(drop=True)
     )
-    dataset.rename(columns={col: col.replace(".", "_") for col in dataset.columns}, inplace=True)
+    dataset.rename(
+        columns={col: col.replace(".", "_") for col in dataset.columns}, inplace=True
+    )
     params["ds_cols"] = [col.replace(".", "_") for col in params["ds_cols"]]
-    cls = RandomForestMC(n_trees=8, target_col=params["target_col"], max_discard_trees=4)
+    cls = RandomForestMC(
+        n_trees=8, target_col=params["target_col"], max_discard_trees=4
+    )
     cls.process_dataset(dataset)
     cls.fit()
     ds = dataset.sample(n=min(1000, dataset.shape[0]), random_state=51)
@@ -531,9 +585,13 @@ def test_RandomForestMC_fullCycle_creditcard():
     ds_name = "creditcard_trans_float"
     params = dataset_dict[ds_name]
     dataset = (
-        pd.read_csv(params["csv_path"])[params["ds_cols"] + [params["target_col"]]].dropna().reset_index(drop=True)
+        pd.read_csv(params["csv_path"])[params["ds_cols"] + [params["target_col"]]]
+        .dropna()
+        .reset_index(drop=True)
     )
-    cls = RandomForestMC(n_trees=32, target_col=params["target_col"], max_discard_trees=16)
+    cls = RandomForestMC(
+        n_trees=32, target_col=params["target_col"], max_discard_trees=16
+    )
     cls.process_dataset(dataset)
     cls.fit()
     ds = dataset.sample(n=min(1000, dataset.shape[0]), random_state=51)
@@ -553,10 +611,14 @@ def test_RandomForestMC_fullCycle_creditcard_Parallel_process():
     ds_name = "creditcard_trans_float"
     params = dataset_dict[ds_name]
     dataset = (
-        pd.read_csv(params["csv_path"])[params["ds_cols"] + [params["target_col"]]].dropna().reset_index(drop=True)
+        pd.read_csv(params["csv_path"])[params["ds_cols"] + [params["target_col"]]]
+        .dropna()
+        .reset_index(drop=True)
     )
     n_trees = 32
-    cls = RandomForestMC(n_trees=n_trees, target_col=params["target_col"], max_discard_trees=16)
+    cls = RandomForestMC(
+        n_trees=n_trees, target_col=params["target_col"], max_discard_trees=16
+    )
     cls.process_dataset(dataset)
     cls.fitParallel(max_workers=8, thread_parallel_method=False)
     ds = dataset.sample(n=min(1000, dataset.shape[0]), random_state=51)
