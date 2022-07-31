@@ -189,13 +189,13 @@ With this image you can run all notebooks and scripts Python inside this reposit
 
 ### TODO v1.0:
 
-- DRY: `DatasetNotFound` msg.
-- Create a new class for Tree storing the:
+- ~~DRY: `DatasetNotFound` msg.~~ [Done]
+- ~~Create a new class for Tree storing the:~~ [Done]
     - ~~decision tree itself,~~ [Done]
-    - the score given during the validation process,
-    - the features used,
-    - how many decision nodes.
-    compatible with operands like `>` based on the score.
+    - ~~the score given during the validation process,~~ [Done]
+    - ~~the features used,~~ [Done]
+    - ~~how many decision nodes,~~ [Done]  
+    - ~~compatible with rich comparison operands based on the score.~~ [Done] 
 - New feature (new class): create new forests from a cross merging between other forests, with proportionalities as input parameters:
     - by randomness;
     - by optimization, based on a GA and MC approaches, using a given test dataset;
@@ -203,16 +203,10 @@ With this image you can run all notebooks and scripts Python inside this reposit
     - Design as a subclass of the `RandomForestMC` for optimization approaches and a function for randomness and sorted merging.
 - Create a notebook with [Memray](https://github.com/bloomberg/memray) applied to the model with different datasets.
 - ~~Add `__len__` and `__getitem__` considering a tree as a item, `__contains__` hashing the trees. Consider extend the model's classe using `list`.~~ [Done].
-- Create a base-class for load model and predict only. The current class extending from the base with training step and explanable fatures.
-- ~~Add typy check at pre-commit.~~ [Deprecated].
+- ~~Create a base-class for load model and predict only. The current class extending from the base with training step and explanable fatures.~~ [Deprecated]
+- ~~Add typy check at pre-commit.~~ [Deprecated]
 - Discover how automate the unit tests for test with each compatible minor version.
-- Turn the model (object instance from the class of the model) callable: define inside the `__call__` to use `useForest`, `testForest` and `testForestProbs`, in the follow terms:
-```python
-def __call__(row_or_matrix: dsRow | pd.DataFrame, prob_output: bool = False) -> TypeLeaf | List[TypeClassVal] | List[TypeLeaf]:
-    '''
-    *Attention*: take care that type hints are backward compatible with version `3.7`.
-    '''
-```
+- ~~Turn the model (object instance from the class of the model) callable: define inside the `__call__` to use `useForest`, `testForest` and `testForestProbs`, in the follow terms:~~ [Done]
 - Mssing data issue:
     - Data Imputation using the Forest (with and without true label).
     - Prediction with missing values, approaches:
