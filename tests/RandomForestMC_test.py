@@ -6,7 +6,7 @@ import pytest
 import pytest_check as check
 
 sys.path.append("src/")
-path_dict = "/tmp/model_dict.json"
+path_dict = "/tmp/datasets/model_dict.json"
 
 
 def test_version():
