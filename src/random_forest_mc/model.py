@@ -65,7 +65,7 @@ class DatasetNotFound(Exception):
 
 class DecisionTreeMC(UserDict):
     typer_error_msg = typer_error_msg.format('DecisionTreeMC')
-    def __init__(self, data: dict, class_vals: List(TypeClassVal), survived_score: Optional[Real] = None, features: Optional[List[str]] = None, used_features: Optional[List[str]] = None ):
+    def __init__(self, data: dict, class_vals: List[TypeClassVal], survived_score: Optional[Real] = None, features: Optional[List[str]] = None, used_features: Optional[List[str]] = None ):
         self.data = data
         self.class_vals = class_vals
         self.survived_score = survived_score
