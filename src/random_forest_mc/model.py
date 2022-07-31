@@ -196,7 +196,7 @@ class RandomForestMC(UserList):
             "max_discard_trees",
             "n_trees",
             "class_vals",
-            "Forest",
+            "data",
             "survived_scores",
             "version",
             "numeric_cols",
