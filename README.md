@@ -196,10 +196,11 @@ With this image you can run all notebooks and scripts Python inside this reposit
     - ~~the features used,~~ [Done]
     - ~~how many decision nodes,~~ [Done]  
     - ~~compatible with rich comparison operands based on the score.~~ [Done] 
-- New feature (new class): create new forests from a cross merging between other forests, with proportionalities as input parameters:
+- New feature (new class): create new forests from a cross merging between other forests, for a given amount of trees for the output forest:~
+    - if not given output size, perform a simply concatenation;
+    - by the sorting of the scores already avaliable.
     - by randomness;
     - by optimization, based on a GA and MC approaches, using a given test dataset;
-    - by the sorting of the scores already avaliable.
     - Design as a subclass of the `RandomForestMC` for optimization approaches and a function for randomness and sorted merging.
 - Create a notebook with [Memray](https://github.com/bloomberg/memray) applied to the model with different datasets.
 - ~~Add `__len__` and `__getitem__` considering a tree as a item, `__contains__` hashing the trees. Consider extend the model's classe using `list`.~~ [Done].
@@ -207,12 +208,6 @@ With this image you can run all notebooks and scripts Python inside this reposit
 - ~~Add typy check at pre-commit.~~ [Deprecated]
 - Discover how automate the unit tests for test with each compatible minor version.
 - ~~Turn the model (object instance from the class of the model) callable: define inside the `__call__` to use `useForest`, `testForest` and `testForestProbs`, in the follow terms:~~ [Done]
-- Mssing data issue:
-    - Data Imputation using the Forest (with and without true label).
-    - Prediction with missing values, approaches:
-        - *A*) only for numeric feature, `useTree` must be functional and branching when missing value, combining classes at leaves with their probabilities (duplicate the tree in each node with missing value)), for categorical features, use the default value branching already implemented and working well.
-        - *B*) Use imputation data before prediction. Different from *A*, choose the value with the higher probability.
-        - *C*) (User) Set a default value for each feature a priori. When facing a missing value, use the given default value.
 - Add parameter for limit depth, min sample to leaf, min feature completed cycles.
 - Find out how prevent the follow error msg: `cannot take a larger sample than population when 'replace=false'`. It's maybe interesting to have duplicate rows because during the growing the tree we may consider a different structure of decision reusing values (feature). In fact, the algorithm will prevent the creation of a duplicated decision node. We may set as a input parameter (boolean), or in the same way but with a third parameter to change to `True` when we got a error. Consider a possible performance decreasing this third parameter (using `try` may works?).
 - Add parameter for active validation score (like loss) for each set of a given number of trees generated.
@@ -220,10 +215,16 @@ With this image you can run all notebooks and scripts Python inside this reposit
 - Review the usage of `defaultdict` and try use `dict.setdefault`.
 - Review the use of the threshold (TH) for validation process. How we could set the dynamic portion? How spread the TH? The set of rows, for a set of rounds, not reaching the TH, drop and get next? Dynamicaly decreasing the TH for each N sets of rows without sucess?
 - Docstring.
+- ~~Mssing data issue: For numeric and categorical values, `useTree` must be functional and branching when missing value, combining classes at leaves with their probabilities (duplicate the tree in each node with missing value).~~ [Done]
 
 ### TODO v1.1:
 
 - Automated tests using GitHub Actions.
+- Mssing data issue:
+    - Data Imputation using the Forest (with and without true label).
+    - Prediction with missing values, approaches:
+        - *A*) Use imputation data before prediction. Different from *A*, choose the value with the higher probability.
+        - *B*) (User) Set a default value for each feature a priori. When facing a missing value, use the given default value.
 
 ### TODO V2.0:
 
