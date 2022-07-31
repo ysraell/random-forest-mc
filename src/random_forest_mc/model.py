@@ -13,7 +13,7 @@ from collections import UserDict
 from collections import UserList
 from hashlib import md5
 from itertools import combinations
-from itertools import count
+from itertools import count as itertools_count
 from numbers import Real
 from random import randint
 from random import sample
@@ -109,9 +109,8 @@ class DecisionTreeMC(UserDict):
             raise TypeError(self.typer_error_msg)
         return self.survived_score >= other.survived_score
 
-    def useTree(self, row: dsRow) -> TypeLeaf:
-        Tree = self.data.copy()
-
+    @staticmethod
+    def _useTree(Tree, row: dsRow) -> TypeLeaf:
         def functionalUseTree(Tree):
             while True:
                 node = list(Tree.keys())[0]
@@ -136,8 +135,11 @@ class DecisionTreeMC(UserDict):
                         if val == tree_node_split["split_val"]
                         else tree_node_split["<"]
                     )
+        return functionalUseTree(Tree)
 
-        out = functionalUseTree(Tree)
+    def useTree(self, row: dsRow) -> TypeLeaf:
+        Tree = self.data.copy()
+        out = self._useTree(Tree, row)
         if isinstance(out, dict):
             return out
         leafes = []
@@ -258,8 +260,8 @@ class RandomForestMC(UserList):
         if isinstance(otherForest, RandomForestMC):
 
             same_model = all(
-                [r in otherForest.feature_cols for r in self.feature_cols]
-            ) and all([l in self.feature_cols for l in otherForest.feature_cols])
+                [right in otherForest.feature_cols for right in self.feature_cols]
+            ) and all([left in self.feature_cols for left in otherForest.feature_cols])
             if not same_model:
                 raise ValueError("Both forests must have the same set of features.")
 
@@ -475,7 +477,7 @@ class RandomForestMC(UserList):
     def survivedTree(self, _=None) -> DecisionTreeMC:
         ds_T, ds_V = self.split_train_val()
         Threshold_for_drop = self.th_start
-        dropped_trees_counter = count(1)
+        dropped_trees_counter = itertools_count(1)
         # Only survived trees
         max_th_val = 0.0
         max_Tree = None
