@@ -207,7 +207,6 @@ class RandomForestMC(UserList):
         ]
         self.soft_voting = False
         self.weighted_tree = False
-        self.__class__.__call__ = self.predict
 
     def __repr__(self) -> str:
         txt = "RandomForestMC(len(Forest)={},n_trees={},model_version={},module_version={})"
@@ -215,6 +214,9 @@ class RandomForestMC(UserList):
             len(self.data), self.n_trees, self.model_version, self.version
         )
     
+    def predict_proba(self, row_or_matrix: dsRow | pd.DataFrame, prob_output: bool = True) -> Union[TypeLeaf, List[TypeClassVal], List[TypeLeaf]]:
+        return self.predict(self, row_or_matrix, prob_output)
+
     def predict(self, row_or_matrix: dsRow | pd.DataFrame, prob_output: bool = False) -> Union[TypeLeaf, List[TypeClassVal], List[TypeLeaf]]:
         if isinstance(row_or_matrix, dsRow):
             return self.useForest(row_or_matrix)
