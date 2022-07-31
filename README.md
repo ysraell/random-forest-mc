@@ -187,7 +187,7 @@ With this image you can run all notebooks and scripts Python inside this reposit
 
 - Add methods from [scikit-survival](https://scikit-survival.readthedocs.io/en/stable/user_guide/random-survival-forest.html) for comparison.
 
-### TODO v0.4 (in test):
+### TODO v1.0 (0.4.0-test):
 
 - ~~DRY: `DatasetNotFound` msg.~~ [Done]
 - ~~Create a new class for Tree storing the:~~ [Done]
@@ -207,7 +207,7 @@ With this image you can run all notebooks and scripts Python inside this reposit
 - ~~Mssing data issue: For numeric and categorical values, `useTree` must be functional and branching when missing value, combining classes at leaves with their probabilities (duplicate the tree in each node with missing value).~~ [Done]
 
 
-### TODO v1.0:
+### TODO v1.1:
 
 - Mssing data issue:
     - Data Imputation using the Forest (with and without true label).
@@ -227,10 +227,6 @@ With this image you can run all notebooks and scripts Python inside this reposit
 - Review the use of the threshold (TH) for validation process. How we could set the dynamic portion? How spread the TH? The set of rows, for a set of rounds, not reaching the TH, drop and get next? Dynamicaly decreasing the TH for each N sets of rows without sucess?
 - Docstring.
 
-### TODO v1.1:
-
-- Automated tests using GitHub Actions.
-
 ### TODO V2.0:
 
 - Extender for predict by regression.
@@ -238,6 +234,7 @@ With this image you can run all notebooks and scripts Python inside this reposit
 - Tree management framework: to remove or add new trees, version management for set of trees.
 
 ### TODO Extras:
- - Develop a Scikit-Learn full compatible model. Ref.: <https://scikit-learn.org/stable/developers/develop.html>.
- - Write and publish a article.
- - Read the Scikit-learn governance and decision-making (https://scikit-learn.org/stable/governance.html#governance).
+- Automated tests using GitHub Actions.
+- Develop a Scikit-Learn full compatible model. Ref.: <https://scikit-learn.org/stable/developers/develop.html>.
+- Write and publish a article.
+- Read the Scikit-learn governance and decision-making (https://scikit-learn.org/stable/governance.html#governance).
