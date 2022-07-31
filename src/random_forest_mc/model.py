@@ -36,8 +36,7 @@ from .__init__ import __version__
 typer_error_msg = "Both objects must be instances of \'{}\' class."
 
 # For extract the feature names from the tree-dict.
-re_patter_feature_name = "\'[\w\s]+\'\:"
-re_feat_name = re.compile(re_patter_feature_name)
+re_feat_name = re.compile("\\'[\\w\\s]+\'\\:")
 
 # a row of pd.DataFrame.iterrows()
 dsRow = NewType("dsRow", pd.core.series.Series)
