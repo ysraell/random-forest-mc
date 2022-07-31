@@ -16,7 +16,8 @@ from itertools import combinations
 from itertools import count
 from numbers import Real
 from random import randint
-from random import sample, shuffle
+from random import sample
+from random import shuffle
 from typing import Any
 from typing import Dict
 from typing import List
@@ -33,10 +34,10 @@ from tqdm.contrib.concurrent import thread_map
 
 from .__init__ import __version__
 
-typer_error_msg = "Both objects must be instances of \'{}\' class."
+typer_error_msg = "Both objects must be instances of '{}' class."
 
 # For extract the feature names from the tree-dict.
-re_feat_name = re.compile("\\'[\\w\\s]+\'\\:")
+re_feat_name = re.compile("\\'[\\w\\s]+'\\:")
 
 # a row of pd.DataFrame.iterrows()
 dsRow = NewType("dsRow", pd.core.series.Series)
@@ -58,38 +59,56 @@ class DatasetNotFound(Exception):
         message -- explanation of the error
     """
 
-    def __init__(self, message="Dataset not found! Please, give a dataset for functions fit() or process_dataset()."):
+    def __init__(
+        self,
+        message="Dataset not found! Please, give a dataset for functions fit() or process_dataset().",
+    ):
         super().__init__(message)
 
 
 class DecisionTreeMC(UserDict):
-    typer_error_msg = typer_error_msg.format('DecisionTreeMC')
-    def __init__(self, data: dict, class_vals: List[TypeClassVal], survived_score: Optional[Real] = None, features: Optional[List[str]] = None, used_features: Optional[List[str]] = None ):
+    typer_error_msg = typer_error_msg.format("DecisionTreeMC")
+
+    def __init__(
+        self,
+        data: dict,
+        class_vals: List[TypeClassVal],
+        survived_score: Optional[Real] = None,
+        features: Optional[List[str]] = None,
+        used_features: Optional[List[str]] = None,
+    ):
         self.data = data
         self.class_vals = class_vals
         self.survived_score = survived_score
         self.features = features
         self.used_features = used_features
         self.module_version = __version__
+
     def __str__(self) -> str:
         return str(self.data)
+
     def __repr__(self) -> str:
         txt = "DecisionTreeMC(survived_score={},module_version={})"
         return txt.format(self.module_version, self.module_version)
+
     def __call__(self, row: dsRow) -> TypeLeaf:
         return self.useTree(row)
+
     def __eq__(self, other) -> bool:
         if not isinstance(other, DecisionTreeMC):
             raise TypeError(self.typer_error_msg)
         return self.survived_score == other.survived_score
+
     def __gt__(self, other) -> bool:
         if not isinstance(other, DecisionTreeMC):
             raise TypeError(self.typer_error_msg)
         return self.survived_score > other.survived_score
+
     def __ge__(self, other) -> bool:
         if not isinstance(other, DecisionTreeMC):
             raise TypeError(self.typer_error_msg)
         return self.survived_score >= other.survived_score
+
     def useTree(self, row: dsRow) -> TypeLeaf:
         Tree = self.data.copy()
 
@@ -100,7 +119,10 @@ class DecisionTreeMC(UserDict):
                     return Tree["leaf"]
                 tree_node_split = Tree[node]["split"]
                 if node not in row.index:
-                    return [functionalUseTree(tree_node_split[">="]), functionalUseTree(tree_node_split["<"])]
+                    return [
+                        functionalUseTree(tree_node_split[">="]),
+                        functionalUseTree(tree_node_split["<"]),
+                    ]
                 val = row[node]
                 if tree_node_split["feat_type"] == "numeric":
                     Tree = (
@@ -114,7 +136,7 @@ class DecisionTreeMC(UserDict):
                         if val == tree_node_split["split_val"]
                         else tree_node_split["<"]
                     )
-        
+
         out = functionalUseTree(Tree)
         if isinstance(out, dict):
             return out
@@ -125,11 +147,12 @@ class DecisionTreeMC(UserDict):
                 leafes.append(LeafList)
             for Leaf in LeafList:
                 return popLeafs(Leaf)
+
         popLeafs(out)
 
         outLeaf = {c: 0 for c in self.class_vals}
         for leaf in leafes:
-            for c,prob in leaf.items():
+            for c, prob in leaf.items():
                 outLeaf[c] += prob
         for c in self.class_vals:
             outLeaf[c] /= len(leafes)
@@ -140,8 +163,10 @@ class DecisionTreeMC(UserDict):
 
         return outLeaf
 
+
 class RandomForestMC(UserList):
-    typer_error_msg = typer_error_msg.format('RandomForestMC')
+    typer_error_msg = typer_error_msg.format("RandomForestMC")
+
     def __init__(
         self,
         n_trees: int = 16,
@@ -212,41 +237,46 @@ class RandomForestMC(UserList):
         return txt.format(
             len(self.data), self.n_trees, self.model_version, self.version
         )
-    
-    def predict_proba(self, row_or_matrix: Union[dsRow, pd.DataFrame], prob_output: bool = True) -> Union[TypeLeaf, List[TypeClassVal], List[TypeLeaf]]:
+
+    def predict_proba(
+        self, row_or_matrix: Union[dsRow, pd.DataFrame], prob_output: bool = True
+    ) -> Union[TypeLeaf, List[TypeClassVal], List[TypeLeaf]]:
         return self.predict(self, row_or_matrix, prob_output)
 
-    def predict(self, row_or_matrix: Union[dsRow, pd.DataFrame], prob_output: bool = False) -> Union[TypeLeaf, List[TypeClassVal], List[TypeLeaf]]:
+    def predict(
+        self, row_or_matrix: Union[dsRow, pd.DataFrame], prob_output: bool = False
+    ) -> Union[TypeLeaf, List[TypeClassVal], List[TypeLeaf]]:
         if isinstance(row_or_matrix, dsRow):
             return self.useForest(row_or_matrix)
         if isinstance(row_or_matrix, pd.DataFrame):
             if prob_output:
                 return self.testForestProbs(row_or_matrix)
             return self.testForest(row_or_matrix)
-        raise TypeError('The input argument must be \'dsRow\' or \'pd.DataFrame\'.')
+        raise TypeError("The input argument must be 'dsRow' or 'pd.DataFrame'.")
 
-    def mergeForest(self, otherForest, N: int = -1, by: str = 'add'):
+    def mergeForest(self, otherForest, N: int = -1, by: str = "add"):
         if isinstance(otherForest, RandomForestMC):
 
-            same_model = all([r in otherForest.feature_cols for r in self.feature_cols]) and all([l in self.feature_cols for l in otherForest.feature_cols])
+            same_model = all(
+                [r in otherForest.feature_cols for r in self.feature_cols]
+            ) and all([l in self.feature_cols for l in otherForest.feature_cols])
             if not same_model:
-                raise ValueError('Both forests must have the same set of features.')
+                raise ValueError("Both forests must have the same set of features.")
 
-            if by == 'score':
+            if by == "score":
                 self.data.extend(otherForest.data)
 
-            if by == 'score':
+            if by == "score":
                 data = self.data + otherForest.data
                 self.data = sorted(data)[::-1][:N]
 
-            if by == 'random':
+            if by == "random":
                 data = self.data + otherForest.data
                 shuffle(data)
                 self.data = data[:N]
 
-            self.survived_scores = [Tree.survived_score for Tree in self.data] 
+            self.survived_scores = [Tree.survived_score for Tree in self.data]
         raise TypeError(self.typer_error_msg)
-
 
     def setSoftVoting(self, set: bool = True) -> None:
         self.soft_voting = set
@@ -396,7 +426,9 @@ class RandomForestMC(UserList):
             ds = ds.sort_values(feat).reset_index(drop=True)
             return (ds.loc[1].to_frame().T, ds.loc[0].to_frame().T, ds[feat].loc[1])
 
-    def plantTree(self, ds_train: pd.DataFrame, feature_list: List[str]) -> DecisionTreeMC:
+    def plantTree(
+        self, ds_train: pd.DataFrame, feature_list: List[str]
+    ) -> DecisionTreeMC:
 
         # Functional process.
         def growTree(F: List[str], ds: pd.DataFrame) -> Union[TypeTree, TypeLeaf]:
@@ -570,9 +602,7 @@ class RandomForestMC(UserList):
                     for class_val in self.class_vals
                 }
             else:
-                y_pred = [
-                    self.maxProbClas(Tree(row)) for Tree in self.data
-                ]
+                y_pred = [self.maxProbClas(Tree(row)) for Tree in self.data]
                 return {
                     class_val: y_pred.count(class_val) / len(y_pred)
                     for class_val in self.class_vals
@@ -585,17 +615,13 @@ class RandomForestMC(UserList):
         return [self.useForest(row) for _, row in ds.iterrows()]
 
     def sampleClass2trees(self, row: dsRow, Class: TypeClassVal) -> List[TypeTree]:
-        return [
-            Tree
-            for Tree in self.data
-            if self.maxProbClas(Tree(row)) == Class
-        ]
+        return [Tree for Tree in self.data if self.maxProbClas(Tree(row)) == Class]
 
     def tree2feats(self, Tree) -> List[str]:
         set_keys = set(re_feat_name.findall(str(Tree)))
         set_feat_keys = set([f"'{f}':" for f in self.feature_cols])
         found_feat_keys = set_keys.intersection(set_feat_keys)
-        return [feat.replace('\'','').replace(':','') for feat in found_feat_keys]
+        return [feat.replace("'", "").replace(":", "") for feat in found_feat_keys]
 
     def featCount(
         self, Forest: Optional[List[TypeTree]] = None
