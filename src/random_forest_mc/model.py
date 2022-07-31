@@ -68,7 +68,7 @@ class DecisionTreeMC(UserDict):
     def __init__(self, data: dict, class_vals: List[TypeClassVal], survived_score: Optional[Real] = None, features: Optional[List[str]] = None, used_features: Optional[List[str]] = None ):
         self.data = data
         self.class_vals = class_vals
-        self.survived_score = survived_score
+        self. = survived_score
         self.features = features
         self.used_features = used_features
         self.module_version = __version__
@@ -292,6 +292,10 @@ class RandomForestMC(UserList):
     @property
     def Forest_size(self) -> int:
         return len(self)
+
+    @property
+    def Forest(self) -> List[DecisionTreeMC]:
+        return self.data
 
     def process_dataset(self, dataset: pd.DataFrame) -> None:
         dataset[self.target_col] = dataset[self.target_col].astype(str)
@@ -526,7 +530,7 @@ class RandomForestMC(UserList):
         )
 
         self.data.extend(Tree_list)
-        self.survived_scores.extend([Tree.survide_score for Tree in Tree_list])
+        self.survived_scores.extend([Tree.survived_score for Tree in Tree_list])
 
     def useForest(self, row: dsRow) -> TypeLeaf:
         if self.soft_voting:
