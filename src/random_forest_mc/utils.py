@@ -3,9 +3,6 @@ from glob import glob
 from typing import Any
 from typing import NewType
 
-import numpy as np
-
-
 
 DictsPathType = NewType("DictsPath", str)
 
