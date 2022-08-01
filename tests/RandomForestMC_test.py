@@ -1,5 +1,4 @@
 from copy import copy
-from multiprocessing.dummy import Value
 import sys
 import numpy as np
 import pandas as pd
@@ -362,6 +361,7 @@ def test_RandomForestMC_save_load_model():
     check.equal(cls.Forest_size, Forest_size)
     check.almost_equal(sum(cls.survived_scores), sum_survived_scores)
 
+
 # @pytest.mark.skip()
 def test_RandomForestMC_predictl():
     from random_forest_mc.model import RandomForestMC
@@ -383,10 +383,10 @@ def test_RandomForestMC_predictl():
     cls = RandomForestMC(target_col=params["target_col"])
     cls.fit(dataset)
     row = dataset.reset_index(drop=True).loc[0]
-    
+
     predict_row = cls.predict(row)
     check.is_instance(predict_row, dict)
-    
+
     predict_ds = cls.predict(dataset.sample(n=10))
     check.is_instance(predict_ds, list)
 
@@ -395,7 +395,7 @@ def test_RandomForestMC_predictl():
     for leaf in predict_probs_ds:
         check.is_instance(leaf, dict)
 
-    with check.raise(TypeError):
+    with check.raises(TypeError):
         _ = cls.predict(row.array)
 
 
@@ -430,18 +430,19 @@ def test_RandomForestMC_mergeForest_dorpduplicated():
     cls.mergeForest(cls, 8, "score")
     check.equal(cls.Forest_size, 8)
 
-    with check.raise(TypeError):
+    with check.raises(TypeError):
         cls.mergeForest(cls.data)
 
-    with check.raise(ValueError):
+    with check.raises(ValueError):
         cls_other = copy(cls)
         cls_other.feature_cols.pop(0)
         cls.mergeForest(cls_other)
 
-    with check.raise(ValueError):
+    with check.raises(ValueError):
         cls_other = copy(cls)
-        cls_other.class_vals.append('3')
+        cls_other.class_vals.append("3")
         cls.mergeForest(cls_other)
+
 
 # @pytest.mark.skip()
 def test_RandomForestMC_fullCycle_titanic():
