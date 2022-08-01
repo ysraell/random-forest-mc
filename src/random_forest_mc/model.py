@@ -28,10 +28,11 @@ from typing import Union
 
 import numpy as np
 import pandas as pd
-from __init__ import __version__
 from tqdm import tqdm
 from tqdm.contrib.concurrent import process_map
 from tqdm.contrib.concurrent import thread_map
+
+from __init__ import __version__
 
 typer_error_msg = "Both objects must be instances of '{}' class."
 
@@ -88,7 +89,7 @@ class DecisionTreeMC(UserDict):
 
     def __repr__(self) -> str:
         txt = "DecisionTreeMC(survived_score={},module_version={})"
-        return txt.format(self.module_version, self.module_version)
+        return txt.format(self.survived_score, self.module_version)
 
     def __call__(self, row: dsRow) -> TypeLeaf:
         return self.useTree(row)
