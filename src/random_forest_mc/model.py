@@ -28,11 +28,10 @@ from typing import Union
 
 import numpy as np
 import pandas as pd
+from __init__ import __version__
 from tqdm import tqdm
 from tqdm.contrib.concurrent import process_map
 from tqdm.contrib.concurrent import thread_map
-
-from .__init__ import __version__
 
 typer_error_msg = "Both objects must be instances of '{}' class."
 
