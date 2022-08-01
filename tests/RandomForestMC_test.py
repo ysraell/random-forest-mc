@@ -360,6 +360,30 @@ def test_RandomForestMC_save_load_model():
     check.equal(cls.Forest_size, Forest_size)
     check.almost_equal(sum(cls.survived_scores), sum_survived_scores)
 
+# @pytest.mark.skip()
+def test_RandomForestMC_predictl():
+    from random_forest_mc.model import RandomForestMC
+    from random_forest_mc.utils import LoadDicts, dump_file_json, load_file_json
+
+    dicts = LoadDicts("tests/")
+    dataset_dict = dicts.datasets_metadata
+    ds_name = "titanic"
+    params = dataset_dict[ds_name]
+    dataset = (
+        pd.read_csv(params["csv_path"])[params["ds_cols"] + [params["target_col"]]]
+        .dropna()
+        .reset_index(drop=True)
+    )
+    dataset["Age"] = dataset["Age"].astype(np.uint8)
+    dataset["SibSp"] = dataset["SibSp"].astype(np.uint8)
+    dataset["Pclass"] = dataset["Pclass"].astype(str)
+    dataset["Fare"] = dataset["Fare"].astype(np.uint32)
+    cls = RandomForestMC(target_col=params["target_col"])
+    cls.fit(dataset)
+    predict_probs_row = cls.predict_proba(dataset.loc[0])
+    check.isinstance(predict_probs_row, dict)
+    predicts_row = cls.predict(dataset.loc[0])
+    check.isinstance(predicts_row, dict)
 
 # @pytest.mark.skip()
 def test_RandomForestMC_mergeForest_dorpduplicated():

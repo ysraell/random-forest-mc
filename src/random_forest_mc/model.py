@@ -259,7 +259,7 @@ class RandomForestMC(UserList):
     def predict(
         self, row_or_matrix: Union[dsRow, pd.DataFrame], prob_output: bool = False
     ) -> Union[TypeLeaf, List[TypeClassVal], List[TypeLeaf]]:
-        if isinstance(row_or_matrix, dsRow):
+        if isinstance(row_or_matrix, pd.core.series.Series):
             return self.useForest(row_or_matrix)
         if isinstance(row_or_matrix, pd.DataFrame):
             if prob_output:
