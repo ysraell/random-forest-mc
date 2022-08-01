@@ -32,7 +32,7 @@ from tqdm import tqdm
 from tqdm.contrib.concurrent import process_map
 from tqdm.contrib.concurrent import thread_map
 
-from __init__ import __version__
+from .__init__ import __version__
 
 typer_error_msg = "Both objects must be instances of '{}' class."
 
@@ -268,34 +268,33 @@ class RandomForestMC(UserList):
         raise TypeError("The input argument must be 'dsRow' or 'pd.DataFrame'.")
 
     def mergeForest(self, otherForest, N: int = -1, by: str = "add"):
-        if isinstance(otherForest, RandomForestMC):
+        if not isinstance(otherForest, RandomForestMC):
+            raise TypeError(self.typer_error_msg)
+        same_model = all(
+            [right in otherForest.feature_cols for right in self.feature_cols]
+        ) and all([left in self.feature_cols for left in otherForest.feature_cols])
+        if not same_model:
+            raise ValueError("Both forests must have the same set of features.")
 
-            same_model = all(
-                [right in otherForest.feature_cols for right in self.feature_cols]
-            ) and all([left in self.feature_cols for left in otherForest.feature_cols])
-            if not same_model:
-                raise ValueError("Both forests must have the same set of features.")
+        same_model = all(
+            [right in otherForest.class_vals for right in self.class_vals]
+        ) and all([left in self.class_vals for left in otherForest.class_vals])
+        if not same_model:
+            raise ValueError("Both forests must have the same set of classes.")
 
-            same_model = all(
-                [right in otherForest.class_vals for right in self.class_vals]
-            ) and all([left in self.class_vals for left in otherForest.class_vals])
-            if not same_model:
-                raise ValueError("Both forests must have the same set of classes.")
+        if by == "add":
+            self.data.extend(otherForest.data)
 
-            if by == "score":
-                self.data.extend(otherForest.data)
+        if by == "score":
+            data = self.data + otherForest.data
+            self.data = sorted(data)[::-1][:N]
 
-            if by == "score":
-                data = self.data + otherForest.data
-                self.data = sorted(data)[::-1][:N]
+        if by == "random":
+            data = self.data + otherForest.data
+            shuffle(data)
+            self.data = data[:N]
 
-            if by == "random":
-                data = self.data + otherForest.data
-                shuffle(data)
-                self.data = data[:N]
-
-            self.survived_scores = [Tree.survived_score for Tree in self.data]
-        raise TypeError(self.typer_error_msg)
+        self.survived_scores = [Tree.survived_score for Tree in self.data]
 
     def setSoftVoting(self, set: bool = True) -> None:
         self.soft_voting = set

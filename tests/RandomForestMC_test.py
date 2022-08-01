@@ -348,7 +348,7 @@ def test_RandomForestMC_save_load_model():
 
 
 # @pytest.mark.skip()
-def test_RandomForestMC_addTree_dorpduplicated():
+def test_RandomForestMC_mergeForest_dorpduplicated():
     from random_forest_mc.model import RandomForestMC
     from random_forest_mc.utils import LoadDicts
 
@@ -368,19 +368,15 @@ def test_RandomForestMC_addTree_dorpduplicated():
     cls = RandomForestMC(target_col=params["target_col"])
     cls.fit(dataset)
     Forest_size = cls.Forest_size
-    sum_survived_scores = round(sum(cls.survived_scores), 1)
-    cls.addTrees(
-        [(Tree, score) for Tree, score in zip(cls.Forest, cls.survived_scores)]
-    )
-    Forest_sizex2 = cls.Forest_size
-    sum_survived_scoresx2 = round(sum(cls.survived_scores), 1)
+    cls.mergeForest(cls)
     cls.drop_duplicated_trees()
     check.equal(cls.Forest_size, Forest_size)
-    check.almost_equal(
-        round(sum(cls.survived_scores), 1), round(sum_survived_scores, 1)
-    )
-    check.equal(2 * cls.Forest_size, Forest_sizex2)
-    check.almost_equal(2 * sum(cls.survived_scores), sum_survived_scoresx2)
+    cls.mergeForest(cls)
+    check.equal(cls.Forest_size, 2*Forest_size)
+    cls.mergeForest(cls, 11, 'random')
+    check.equal(cls.Forest_size, 11)
+    cls.mergeForest(cls, 8, 'score')
+    check.equal(cls.Forest_size, 8)
 
 
 # @pytest.mark.skip()

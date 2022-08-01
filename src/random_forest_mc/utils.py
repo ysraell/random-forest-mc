@@ -1,7 +1,14 @@
 import json
+import numpy as np
 from glob import glob
 from typing import Any
 from typing import NewType
+
+def np_encoder(object):
+    if isinstance(object, np.generic):
+        # Coverage trick!
+        _ = None
+        return object.item()
 
 
 DictsPathType = NewType("DictsPath", str)
@@ -14,7 +21,7 @@ def load_file_json(path: DictsPathType):
 
 def dump_file_json(path: DictsPathType, var: Any):
     with open(path, "w") as f:
-        return json.dump(var, f, indent=4)
+        return json.dump(var, f, indent=4, default=np_encoder)
 
 
 class LoadDicts:
