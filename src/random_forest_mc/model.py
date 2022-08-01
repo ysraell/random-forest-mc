@@ -319,11 +319,11 @@ class RandomForestMC(UserList):
         self.version = self.__version__
         self.data = [
             DecisionTreeMC(
-                Tree.data,
-                Tree.class_vals,
-                Tree.survived_score,
-                Tree.features,
-                Tree.used_features,
+                Tree["data"],
+                Tree["class_vals"],
+                Tree["survived_score"],
+                Tree["features"],
+                Tree["used_features"],
             )
             for Tree in dict_model["Forest"]
         ]
