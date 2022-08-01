@@ -83,6 +83,14 @@ class DecisionTreeMC(UserDict):
         self.features = features
         self.used_features = used_features
         self.module_version = __version__
+        self.attr_to_save = [
+            'data',
+            'class_vals',
+            'survived_score',
+            'features',
+            'used_features',
+            'module_version',
+        ]
 
     def __str__(self) -> str:
         return str(self.data)
@@ -108,6 +116,9 @@ class DecisionTreeMC(UserDict):
         if not isinstance(other, DecisionTreeMC):
             raise TypeError(self.typer_error_msg)
         return self.survived_score >= other.survived_score
+
+    def tree2dict(self) -> dict:
+        return {attr: getattr(self, attr) for attr in self.attr_to_save}
 
     @staticmethod
     def _useTree(Tree, row: dsRow) -> TypeLeaf:
@@ -222,7 +233,6 @@ class RandomForestMC(UserList):
             "max_discard_trees",
             "n_trees",
             "class_vals",
-            "data",
             "survived_scores",
             "version",
             "numeric_cols",
@@ -261,9 +271,20 @@ class RandomForestMC(UserList):
 
             same_model = all(
                 [right in otherForest.feature_cols for right in self.feature_cols]
-            ) and all([left in self.feature_cols for left in otherForest.feature_cols])
+            ) and all(
+                [left in self.feature_cols for left in otherForest.feature_cols]
+            )
             if not same_model:
                 raise ValueError("Both forests must have the same set of features.")
+
+            same_model = all(
+                [right in otherForest.class_vals for right in self.class_vals]
+            ) and 
+            all(
+                [left in self.class_vals for left in otherForest.class_vals]
+            )
+            if not same_model:
+                raise ValueError("Both forests must have the same set of classes.")
 
             if by == "score":
                 self.data.extend(otherForest.data)
@@ -291,13 +312,25 @@ class RandomForestMC(UserList):
         self.survived_scores = []
 
     def model2dict(self) -> dict:
-        return {attr: getattr(self, attr) for attr in self.attr_to_save}
+        out = {attr: getattr(self, attr) for attr in self.attr_to_save}
+        out['data'] = [Tree.tree2dict() for Tree in self.data]
+        return out
 
     def dict2model(self, dict_model: dict) -> None:
         for attr in self.attr_to_save:
             setattr(self, attr, dict_model[attr])
         self.model_version = self.version
         self.version = self.__version__
+        self.data = [
+            DecisionTreeMC(
+                Tree.data,
+                Tree.class_vals,
+                Tree.survived_score,
+                Tree.features,
+                Tree.used_features
+                ) 
+                for Tree in dict_model['data']
+            ]
 
     def addTrees(self, Forest_Score: List[Tuple[TypeTree, float]]) -> None:
         for Tree, survived_score in Forest_Score:

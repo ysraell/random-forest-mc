@@ -6,10 +6,6 @@ from typing import NewType
 import numpy as np
 
 
-def np_encoder(object):
-    if isinstance(object, np.generic):
-        return object.item()
-
 
 DictsPathType = NewType("DictsPath", str)
 
@@ -21,7 +17,7 @@ def load_file_json(path: DictsPathType):
 
 def dump_file_json(path: DictsPathType, var: Any):
     with open(path, "w") as f:
-        return json.dump(var, f, indent=4, default=np_encoder)
+        return json.dump(var, f, indent=4)
 
 
 class LoadDicts:
