@@ -1,6 +1,4 @@
 import sys
-from tkinter.tix import Tree
-
 import numpy as np
 import pandas as pd
 import pytest
@@ -132,6 +130,7 @@ def test_RandomForestMC_fit():
     _ = Tree >= Tree
     with check.raises(TypeError):
         Tree >= Tree.data
+
 
 # @pytest.mark.skip()
 def test_RandomForestMC_fitParallel():
@@ -387,10 +386,10 @@ def test_RandomForestMC_mergeForest_dorpduplicated():
     cls.drop_duplicated_trees()
     check.equal(cls.Forest_size, Forest_size)
     cls.mergeForest(cls)
-    check.equal(cls.Forest_size, 2*Forest_size)
-    cls.mergeForest(cls, 11, 'random')
+    check.equal(cls.Forest_size, 2 * Forest_size)
+    cls.mergeForest(cls, 11, "random")
     check.equal(cls.Forest_size, 11)
-    cls.mergeForest(cls, 8, 'score')
+    cls.mergeForest(cls, 8, "score")
     check.equal(cls.Forest_size, 8)
 
 

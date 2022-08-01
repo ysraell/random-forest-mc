@@ -4,6 +4,7 @@ from glob import glob
 from typing import Any
 from typing import NewType
 
+
 def np_encoder(object):
     if isinstance(object, np.generic):
         # Coverage trick!
