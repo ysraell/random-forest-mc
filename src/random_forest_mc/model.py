@@ -254,7 +254,7 @@ class RandomForestMC(UserList):
     def predict_proba(
         self, row_or_matrix: Union[dsRow, pd.DataFrame], prob_output: bool = True
     ) -> Union[TypeLeaf, List[TypeClassVal], List[TypeLeaf]]:
-        return self.predict(self, row_or_matrix, prob_output)
+        return self.predict(row_or_matrix, prob_output)
 
     def predict(
         self, row_or_matrix: Union[dsRow, pd.DataFrame], prob_output: bool = False
