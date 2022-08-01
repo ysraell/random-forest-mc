@@ -1,4 +1,4 @@
-from copy import copy
+from copy import deepcopy
 import sys
 import numpy as np
 import pandas as pd
@@ -434,12 +434,12 @@ def test_RandomForestMC_mergeForest_dorpduplicated():
         cls.mergeForest(cls.data)
 
     with check.raises(ValueError):
-        cls_other = copy(cls)
+        cls_other = deepcopy(cls)
         cls_other.feature_cols.pop(0)
         cls.mergeForest(cls_other)
 
     with check.raises(ValueError):
-        cls_other = copy(cls)
+        cls_other = deepcopy(cls)
         cls_other.class_vals.append("3")
         cls.mergeForest(cls_other)
 
