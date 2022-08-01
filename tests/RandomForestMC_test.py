@@ -383,16 +383,16 @@ def test_RandomForestMC_predictl():
     row = dataset.reset_index(drop=True).loc[0]
     
     predict_row = cls.predict(row)
-    check.isinstance(predict_row, dict)
+    check.is_instance(predict_row, dict)
     
     predict_ds = cls.predict(dataset.sample(n=10))
-    check.isinstance(predict_ds, list)
+    check.is_instance(predict_ds, list)
 
     predict_probs_ds = cls.predict_proba(dataset.sample(n=10))
-    check.isinstance(predict_probs_ds, list)
+    check.is_instance(predict_probs_ds, list)
     for leaf in predict_probs_ds:
-        check.isinstance(leaf, dict)
-    
+        check.is_instance(leaf, dict)
+
 
 # @pytest.mark.skip()
 def test_RandomForestMC_mergeForest_dorpduplicated():
