@@ -309,7 +309,7 @@ class RandomForestMC(UserList):
 
     def model2dict(self) -> dict:
         out = {attr: getattr(self, attr) for attr in self.attr_to_save}
-        out["data"] = [Tree.tree2dict() for Tree in self.data]
+        out["Forest"] = [Tree.tree2dict() for Tree in self.data]
         return out
 
     def dict2model(self, dict_model: dict) -> None:
@@ -325,13 +325,8 @@ class RandomForestMC(UserList):
                 Tree.features,
                 Tree.used_features,
             )
-            for Tree in dict_model["data"]
+            for Tree in dict_model["Forest"]
         ]
-
-    def addTrees(self, Forest_Score: List[Tuple[TypeTree, float]]) -> None:
-        for Tree, survived_score in Forest_Score:
-            self.survived_scores.append(survived_score)
-            self.data.append(Tree)
 
     def validFeaturesTemporal(self):
         return all([x.split("_")[-1].isnumeric() for x in self.feature_cols])
