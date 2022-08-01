@@ -1,4 +1,5 @@
 import sys
+from tkinter.tix import Tree
 
 import numpy as np
 import pandas as pd
@@ -117,6 +118,20 @@ def test_RandomForestMC_fit():
     check.is_true(cls.temporal_features)
     cls.fit(dataset)
 
+    Tree = cls.data[0]
+    check.is_in("DecisionTreeMC(", repr(Tree))
+
+    check.equal(Tree, Tree)
+    with check.raises(TypeError):
+        Tree == Tree.data
+
+    _ = Tree > Tree
+    with check.raises(TypeError):
+        Tree > Tree.data
+
+    _ = Tree >= Tree
+    with check.raises(TypeError):
+        Tree >= Tree.data
 
 # @pytest.mark.skip()
 def test_RandomForestMC_fitParallel():
