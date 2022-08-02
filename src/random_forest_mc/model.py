@@ -92,6 +92,10 @@ class DecisionTreeMC(UserDict):
             "module_version",
         ]
 
+    def _check_format(self, other):
+        if not isinstance(other, DecisionTreeMC):
+            raise TypeError(self.typer_error_msg)
+
     def __str__(self) -> str:
         return str(self.data)
 
@@ -103,19 +107,24 @@ class DecisionTreeMC(UserDict):
         return self.useTree(row)
 
     def __eq__(self, other) -> bool:
-        if not isinstance(other, DecisionTreeMC):
-            raise TypeError(self.typer_error_msg)
+        self._check_format(other)
         return self.survived_score == other.survived_score
 
     def __gt__(self, other) -> bool:
-        if not isinstance(other, DecisionTreeMC):
-            raise TypeError(self.typer_error_msg)
+        self._check_format(other)
         return self.survived_score > other.survived_score
 
     def __ge__(self, other) -> bool:
-        if not isinstance(other, DecisionTreeMC):
-            raise TypeError(self.typer_error_msg)
+        self._check_format(other)
         return self.survived_score >= other.survived_score
+
+    def __lt__(self, other) -> bool:
+        self._check_format(other)
+        return self.survived_score > other.survived_score
+
+    def __le__(self, other) -> bool:
+        self._check_format(other)
+        return self.survived_score <= other.survived_score
 
     def tree2dict(self) -> dict:
         return {attr: getattr(self, attr) for attr in self.attr_to_save}
@@ -248,6 +257,11 @@ class RandomForestMC(UserList):
         return txt.format(
             len(self.data), self.n_trees, self.model_version, self.version
         )
+
+    def __eq__(self, other):
+        if not isinstance(other, RandomForestMC):
+            raise TypeError(self.typer_error_msg)
+        return all(getattr(self, att) == getattr(other, att) for att in dir(self))
 
     def predict_proba(
         self, row_or_matrix: Union[dsRow, pd.DataFrame], prob_output: bool = True

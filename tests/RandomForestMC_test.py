@@ -434,15 +434,24 @@ def test_RandomForestMC_mergeForest_dorpduplicated():
     with check.raises(TypeError):
         cls.mergeForest(cls.data)
 
+    cls_other = deepcopy(cls)
+    check.equal(cls_other, cls)
     with check.raises(ValueError):
-        cls_other = deepcopy(cls)
         cls_other.feature_cols.pop(0)
         cls.mergeForest(cls_other)
 
+    cls_other = deepcopy(cls)
+    check.equal(cls_other, cls)
     with check.raises(ValueError):
-        cls_other = deepcopy(cls)
         cls_other.class_vals.append("3")
         cls.mergeForest(cls_other)
+
+    for Tree in cls:
+        for Tree_other in cls_other:
+            _ = Tree <= Tree_other
+            _ = Tree < Tree_other
+            _ = Tree >= Tree_other
+            _ = Tree > Tree_other
 
 
 # @pytest.mark.skip()
