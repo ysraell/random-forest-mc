@@ -261,7 +261,7 @@ class RandomForestMC(UserList):
     def __eq__(self, other):
         if not isinstance(other, RandomForestMC):
             raise TypeError(self.typer_error_msg)
-        return all([getattr(self, att) == getattr(other, att) for att in dir(self)])
+        return all([getattr(self, att) == getattr(other, att) for att in self.attr_to_save])
 
     def predict_proba(
         self, row_or_matrix: Union[dsRow, pd.DataFrame], prob_output: bool = True
