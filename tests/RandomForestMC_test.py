@@ -1,4 +1,5 @@
 from copy import deepcopy
+from random import shuffle
 import sys
 import numpy as np
 import pandas as pd
@@ -365,7 +366,7 @@ def test_RandomForestMC_save_load_model():
 # @pytest.mark.skip()
 def test_RandomForestMC_predictl():
     from random_forest_mc.model import RandomForestMC
-    from random_forest_mc.utils import LoadDicts, dump_file_json, load_file_json
+    from random_forest_mc.utils import LoadDicts
 
     dicts = LoadDicts("tests/")
     dataset_dict = dicts.datasets_metadata
@@ -660,6 +661,43 @@ def test_RandomForestMC_fullCycle_creditcard():
     y_pred = cls.testForest(ds)
     _ = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
     _ = cls.testForestProbs(ds)
+
+
+# @pytest.mark.skip()
+def test_RandomForestMC_fullCycle_creditcard_missing_values():
+    from random_forest_mc.model import RandomForestMC
+    from random_forest_mc.utils import LoadDicts
+
+    dicts = LoadDicts("tests/")
+    dataset_dict = dicts.datasets_metadata
+    ds_name = "creditcard_trans_float"
+    params = dataset_dict[ds_name]
+    dataset = (
+        pd.read_csv(params["csv_path"])[params["ds_cols"] + [params["target_col"]]]
+        .dropna()
+        .reset_index(drop=True)
+    )
+    cls = RandomForestMC(
+        n_trees=32, target_col=params["target_col"], max_discard_trees=16
+    )
+    cls.process_dataset(dataset)
+    cls.fit()
+    cols = list(dataset.columns)
+    _ = cols.pop(cols.index("Class"))
+    shuffle(cols)
+    dataset = dataset[cols[:10] + ["Class"]]
+    row = dataset.reset_index(drop=True).loc[0]
+
+    predict_row = cls.predict(row)
+    check.is_instance(predict_row, dict)
+
+    predict_ds = cls.predict(dataset.sample(n=10))
+    check.is_instance(predict_ds, list)
+
+    predict_probs_ds = cls.predict_proba(dataset.sample(n=10))
+    check.is_instance(predict_probs_ds, list)
+    for leaf in predict_probs_ds:
+        check.is_instance(leaf, dict)
 
 
 # @pytest.mark.skip()
