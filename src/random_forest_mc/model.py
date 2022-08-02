@@ -425,7 +425,7 @@ class RandomForestMC(UserList):
         if ds.shape[0] > 2:
 
             if feat in self.numeric_cols:
-                split_val = int(ds[feat].quantile())
+                split_val = float(ds[feat].quantile())
                 ds_a = ds.query(f"{feat} >= {split_val}").reset_index(drop=True)
                 ds_b = ds.query(f"{feat} < {split_val}").reset_index(drop=True)
                 if (ds_a.shape[0] == 0) or (ds_b.shape[0] == 0):
