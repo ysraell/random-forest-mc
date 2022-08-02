@@ -5,7 +5,7 @@
 <a href="https://pypi.org/project/random-forest-mc"><img src="https://img.shields.io/pypi/v/random-forest-mc?color=blue" alt="PyPI version"></a>
 ![](https://img.shields.io/badge/Coverage-100%25-green)
 ![](https://img.shields.io/badge/Status-Stable-green)
-![](https://img.shields.io/badge/Dev--status-WIP-orange)
+![](https://img.shields.io/badge/Dev--status-Released-green)
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/ysraell/random-forest-mc.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/ysraell/random-forest-mc/alerts/)
 [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/ysraell/random-forest-mc.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/ysraell/random-forest-mc/context:python)
 [![](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
@@ -66,6 +66,39 @@ cls.setSoftVoting(True) # for predicitons using soft voting strategy
 y_pred = cls.testForest(dataset)
 accuracy_soft = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
 
+# Simply predictions:
+
+# One row
+row = dataset.loc[0]
+cls.predict(row)
+{'0': 0.75, '1': 0.25}
+
+# Multiple rows (dataset)
+cls.predict(dataset.sample(n=10))
+['0', '1', ...]
+
+# Get the probabilities:
+cls.predict_proba(dataset.sample(n=10))
+[
+    {'0': 0.75, '1': 0.25},
+    {'0': 1.0, '1': 0.0},
+    ...
+    {'0': 0.625, '1': 0.375}
+]
+
+# Works with missing values:
+
+cols = list(dataset.columns)
+cols.pop(cols.index('Class'))
+ds = dataset[cols[:10]+['Class']]
+
+row = ds.loc[0]
+cls.predict(row)
+{'0': 0.75, '1': 0.25}
+
+cls.predict(dataset.sample(n=10))
+['0', '1', ...]
+
 # Saving model:
 ModelDict = cls.model2dict()
 dump_file_json(path_dict, ModelDict)
@@ -110,6 +143,21 @@ cls.featCorrDataFrame() # or cls.sampleClassFeatCorrDataFrame(row, row[target_co
 feat 1       0.900000   0.120000   0.130000
 feat 2       0.120000   0.804688   0.230000
 feat 3       0.130000   0.230000   0.398438
+
+# For merge different models (forests):
+...
+cls.fit()
+cls2.fit()
+
+# Simply add all trees from cls2 in cls.
+cls.mergeForest(cls2)
+
+# Merge all trees from both models and keep the trees with scores within the top N survived scores.
+cls.mergeForest(cls2, N, 'score')
+
+# Merge all trees from both models and keep N random trees.
+cls.mergeForest(cls2, N, 'random')
+
 ```
 
 ### Notes:
@@ -186,26 +234,6 @@ With this image you can run all notebooks and scripts Python inside this reposit
 ### TODO Utils:
 
 - Add methods from [scikit-survival](https://scikit-survival.readthedocs.io/en/stable/user_guide/random-survival-forest.html) for comparison.
-
-### TODO v1.0 (0.4.0-test):
-
-- ~~DRY: `DatasetNotFound` msg.~~ [Done]
-- ~~Create a new class for Tree storing the:~~ [Done]
-    - ~~decision tree itself,~~ [Done]
-    - ~~the score given during the validation process,~~ [Done]
-    - ~~the features used,~~ [Done]
-    - ~~how many decision nodes,~~ [Done]  
-    - ~~compatible with rich comparison operands based on the score.~~ [Done] 
-- ~~New feature (new class): create new forests from a cross merging between other forests, for a given amount of trees for the output forest:~~~ [Done]
-    - ~~if not given output size, perform a simply concatenation;~~ [Done]
-    - ~~by the sorting of the scores already avaliable.~~ [Done]
-    - ~~by randomness;~~ [Done]
-- ~~Add `__len__` and `__getitem__` considering a tree as a item, `__contains__` hashing the trees. Consider extend the model's classe using `list`.~~ [Done].
-- ~~Create a base-class for load model and predict only. The current class extending from the base with training step and explanable fatures.~~ [Deprecated]
-- ~~Add typy check at pre-commit.~~ [Deprecated]
-- ~~Turn the model (object instance from the class of the model) callable: define inside the `__call__` to use `useForest`, `testForest` and `testForestProbs`, in the follow terms:~~ [Done]
-- ~~Mssing data issue: For numeric and categorical values, `useTree` must be functional and branching when missing value, combining classes at leaves with their probabilities (duplicate the tree in each node with missing value).~~ [Done]
-
 
 ### TODO v1.1:
 
