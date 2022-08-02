@@ -5,7 +5,7 @@
 <a href="https://pypi.org/project/random-forest-mc"><img src="https://img.shields.io/pypi/v/random-forest-mc?color=blue" alt="PyPI version"></a>
 ![](https://img.shields.io/badge/Coverage-100%25-green)
 ![](https://img.shields.io/badge/Status-Stable-green)
-![](https://img.shields.io/badge/Dev--status-WIP-orange)
+![](https://img.shields.io/badge/Dev--status-Released-green)
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/ysraell/random-forest-mc.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/ysraell/random-forest-mc/alerts/)
 [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/ysraell/random-forest-mc.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/ysraell/random-forest-mc/context:python)
 [![](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
@@ -66,6 +66,39 @@ cls.setSoftVoting(True) # for predicitons using soft voting strategy
 y_pred = cls.testForest(dataset)
 accuracy_soft = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
 
+# Simply predictions:
+
+# One row
+row = dataset.loc[0]
+cls.predict(row)
+{'0': 0.75, '1': 0.25}
+
+# Multiple rows (dataset)
+cls.predict(dataset.sample(n=10))
+['0', '1', ...]
+
+# Get the probabilities:
+cls.predict_proba(dataset.sample(n=10))
+[
+    {'0': 0.75, '1': 0.25},
+    {'0': 1.0, '1': 0.0},
+    ...
+    {'0': 0.625, '1': 0.375}
+]
+
+# Works with missing values:
+
+cols = list(dataset.columns)
+cols.pop(cols.index('Class'))
+ds = dataset[cols[:10]+['Class']]
+
+row = ds.loc[0]
+cls.predict(row)
+{'0': 0.75, '1': 0.25}
+
+cls.predict(dataset.sample(n=10))
+['0', '1', ...]
+
 # Saving model:
 ModelDict = cls.model2dict()
 dump_file_json(path_dict, ModelDict)
@@ -110,6 +143,21 @@ cls.featCorrDataFrame() # or cls.sampleClassFeatCorrDataFrame(row, row[target_co
 feat 1       0.900000   0.120000   0.130000
 feat 2       0.120000   0.804688   0.230000
 feat 3       0.130000   0.230000   0.398438
+
+# For merge different models (forests):
+...
+cls.fit()
+cls2.fit()
+
+# Simply add all trees from cls2 in cls.
+cls.mergeForest(cls2)
+
+# Merge all trees from both models and keep the trees with scores within the top N survived scores.
+cls.mergeForest(cls2, N, 'score')
+
+# Merge all trees from both models and keep N random trees.
+cls.mergeForest(cls2, N, 'random')
+
 ```
 
 ### Notes:
@@ -187,38 +235,18 @@ With this image you can run all notebooks and scripts Python inside this reposit
 
 - Add methods from [scikit-survival](https://scikit-survival.readthedocs.io/en/stable/user_guide/random-survival-forest.html) for comparison.
 
-### TODO v1.0:
+### TODO v1.1:
 
-- DRY: `DatasetNotFound` msg.
-- Create a new class for Tree storing the: 
-    - decision tree itself, 
-    - the score given during the validation process, 
-    - the features used,
-    - how many decision nodes.
-    compatible with operands like `>` based on the score.
-- New feature (new class): create new forests from a cross merging between other forests, with proportionalities as input parameters:
-    - by randomness;
-    - by optimization, based on a GA and MC approaches, using a given test dataset;
-    - by the sorting of the scores already avaliable.
-    - Design as a subclass of the `RandomForestMC` for optimization approaches and a function for randomness and sorted merging.
-- Create a notebook with [Memray](https://github.com/bloomberg/memray) applied to the model with different datasets.
-- Add `__len__` and `__getitem__` considering a tree as a item, `__contains__` hashing the trees. Consider extend the model's classe using `list`.
-- Create a base-class for load model and predict only. The current class extending from the base with training step and explanable fatures.
-- Add typy check at pre-commit.
-- Discover how automate the unit tests for test with each compatible minor version.
-- Turn the model (object instance from the class of the model) callable: define inside the `__call__` to use `useForest`, `testForest` and `testForestProbs`, in the follow terms:
-```python
-def __call__(row_or_matrix: dsRow | pd.DataFrame, prob_output: bool = False) -> TypeLeaf | List[TypeClassVal] | List[TypeLeaf]:
-    '''
-    *Attention*: take care that type hints are backward compatible with version `3.7`.
-    '''
-```
 - Mssing data issue:
     - Data Imputation using the Forest (with and without true label).
     - Prediction with missing values, approaches:
-        - *A*) only for numeric feature, `useTree` must be functional and branching when missing value, combining classes at leaves with their probabilities (duplicate the tree in each node with missing value)), for categorical features, use the default value branching already implemented and working well.
-        - *B*) Use imputation data before prediction. Different from *A*, choose the value with the higher probability.
-        - *C*) (User) Set a default value for each feature a priori. When facing a missing value, use the given default value.
+        - *A*) Use imputation data before prediction. Different from *A*, choose the value with the higher probability.
+        - *B*) (User) Set a default value for each feature a priori. When facing a missing value, use the given default value.
+- Create new forests from a cross merging between other forests, for a given amount of trees for the output forest:~
+    - by optimization, based on a GA and MC approaches, using a given test dataset;
+    - Design as a subclass of the `RandomForestMC` for optimization approaches and a function for randomness and sorted merging.
+- Create a notebook with [Memray](https://github.com/bloomberg/memray) applied to the model with different datasets.
+- Discover how automate the unit tests for test with each compatible minor version.
 - Add parameter for limit depth, min sample to leaf, min feature completed cycles.
 - Find out how prevent the follow error msg: `cannot take a larger sample than population when 'replace=false'`. It's maybe interesting to have duplicate rows because during the growing the tree we may consider a different structure of decision reusing values (feature). In fact, the algorithm will prevent the creation of a duplicated decision node. We may set as a input parameter (boolean), or in the same way but with a third parameter to change to `True` when we got a error. Consider a possible performance decreasing this third parameter (using `try` may works?).
 - Add parameter for active validation score (like loss) for each set of a given number of trees generated.
@@ -227,10 +255,6 @@ def __call__(row_or_matrix: dsRow | pd.DataFrame, prob_output: bool = False) -> 
 - Review the use of the threshold (TH) for validation process. How we could set the dynamic portion? How spread the TH? The set of rows, for a set of rounds, not reaching the TH, drop and get next? Dynamicaly decreasing the TH for each N sets of rows without sucess?
 - Docstring.
 
-### TODO v1.1:
-
-- Automated tests using GitHub Actions.
-
 ### TODO V2.0:
 
 - Extender for predict by regression.
@@ -238,6 +262,7 @@ def __call__(row_or_matrix: dsRow | pd.DataFrame, prob_output: bool = False) -> 
 - Tree management framework: to remove or add new trees, version management for set of trees.
 
 ### TODO Extras:
- - Develop a Scikit-Learn full compatible model. Ref.: <https://scikit-learn.org/stable/developers/develop.html>.
- - Write and publish a article.
- - Read the Scikit-learn governance and decision-making (https://scikit-learn.org/stable/governance.html#governance).
+- Automated tests using GitHub Actions.
+- Develop a Scikit-Learn full compatible model. Ref.: <https://scikit-learn.org/stable/developers/develop.html>.
+- Write and publish a article.
+- Read the Scikit-learn governance and decision-making (https://scikit-learn.org/stable/governance.html#governance).
