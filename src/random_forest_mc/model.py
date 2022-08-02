@@ -122,30 +122,27 @@ class DecisionTreeMC(UserDict):
 
     @staticmethod
     def _useTree(Tree, row: dsRow) -> TypeLeaf:
-        def functionalUseTree(Tree):
-            while True:
-                node = list(Tree.keys())[0]
-                if node == "leaf":
-                    return Tree["leaf"]
-                tree_node_split = Tree[node]["split"]
-                if node not in row.index:
-                    return [
-                        functionalUseTree(tree_node_split[">="]),
-                        functionalUseTree(tree_node_split["<"]),
-                    ]
-                val = row[node]
-                if tree_node_split["feat_type"] == "numeric":
-                    Tree = (
-                        tree_node_split[">="]
-                        if val >= tree_node_split["split_val"]
-                        else tree_node_split["<"]
-                    )
+        def functionalUseTree(subTree):
+            node = list(subTree.keys())[0]
+            if node == "leaf":
+                return subTree["leaf"]
+            tree_node_split = subTree[node]["split"]
+            if node not in row.index:
+                return [
+                    functionalUseTree(tree_node_split[">="]),
+                    functionalUseTree(tree_node_split["<"]),
+                ]
+            val = row[node]
+            if tree_node_split["feat_type"] == "numeric":
+                if val >= tree_node_split["split_val"]:
+                    functionalUseTree(tree_node_split[">="])
                 else:
-                    Tree = (
-                        tree_node_split[">="]
-                        if val == tree_node_split["split_val"]
-                        else tree_node_split["<"]
-                    )
+                    functionalUseTree(tree_node_split["<"])
+            else:
+                if val == tree_node_split["split_val"]:
+                    functionalUseTree(tree_node_split[">="])
+                else:
+                    functionalUseTree(tree_node_split["<"])
 
         return functionalUseTree(Tree)
 
