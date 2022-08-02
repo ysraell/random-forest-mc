@@ -156,6 +156,7 @@ class DecisionTreeMC(UserDict):
         def popLeafs(LeafList):
             if isinstance(LeafList, dict):
                 leafes.append(LeafList)
+                return
             for Leaf in LeafList:
                 return popLeafs(Leaf)
 
