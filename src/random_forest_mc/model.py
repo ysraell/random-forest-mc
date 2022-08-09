@@ -25,6 +25,7 @@ from typing import NewType
 from typing import Optional
 from typing import Tuple
 from typing import Union
+from math import fsum
 
 import numpy as np
 import pandas as pd
@@ -178,7 +179,7 @@ class DecisionTreeMC(UserDict):
         for c in self.class_vals:
             outLeaf[c] /= len(leafes)
 
-        total_prob = sum(outLeaf.values())
+        total_prob = fsum(outLeaf.values())
         for c in self.class_vals:
             outLeaf[c] /= total_prob
 
@@ -261,7 +262,9 @@ class RandomForestMC(UserList):
     def __eq__(self, other):
         if not isinstance(other, RandomForestMC):
             raise TypeError(self.typer_error_msg)
-        return all([getattr(self, att) == getattr(other, att) for att in self.attr_to_save])
+        return all(
+            [getattr(self, att) == getattr(other, att) for att in self.attr_to_save]
+        )
 
     def predict_proba(
         self, row_or_matrix: Union[dsRow, pd.DataFrame], prob_output: bool = True
@@ -508,7 +511,7 @@ class RandomForestMC(UserList):
     def validationTree(self, Tree: TypeTree, ds: pd.DataFrame) -> float:
         y_pred = [self.maxProbClas(Tree(row)) for _, row in ds.iterrows()]
         y_val = ds[self.target_col].to_list()
-        return sum([v == p for v, p in zip(y_val, y_pred)]) / len(y_pred)
+        return fsum([v == p for v, p in zip(y_val, y_pred)]) / len(y_pred)
 
     # _ argument is for compatible execution with thread_map
     def survivedTree(self, _=None) -> DecisionTreeMC:
@@ -614,7 +617,7 @@ class RandomForestMC(UserList):
                     for class_val, prob in predp.items():
                         class_probs[class_val] += prob * score
                 return {
-                    class_val: class_probs[class_val] / sum(self.survived_scores)
+                    class_val: class_probs[class_val] / fsum(self.survived_scores)
                     for class_val in self.class_vals
                 }
             else:
@@ -637,7 +640,7 @@ class RandomForestMC(UserList):
                 for class_val, score in y_pred_score:
                     class_scores[class_val] += score
                 return {
-                    class_val: class_scores[class_val] / sum(self.survived_scores)
+                    class_val: class_scores[class_val] / fsum(self.survived_scores)
                     for class_val in self.class_vals
                 }
             else:
@@ -682,7 +685,7 @@ class RandomForestMC(UserList):
             Forest = self.data
         n_trees = len(Forest)
         return {
-            feat: sum([f"'{feat}'" in str(Tree) for Tree in Forest]) / n_trees
+            feat: fsum([f"'{feat}'" in str(Tree) for Tree in Forest]) / n_trees
             for feat in self.feature_cols
         }
 
