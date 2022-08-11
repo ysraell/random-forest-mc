@@ -18,10 +18,9 @@ from numbers import Real
 from random import randint
 from random import sample
 from random import shuffle
-from typing import Any, TypeAlias
+from typing import Any
 from typing import Dict
 from typing import List
-# from typing import TypeAlias # Fro backward compatibility with 3.7
 from typing import Optional
 from typing import Tuple
 from typing import Union
@@ -34,6 +33,9 @@ from tqdm.contrib.concurrent import process_map
 from tqdm.contrib.concurrent import thread_map
 
 from .__init__ import __version__
+
+# For backward compatibility with 3.7
+# from typing import TypeAlias
 
 typer_error_msg = "Both objects must be instances of '{}' class."
 
@@ -284,9 +286,7 @@ class RandomForestMC(UserList):
             if prob_output:
                 return self.testForestProbs(row_or_matrix)
             return self.testForest(row_or_matrix)
-        raise TypeError(
-            f"The input argument must be '{dsRow}' or '{pd.DataFrame}'."
-        )
+        raise TypeError(f"The input argument must be '{dsRow}' or '{pd.DataFrame}'.")
 
     def mergeForest(self, otherForest, N: int = -1, by: str = "add"):
         if not isinstance(otherForest, RandomForestMC):
