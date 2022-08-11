@@ -442,7 +442,7 @@ class RandomForestMC(UserList):
     # Splits the data during the tree's growth process.
     def splitData(
         self, feat, ds: pd.DataFrame
-    ) -> Tuple[pd.DataFrame, pd.DataFrame, Union[int, float, str]]:
+    ) -> Tuple[pd.DataFrame, pd.DataFrame, Union[Real, str]]:
         if ds.shape[0] > 2:
 
             if feat in self.numeric_cols:
