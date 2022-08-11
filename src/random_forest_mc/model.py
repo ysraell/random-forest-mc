@@ -18,10 +18,10 @@ from numbers import Real
 from random import randint
 from random import sample
 from random import shuffle
-from typing import Any
+from typing import Any, TypeAlias
 from typing import Dict
 from typing import List
-from typing import NewType
+from typing import TypeAlias
 from typing import Optional
 from typing import Tuple
 from typing import Union
@@ -41,16 +41,16 @@ typer_error_msg = "Both objects must be instances of '{}' class."
 re_feat_name = re.compile("\\'[\\w\\s]+'\\:")
 
 # a row of pd.DataFrame.iterrows()
-dsRow = NewType("dsRow", pd.core.series.Series)
+dsRow: TypeAlias = pd.core.series.Series
 
 # A tree composed by a assimetric tree of dictionaries:
-TypeTree = NewType("TypeTree", Dict)
+TypeTree: TypeAlias = Dict
 
 # Value type of classes
-TypeClassVal = NewType("TypeClassVal", Any)
+TypeClassVal: TypeAlias = Any
 
 # Type of the leaf
-TypeLeaf = Dict[TypeClassVal, float]
+TypeLeaf: TypeAlias = Dict[TypeClassVal, float]
 
 
 class DatasetNotFound(Exception):
@@ -274,14 +274,14 @@ class RandomForestMC(UserList):
     def predict(
         self, row_or_matrix: Union[dsRow, pd.DataFrame], prob_output: bool = False
     ) -> Union[TypeLeaf, List[TypeClassVal], List[TypeLeaf]]:
-        if isinstance(row_or_matrix, pd.core.series.Series):
+        if isinstance(row_or_matrix, dsRow):
             return self.useForest(row_or_matrix)
         if isinstance(row_or_matrix, pd.DataFrame):
             if prob_output:
                 return self.testForestProbs(row_or_matrix)
             return self.testForest(row_or_matrix)
         raise TypeError(
-            "The input argument must be 'pd.core.series.Series' or 'pd.DataFrame'."
+            f"The input argument must be '{dsRow}' or '{pd.DataFrame}'."
         )
 
     def mergeForest(self, otherForest, N: int = -1, by: str = "add"):

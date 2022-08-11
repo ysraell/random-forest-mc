@@ -2,7 +2,7 @@ import json
 import numpy as np
 from glob import glob
 from typing import Any
-from typing import NewType
+from typing import TypeAlias
 
 
 def np_encoder(object):
@@ -12,7 +12,7 @@ def np_encoder(object):
         return object.item()
 
 
-DictsPathType = NewType("DictsPath", str)
+DictsPathType: TypeAlias = str
 
 
 def load_file_json(path: DictsPathType):
