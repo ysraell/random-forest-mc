@@ -2,7 +2,7 @@ import json
 import numpy as np
 from glob import glob
 from typing import Any
-from typing import TypeAlias
+# from typing import TypeAlias # Fro backward compatibility with 3.7
 
 
 def np_encoder(object):
@@ -12,7 +12,8 @@ def np_encoder(object):
         return object.item()
 
 
-DictsPathType: TypeAlias = str
+#DictsPathType: TypeAlias = str
+DictsPathType = str
 
 
 def load_file_json(path: DictsPathType):

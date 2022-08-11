@@ -21,7 +21,7 @@ from random import shuffle
 from typing import Any, TypeAlias
 from typing import Dict
 from typing import List
-from typing import TypeAlias
+# from typing import TypeAlias # Fro backward compatibility with 3.7
 from typing import Optional
 from typing import Tuple
 from typing import Union
@@ -41,16 +41,20 @@ typer_error_msg = "Both objects must be instances of '{}' class."
 re_feat_name = re.compile("\\'[\\w\\s]+'\\:")
 
 # a row of pd.DataFrame.iterrows()
-dsRow: TypeAlias = pd.core.series.Series
+# dsRow: TypeAlias = pd.core.series.Series
+dsRow = pd.core.series.Series
 
 # A tree composed by a assimetric tree of dictionaries:
-TypeTree: TypeAlias = Dict
+# TypeTree: TypeAlias = Dict
+TypeTree = Dict
 
 # Value type of classes
-TypeClassVal: TypeAlias = Any
+# TypeClassVal: TypeAlias = Any
+TypeClassVal = Any
 
 # Type of the leaf
-TypeLeaf: TypeAlias = Dict[TypeClassVal, float]
+# TypeLeaf: TypeAlias = Dict[TypeClassVal, float]
+TypeLeaf = Dict[TypeClassVal, float]
 
 
 class DatasetNotFound(Exception):
