@@ -446,6 +446,9 @@ def test_RandomForestMC_mergeForest_dorpduplicated():
         cls_other.class_vals.append("3")
         cls.mergeForest(cls_other)
 
+    with check.raises(TypeError):
+        cls == cls_other.data
+
     for Tree in cls:
         for Tree_other in cls_other:
             _ = Tree <= Tree_other
