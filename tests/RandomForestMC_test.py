@@ -434,9 +434,6 @@ def test_RandomForestMC_mergeForest_dorpduplicated():
     with check.raises(TypeError):
         cls.mergeForest(cls.data)
 
-    with check.raises(TypeError):
-        cls = cls.data
-
     cls_other = deepcopy(cls)
     check.equal(cls_other, cls)
     with check.raises(ValueError):
