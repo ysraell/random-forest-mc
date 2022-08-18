@@ -235,6 +235,40 @@ With this image you can run all notebooks and scripts Python inside this reposit
 
 - Add methods from [scikit-survival](https://scikit-survival.readthedocs.io/en/stable/user_guide/random-survival-forest.html) for comparison.
 
+
+### TODO v1.0.3:
+
+    - For avoid `RecursionError` and to have a appropriate depth level in the trees, we need a way to limit the recursive deepening. My first idea is use the `itertools.count` as counter, for every new split that reaches a given limit, create a leaf. However, for each split, we need a independely counter! The counter (or the information about the depth level) must be recursive too. It will increase the amount of operations. We could use EAFP instead LBYL: Set the max limit as given by the user and let the `try/excpet` do the work.
+
+    ```python
+    import sys
+
+    class recursion_depth:
+        def __init__(self, limit):
+            self.limit = limit
+            self.default_limit = sys.getrecursionlimit()
+
+        def __enter__(self):
+            sys.setrecursionlimit(self.limit)
+
+        def __exit__(self, type, value, traceback):
+            sys.setrecursionlimit(self.default_limit)
+
+
+    ...
+    # Inside the function to grow the tree:
+        with recursion_depth(2000):
+            try:
+                pass
+                # growing tree
+            except RecursionError:
+                pass
+                # return leaf
+
+    # Check if as a context manager is better.
+    ```
+    Source: [What Is the Maximum Recursion Depth in Python](https://www.codingem.com/python-maximum-recursion-depth/), Artturi Jalli.
+
 ### TODO v1.1:
 
 - Mssing data issue:
