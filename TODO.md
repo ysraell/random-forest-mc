@@ -38,8 +38,9 @@ class recursion_depth:
             pass
             # return leaf
 
-# Check if as a context manager is better.
 ```
+Check if as a context manager is better, using function with `yield`. Must works with `>=3.7`. 
+
 Source: [What Is the Maximum Recursion Depth in Python](https://www.codingem.com/python-maximum-recursion-depth/), Artturi Jalli.
 
 ### TODO v1.1:

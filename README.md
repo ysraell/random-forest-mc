@@ -227,3 +227,7 @@ For example:
 - [My data science Docker image](https://github.com/ysraell/my-ds).
 
 With this image you can run all notebooks and scripts Python inside this repository.
+
+### TO-DO list.
+
+For TO-DO list see `TODO.md`.
