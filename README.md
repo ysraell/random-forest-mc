@@ -238,6 +238,7 @@ With this image you can run all notebooks and scripts Python inside this reposit
 
 ### TODO v1.0.3:
 
+- Remove multithread option for concurrency. Is not working properly, not stable.
 - For avoid `RecursionError` and to have a appropriate depth level in the trees, we need a way to limit the recursive deepening. My first idea is use the `itertools.count` as counter, for every new split that reaches a given limit, create a leaf. However, for each split, we need a independely counter! The counter (or the information about the depth level) must be recursive too. It will increase the amount of operations. We could use EAFP instead LBYL: Set the max limit as given by the user and let the `try/excpet` do the work.
 
 ```python
@@ -271,6 +272,7 @@ Source: [What Is the Maximum Recursion Depth in Python](https://www.codingem.com
 
 ### TODO v1.1:
 
+- Fix multithread logic. 
 - Mssing data issue:
     - Data Imputation using the Forest (with and without true label).
     - Prediction with missing values, approaches:
