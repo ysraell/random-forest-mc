@@ -11,35 +11,47 @@
 ### TODO v1.0.3:
 
 - Remove multithread option for concurrency. Is not working properly, not stable.
-- For avoid `RecursionError` and to have a appropriate depth level in the trees, we need a way to limit the recursive deepening. My first idea is use the `itertools.count` as counter, for every new split that reaches a given limit, create a leaf. However, for each split, we need a independely counter! The counter (or the information about the depth level) must be recursive too. It will increase the amount of operations. We could use EAFP instead LBYL: Set the max limit as given by the user and let the `try/excpet` do the work.
+- For avoid `RecursionError` and to have a appropriate depth level in the trees, we need a way to limit the recursive deepening. 
 
+E.g.:
 ```python
-import sys
+max_level = 3
+def grow_tree(level=0):
+    if level >= max_level:
+        return 'leaf'
+    return {
+        f"L{level}" : grow_tree(level+1),
+        f"R{level}" : grow_tree(level+1)
+    }
 
-class recursion_depth:
-    def __init__(self, limit):
-        self.limit = limit
-        self.default_limit = sys.getrecursionlimit()
-
-    def __enter__(self):
-        sys.setrecursionlimit(self.limit)
-
-    def __exit__(self, type, value, traceback):
-        sys.setrecursionlimit(self.default_limit)
-
-
-...
-# Inside the function to grow the tree:
-    with recursion_depth(2000):
-        try:
-            pass
-            # growing tree
-        except RecursionError:
-            pass
-            # return leaf
-
+Tree = grow_tree()
 ```
-Check if as a context manager is better, using function with `yield`. Must works with `>=3.7`. 
+Output:
+```json
+{
+    "L0": {
+        "L1": {
+            "L2": "leaf",
+            "R2": "leaf"
+        },
+        "R1": {
+            "L2": "leaf",
+            "R2": "leaf"
+        }
+    },
+    "R0": {
+        "L1": {
+            "L2": "leaf",
+            "R2": "leaf"
+        },
+        "R1": {
+            "L2": "leaf",
+            "R2": "leaf"
+        }
+    }
+}
+```
+
 
 Source: [What Is the Maximum Recursion Depth in Python](https://www.codingem.com/python-maximum-recursion-depth/), Artturi Jalli.
 
