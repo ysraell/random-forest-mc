@@ -1,6 +1,7 @@
+import sys
 from copy import deepcopy
 from random import shuffle
-import sys
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -13,7 +14,7 @@ path_dict = "/tmp/datasets/model_dict.json"
 def test_version():
     from random_forest_mc import __version__
 
-    assert __version__ == "1.0.1"
+    assert __version__ == "1.0.3-dev"
 
 
 # @pytest.mark.skip()
