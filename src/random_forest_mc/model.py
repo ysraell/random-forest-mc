@@ -137,6 +137,18 @@ class DecisionTreeMC(UserDict):
     def tree2dict(self) -> dict:
         return {attr: getattr(self, attr) for attr in self.attr_to_save}
 
+    @property
+    def depths(self) -> List[str]:
+        str_tree_splitted = str(self).split(" ")
+        depths = []
+        while str_tree_splitted:
+            term = str_tree_splitted.pop(0)
+            if term == "'depth':":
+                depths.append(
+                    int(str_tree_splitted.pop(0).split("#")[0].replace("'", ""))
+                )
+        return depths
+
     @staticmethod
     def _useTree(Tree, row: dsRow) -> TypeLeaf:
         def functionalUseTree(subTree):
@@ -445,7 +457,7 @@ class RandomForestMC(UserList):
     def genLeaf(self, ds: pd.DataFrame, depth: int) -> TypeLeaf:
         return {
             "leaf": ds[self.target_col].value_counts(normalize=True).to_dict(),
-            "depth": depth,
+            "depth": f"{depth}#",
         }
 
     # Splits the data during the tree's growth process.
@@ -675,14 +687,9 @@ class RandomForestMC(UserList):
     def sampleClass2trees(self, row: dsRow, Class: TypeClassVal) -> List[TypeTree]:
         return [Tree for Tree in self.data if self.maxProbClas(Tree(row)) == Class]
 
-    def tree2depth(self, Tree) -> List[str]:
-        str_tree_splited = str(Tree).split(" ")
-        depths = []
-        while str_tree_splited:
-            term = str_tree_splited.pop(0)
-            if term == '"depth":':
-                depths.append(int(str_tree_splited.pop(0)))
-        return depths
+    @property
+    def trees2depths(self) -> List[List[str]]:
+        return [tree.depths for tree in self.data]
 
     def tree2feats(self, Tree) -> List[str]:
         set_keys = set(re_feat_name.findall(str(Tree)))

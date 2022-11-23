@@ -1,3 +1,5 @@
+import functools
+import operator
 import sys
 from copy import deepcopy
 from random import shuffle
@@ -6,6 +8,11 @@ import numpy as np
 import pandas as pd
 import pytest
 import pytest_check as check
+
+
+def flat(a):
+    return functools.reduce(operator.iconcat, a, [])
+
 
 sys.path.append("src/")
 path_dict = "/tmp/datasets/model_dict.json"
@@ -102,7 +109,7 @@ def test_RandomForestMC_fit():
     )
     cls.process_dataset(dataset)
     check.is_false(cls.temporal_features)
-    dataset.insert(len(dataset.columns), "coqluna_vazia", "None")
+    dataset.insert(len(dataset.columns), "coluna_vazia", "None")
     columns = {
         col: f"{col}_{i}"
         for i, col in enumerate(dataset.columns)
@@ -153,11 +160,83 @@ def test_RandomForestMC_fitParallel():
     dataset["SibSp"] = dataset["SibSp"].astype(np.uint8)
     dataset["Pclass"] = dataset["Pclass"].astype(str)
     dataset["Fare"] = dataset["Fare"].astype(np.uint32)
-    dataset.insert(len(dataset.columns), "coqluna_vazia", "None")
+    dataset.insert(len(dataset.columns), "coluna_vazia", "None")
     cls = RandomForestMC(
         target_col=params["target_col"], max_discard_trees=20, th_decease_verbose=True
     )
     cls.fitParallel(dataset=dataset, max_workers=4, thread_parallel_method=False)
+
+
+# @pytest.mark.skip()
+def test_RandomForestMC_fit_max_depth():
+    from random_forest_mc.model import RandomForestMC
+    from random_forest_mc.utils import LoadDicts
+
+    dicts = LoadDicts("tests/")
+    dataset_dict = dicts.datasets_metadata
+    ds_name = "titanic"
+    params = dataset_dict[ds_name]
+    dataset = (
+        pd.read_csv(params["csv_path"])[params["ds_cols"] + [params["target_col"]]]
+        .dropna()
+        .reset_index(drop=True)
+    )
+    dataset["Age"] = dataset["Age"].astype(np.uint8)
+    dataset["SibSp"] = dataset["SibSp"].astype(np.uint8)
+    dataset["Pclass"] = dataset["Pclass"].astype(str)
+    dataset["Fare"] = dataset["Fare"].astype(np.uint32)
+    dataset.insert(len(dataset.columns), "coluna_vazia", "None")
+    max_depth = 2
+    cls = RandomForestMC(
+        target_col=params["target_col"], max_discard_trees=20, th_decease_verbose=True
+    )
+    cls.fitParallel(dataset=dataset, max_workers=4, thread_parallel_method=False)
+    max_depth_got = max(flat(cls.trees2depths))
+    check.greater(max_depth_got, max_depth)
+    cls = RandomForestMC(
+        target_col=params["target_col"],
+        max_discard_trees=20,
+        th_decease_verbose=True,
+        max_depth=2,
+    )
+    cls.fitParallel(dataset=dataset, max_workers=4, thread_parallel_method=False)
+    max_depth_got = max(flat(cls.trees2depths))
+    check.equal(max_depth_got, max_depth)
+
+
+# @pytest.mark.skip()
+def test_RandomForestMC_fit_min_samples_split():
+    from random_forest_mc.model import RandomForestMC
+    from random_forest_mc.utils import LoadDicts
+
+    dicts = LoadDicts("tests/")
+    dataset_dict = dicts.datasets_metadata
+    ds_name = "titanic"
+    params = dataset_dict[ds_name]
+    dataset = (
+        pd.read_csv(params["csv_path"])[params["ds_cols"] + [params["target_col"]]]
+        .dropna()
+        .reset_index(drop=True)
+    )
+    dataset["Age"] = dataset["Age"].astype(np.uint8)
+    dataset["SibSp"] = dataset["SibSp"].astype(np.uint8)
+    dataset["Pclass"] = dataset["Pclass"].astype(str)
+    dataset["Fare"] = dataset["Fare"].astype(np.uint32)
+    dataset.insert(len(dataset.columns), "coluna_vazia", "None")
+    cls = RandomForestMC(
+        target_col=params["target_col"], max_discard_trees=20, th_decease_verbose=True
+    )
+    cls.fitParallel(dataset=dataset, max_workers=4, thread_parallel_method=False)
+    max_depth_min_samples_split_1 = max(flat(cls.trees2depths))
+    cls = RandomForestMC(
+        target_col=params["target_col"],
+        max_discard_trees=20,
+        th_decease_verbose=True,
+        min_samples_split=10,
+    )
+    cls.fitParallel(dataset=dataset, max_workers=4, thread_parallel_method=False)
+    max_depth_min_samples_split_10 = max(flat(cls.trees2depths))
+    check.less(max_depth_min_samples_split_10, max_depth_min_samples_split_1)
 
 
 # @pytest.mark.skip()
@@ -402,7 +481,7 @@ def test_RandomForestMC_predictl():
 
 
 # @pytest.mark.skip()
-def test_RandomForestMC_mergeForest_dorpduplicated():
+def test_RandomForestMC_mergeForest_dropduplicated():
     from random_forest_mc.model import RandomForestMC
     from random_forest_mc.utils import LoadDicts
 
