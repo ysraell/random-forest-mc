@@ -1,3 +1,10 @@
+# v1.0.3
+
+    1) Add the parameter `max_depth` to limit how deep the branching will be.
+    2) Add the `min_samples_split`, once get this minimun or less, the leaf is generated instead a new branching.
+    3) Fix the `__let__` that was with `>` instead `<`.
+    4) Remove the threading mode for fit in paralell processing.
+
 # v1.0.2
 
     1) Replace sum with fsum in many parts., from math standard lib. See: https://docs.python.org/3/library/math.html. 
