@@ -127,7 +127,7 @@ class DecisionTreeMC(UserDict):
 
     def __lt__(self, other) -> bool:
         self._check_format(other)
-        return self.survived_score > other.survived_score
+        return self.survived_score < other.survived_score
 
     def __le__(self, other) -> bool:
         self._check_format(other)
