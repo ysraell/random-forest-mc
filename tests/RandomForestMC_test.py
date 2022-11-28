@@ -164,7 +164,7 @@ def test_RandomForestMC_fitParallel():
     cls = RandomForestMC(
         target_col=params["target_col"], max_discard_trees=20, th_decease_verbose=True
     )
-    cls.fitParallel(dataset=dataset, max_workers=4, thread_parallel_method=False)
+    cls.fitParallel(dataset=dataset, max_workers=4)
 
 
 # @pytest.mark.skip()
@@ -190,7 +190,7 @@ def test_RandomForestMC_fit_max_depth():
     cls = RandomForestMC(
         target_col=params["target_col"], max_discard_trees=20, th_decease_verbose=True
     )
-    cls.fitParallel(dataset=dataset, max_workers=4, thread_parallel_method=False)
+    cls.fitParallel(dataset=dataset, max_workers=4)
     max_depth_got = max(flat(cls.trees2depths))
     check.greater(max_depth_got, max_depth)
     cls = RandomForestMC(
@@ -199,7 +199,7 @@ def test_RandomForestMC_fit_max_depth():
         th_decease_verbose=True,
         max_depth=2,
     )
-    cls.fitParallel(dataset=dataset, max_workers=4, thread_parallel_method=False)
+    cls.fitParallel(dataset=dataset, max_workers=4)
     max_depth_got = max(flat(cls.trees2depths))
     check.equal(max_depth_got, max_depth)
 
@@ -226,7 +226,7 @@ def test_RandomForestMC_fit_min_samples_split():
     cls = RandomForestMC(
         target_col=params["target_col"], max_discard_trees=20, th_decease_verbose=True
     )
-    cls.fitParallel(dataset=dataset, max_workers=4, thread_parallel_method=False)
+    cls.fitParallel(dataset=dataset, max_workers=4)
     max_depth_min_samples_split_1 = max(flat(cls.trees2depths))
     cls = RandomForestMC(
         target_col=params["target_col"],
@@ -234,7 +234,7 @@ def test_RandomForestMC_fit_min_samples_split():
         th_decease_verbose=True,
         min_samples_split=10,
     )
-    cls.fitParallel(dataset=dataset, max_workers=4, thread_parallel_method=False)
+    cls.fitParallel(dataset=dataset, max_workers=4)
     max_depth_min_samples_split_10 = max(flat(cls.trees2depths))
     check.less(max_depth_min_samples_split_10, max_depth_min_samples_split_1)
 
@@ -258,7 +258,7 @@ def test_RandomForestMC_fitParallel_featImportance():
     dataset["Pclass"] = dataset["Pclass"].astype(str)
     dataset["Fare"] = dataset["Fare"].astype(np.uint32)
     cls = RandomForestMC(target_col=params["target_col"], max_discard_trees=8)
-    cls.fitParallel(dataset=dataset, max_workers=4, thread_parallel_method=False)
+    cls.fitParallel(dataset=dataset, max_workers=4)
     featCount_stats, featCount_list = cls.featCount()
     featImportance = cls.featImportance()
     featScoreMean = cls.featScoreMean()
@@ -315,7 +315,7 @@ def test_RandomForestMC_fitParallel_sampleClassFeatImportance():
     dataset["Pclass"] = dataset["Pclass"].astype(str)
     dataset["Fare"] = dataset["Fare"].astype(np.uint32)
     cls = RandomForestMC(target_col=target_col, max_discard_trees=8)
-    cls.fitParallel(dataset=dataset, max_workers=4, thread_parallel_method=False)
+    cls.fitParallel(dataset=dataset, max_workers=4)
     for row, Class in [
         (dataset.query(f'{target_col} == "1"').reset_index(drop=True).loc[0], "1"),
         (dataset.query(f'{target_col} == "0"').reset_index(drop=True).loc[0], "0"),
@@ -407,7 +407,7 @@ def test_RandomForestMC_fitParallel_get_best_tree_False():
         max_discard_trees=20,
         th_decease_verbose=True,
     )
-    cls.fitParallel(dataset=dataset, max_workers=4, thread_parallel_method=False)
+    cls.fitParallel(dataset=dataset, max_workers=4)
 
 
 # @pytest.mark.skip()
@@ -586,54 +586,6 @@ def test_RandomForestMC_fullCycle_titanic():
 
 
 # @pytest.mark.skip()
-def test_RandomForestMC_fullCycle_titanic_Parallel_thread():
-    from random_forest_mc.model import RandomForestMC
-    from random_forest_mc.utils import LoadDicts
-
-    dicts = LoadDicts("tests/")
-    dataset_dict = dicts.datasets_metadata
-    ds_name = "titanic"
-    params = dataset_dict[ds_name]
-    dataset = (
-        pd.read_csv(params["csv_path"])[params["ds_cols"] + [params["target_col"]]]
-        .dropna()
-        .reset_index(drop=True)
-    )
-    dataset["Age"] = dataset["Age"].astype(np.uint8)
-    dataset["SibSp"] = dataset["SibSp"].astype(np.uint8)
-    dataset["Pclass"] = dataset["Pclass"].astype(str)
-    dataset["Fare"] = dataset["Fare"].astype(np.uint32)
-    cls = RandomForestMC(
-        n_trees=32, target_col=params["target_col"], max_discard_trees=16
-    )
-    cls.process_dataset(dataset)
-    cls.fitParallel(max_workers=4, thread_parallel_method=True)
-    ds = dataset.sample(n=min(1000, dataset.shape[0]), random_state=51)
-    y_test = ds[params["target_col"]].to_list()
-    cls.setSoftVoting(False)
-    cls.setWeightedTrees(False)
-    y_pred = cls.testForest(ds)
-    accuracy_hard = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
-    cls.setSoftVoting(True)
-    cls.setWeightedTrees(False)
-    y_pred = cls.testForest(ds)
-    accuracy_soft = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
-    cls.setSoftVoting(False)
-    cls.setWeightedTrees(True)
-    y_pred = cls.testForest(ds)
-    accuracy_hard_weighted = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
-    cls.setSoftVoting(True)
-    cls.setWeightedTrees(True)
-    y_pred = cls.testForest(ds)
-    accuracy_soft_weighted = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
-    _ = cls.testForestProbs(ds)
-    check.greater(accuracy_hard, 0.6)
-    check.greater(accuracy_soft, 0.6)
-    check.greater(accuracy_hard_weighted, 0.6)
-    check.greater(accuracy_soft_weighted, 0.6)
-
-
-# @pytest.mark.skip()
 def test_RandomForestMC_fullCycle_titanic_Parallel_process():
     from random_forest_mc.model import RandomForestMC
     from random_forest_mc.utils import LoadDicts
@@ -655,7 +607,7 @@ def test_RandomForestMC_fullCycle_titanic_Parallel_process():
         n_trees=32, target_col=params["target_col"], max_discard_trees=16
     )
     cls.process_dataset(dataset)
-    cls.fitParallel(max_workers=4, thread_parallel_method=False)
+    cls.fitParallel(max_workers=4)
     ds = dataset.sample(n=min(1000, dataset.shape[0]), random_state=51)
     y_test = ds[params["target_col"]].to_list()
     cls.setSoftVoting(False)
@@ -811,7 +763,7 @@ def test_RandomForestMC_fullCycle_creditcard_Parallel_process():
         n_trees=n_trees, target_col=params["target_col"], max_discard_trees=16
     )
     cls.process_dataset(dataset)
-    cls.fitParallel(max_workers=8, thread_parallel_method=False)
+    cls.fitParallel(max_workers=8)
     ds = dataset.sample(n=min(1000, dataset.shape[0]), random_state=51)
     y_test = ds[params["target_col"]].to_list()
     y_pred = cls.testForest(ds)

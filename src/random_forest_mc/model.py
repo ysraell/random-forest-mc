@@ -31,7 +31,6 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 from tqdm.contrib.concurrent import process_map
-from tqdm.contrib.concurrent import thread_map
 
 from .__init__ import __version__
 
@@ -607,7 +606,6 @@ class RandomForestMC(UserList):
         dataset: Optional[pd.DataFrame] = None,
         disable_progress_bar: bool = False,
         max_workers: Optional[int] = None,
-        thread_parallel_method: bool = False,
     ):
 
         if dataset is not None:
@@ -616,13 +614,7 @@ class RandomForestMC(UserList):
         if self.dataset is None:
             raise DatasetNotFound
 
-        # Builds the Forest (training step)
-        if thread_parallel_method:
-            func_map = thread_map
-        else:
-            func_map = process_map
-
-        Tree_list = func_map(
+        Tree_list = process_map(
             self.survivedTree,
             range(0, self.n_trees),
             max_workers=max_workers,

@@ -10,8 +10,8 @@
 
 ### TODO v1.0.3:
 
-- Remove multithread option for concurrency. Is not working properly, not stable.
-- For avoid `RecursionError` and to have a appropriate depth level in the trees, we need a way to limit the recursive deepening. 
+- ~~Remove multithread option for concurrency. Is not working properly, not stable.~~
+- ~~For avoid `RecursionError` and to have a appropriate depth level in the trees, we need a way to limit the recursive deepening.~~
 
 E.g.:
 ```python
@@ -57,7 +57,7 @@ Source: [What Is the Maximum Recursion Depth in Python](https://www.codingem.com
 
 ### TODO v1.1:
 
-- Fix multithread logic. 
+- Fix multithread logic.
 - Mssing data issue:
     - Data Imputation using the Forest (with and without true label).
     - Prediction with missing values, approaches:
