@@ -14,23 +14,23 @@ from collections import UserList
 from hashlib import md5
 from itertools import combinations
 from itertools import count as itertools_count
+from math import fsum
 from numbers import Real
 from random import randint
 from random import sample
 from random import shuffle
+from sys import getrecursionlimit
 from typing import Any
 from typing import Dict
 from typing import List
 from typing import Optional
 from typing import Tuple
 from typing import Union
-from math import fsum
 
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
 from tqdm.contrib.concurrent import process_map
-from tqdm.contrib.concurrent import thread_map
 
 from .__init__ import __version__
 
@@ -136,6 +136,18 @@ class DecisionTreeMC(UserDict):
     def tree2dict(self) -> dict:
         return {attr: getattr(self, attr) for attr in self.attr_to_save}
 
+    @property
+    def depths(self) -> List[str]:
+        str_tree_splitted = str(self).split(" ")
+        depths = []
+        while str_tree_splitted:
+            term = str_tree_splitted.pop(0)
+            if term == "'depth':":
+                depths.append(
+                    int(str_tree_splitted.pop(0).split("#")[0].replace("'", ""))
+                )
+        return depths
+
     @staticmethod
     def _useTree(Tree, row: dsRow) -> TypeLeaf:
         def functionalUseTree(subTree):
@@ -210,6 +222,8 @@ class RandomForestMC(UserList):
         th_decease_verbose: bool = False,
         temporal_features: bool = False,
         split_with_replace: bool = False,
+        max_depth: Optional[int] = None,
+        min_samples_split: int = 1,
     ) -> None:
         self.__version__ = __version__
         self.version = __version__
@@ -255,9 +269,12 @@ class RandomForestMC(UserList):
             "type_of_cols",
             "target_col",
             "class_vals",
+            "min_samples_split",
         ]
         self.soft_voting = False
         self.weighted_tree = False
+        self.max_depth = getrecursionlimit() if max_depth is None else int(max_depth)
+        self.min_samples_split = int(min_samples_split)
 
     def __repr__(self) -> str:
         txt = "RandomForestMC(len(Forest)={},n_trees={},model_version={},module_version={})"
@@ -436,8 +453,11 @@ class RandomForestMC(UserList):
         return sorted(out, key=lambda x: int(x.split("_")[-1]))
 
     # Set the leaf of the descion tree.
-    def genLeaf(self, ds: pd.DataFrame) -> TypeLeaf:
-        return {"leaf": ds[self.target_col].value_counts(normalize=True).to_dict()}
+    def genLeaf(self, ds: pd.DataFrame, depth: int) -> TypeLeaf:
+        return {
+            "leaf": ds[self.target_col].value_counts(normalize=True).to_dict(),
+            "depth": f"{depth}#",
+        }
 
     # Splits the data during the tree's growth process.
     def splitData(
@@ -477,10 +497,12 @@ class RandomForestMC(UserList):
     ) -> DecisionTreeMC:
 
         # Functional process.
-        def growTree(F: List[str], ds: pd.DataFrame) -> Union[TypeTree, TypeLeaf]:
+        def growTree(
+            F: List[str], ds: pd.DataFrame, depth: int = 1
+        ) -> Union[TypeTree, TypeLeaf]:
 
-            if ds[self.target_col].nunique() == 1:
-                return self.genLeaf(ds)
+            if (depth >= self.max_depth) or (ds[self.target_col].nunique() == 1):
+                return self.genLeaf(ds, depth)
 
             Pass = False
             first_feat = F[0]
@@ -488,19 +510,20 @@ class RandomForestMC(UserList):
                 feat = F[0]
                 ds_a, ds_b, split_val = self.splitData(feat, ds)
                 F.append(F.pop(0))
-                if (ds_a.shape[0] > 0) and (ds_b.shape[0] > 0):
+                if (ds_a.shape[0] >= self.min_samples_split) and (
+                    ds_b.shape[0] >= self.min_samples_split
+                ):
                     Pass = True
-                else:
-                    if first_feat == F[0]:
-                        return self.genLeaf(ds)
+                elif first_feat == F[0]:
+                    return self.genLeaf(ds, depth)
 
             return {
                 feat: {
                     "split": {
                         "feat_type": self.type_of_cols[feat],
                         "split_val": split_val,
-                        ">=": growTree(F[:], ds_a),
-                        "<": growTree(F[:], ds_b),
+                        ">=": growTree(F[:], ds_a, depth + 1),
+                        "<": growTree(F[:], ds_b, depth + 1),
                     }
                 }
             }
@@ -583,7 +606,6 @@ class RandomForestMC(UserList):
         dataset: Optional[pd.DataFrame] = None,
         disable_progress_bar: bool = False,
         max_workers: Optional[int] = None,
-        thread_parallel_method: bool = False,
     ):
 
         if dataset is not None:
@@ -592,13 +614,7 @@ class RandomForestMC(UserList):
         if self.dataset is None:
             raise DatasetNotFound
 
-        # Builds the Forest (training step)
-        if thread_parallel_method:
-            func_map = thread_map
-        else:
-            func_map = process_map
-
-        Tree_list = func_map(
+        Tree_list = process_map(
             self.survivedTree,
             range(0, self.n_trees),
             max_workers=max_workers,
@@ -662,6 +678,10 @@ class RandomForestMC(UserList):
 
     def sampleClass2trees(self, row: dsRow, Class: TypeClassVal) -> List[TypeTree]:
         return [Tree for Tree in self.data if self.maxProbClas(Tree(row)) == Class]
+
+    @property
+    def trees2depths(self) -> List[List[str]]:
+        return [tree.depths for tree in self.data]
 
     def tree2feats(self, Tree) -> List[str]:
         set_keys = set(re_feat_name.findall(str(Tree)))
