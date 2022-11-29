@@ -559,19 +559,18 @@ class RandomForestMC(UserList):
                         max_th_val = th_val
             else:
                 # Coverage trick!
-                _ = None
+                max_th_val = th_val
                 break
             if next(dropped_trees_counter) >= self.max_discard_trees:
                 if self.get_best_tree:
                     Tree = max_Tree
-                    Threshold_for_drop = max_th_val
                     break
                 else:
                     Threshold_for_drop -= self.delta_th
-                log.info("New threshold for drop: {:.4f}".format(Threshold_for_drop))
+                    log.info("New threshold for drop: {:.4f}".format(survived_score))
 
-        log.info("Got best tree: {:.4f}".format(Threshold_for_drop))
-        Tree.survived_score = Threshold_for_drop
+        log.info("Got best tree: {:.4f}".format(max_th_val))
+        Tree.survived_score = max_th_val
         Tree.features = self.feature_cols
         Tree.used_features = self.tree2feats(Tree)
         return Tree
