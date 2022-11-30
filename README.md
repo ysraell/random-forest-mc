@@ -96,7 +96,7 @@ row = ds.loc[0]
 cls.predict(row)
 {'0': 0.75, '1': 0.25}
 
-cls.predict(dataset.sample(n=10))
+cls.predict(ds.sample(n=10))
 ['0', '1', ...]
 
 # Saving model:
