@@ -430,7 +430,7 @@ class RandomForestMC(UserList):
                 .index.to_list()
             )
             idx_train.extend(idx_list[: self.batch_train_pclass])
-            idx_val.extend(idx_list[self.batch_train_pclass])
+            idx_val.extend(idx_list[self.batch_train_pclass:])
 
         ds_T, ds_V = (
             self.dataset.loc[idx_train].reset_index(drop=True),
