@@ -430,7 +430,7 @@ class RandomForestMC(UserList):
                 .index.to_list()
             )
             idx_train.extend(idx_list[: self.batch_train_pclass])
-            idx_val.extend(idx_list[self.batch_train_pclass :])
+            idx_val.extend(idx_list[self.batch_train_pclass])
 
         ds_T, ds_V = (
             self.dataset.loc[idx_train].reset_index(drop=True),
@@ -567,7 +567,9 @@ class RandomForestMC(UserList):
                     break
                 else:
                     Threshold_for_drop -= self.delta_th
-                    log.info("New threshold for drop: {:.4f}".format(survived_score))
+                    log.info(
+                        "New threshold for drop: {:.4f}".format(Threshold_for_drop)
+                    )
 
         log.info("Got best tree: {:.4f}".format(max_th_val))
         Tree.survived_score = max_th_val
