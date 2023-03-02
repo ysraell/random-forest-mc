@@ -9,5 +9,7 @@ for bziped2 in `ls tests/datasets/*.bz2`;
         bunzip2 -k -c $bziped2 >/tmp/datasets/${csved}
     done
 
+mkdir -p /tmp/datasets/load_josn_fail
+echo "" >/tmp/datasets/load_josn_fail/empty.json
 
 #EOF

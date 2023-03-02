@@ -41,6 +41,14 @@ def test_LoadDicts_content():
 
 
 # @pytest.mark.skip()
+def test_LoadDicts_fail_json_empyt():
+    from random_forest_mc.utils import LoadDicts
+
+    with pytest.raises(Exception):
+        _ = LoadDicts("/tmp/datasets/load_josn_fail")
+
+
+# @pytest.mark.skip()
 def test_RandomForestMC():
     from random_forest_mc.model import RandomForestMC
 
