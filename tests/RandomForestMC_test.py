@@ -60,10 +60,10 @@ def test_LoadDicts_load_json_empty():
 
 
 # @pytest.mark.skip()
-def test_LoadDicts_load_json_id():
+def test_LoadDicts_load_json_keyword():
     from random_forest_mc.utils import LoadDicts
 
-    ld = LoadDicts("../../../tmp/datasets/load_json_id")
+    ld = LoadDicts("../../../tmp/datasets/load_json_keyword")
     assert len(ld.not_attr) > 0
 
 
