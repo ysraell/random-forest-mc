@@ -10,6 +10,7 @@ import pytest
 import pytest_check as check
 from json import JSONDecodeError
 
+
 def flat(a):
     return functools.reduce(operator.iconcat, a, [])
 
@@ -44,17 +45,19 @@ def test_LoadDicts_content():
 def test_LoadDicts_load_json_fail():
     from random_forest_mc.utils import LoadDicts
 
-    _ = LoadDicts("../../../tmp/datasets/load_json_fail", ignore_errors = True)
+    _ = LoadDicts("../../../tmp/datasets/load_json_fail", ignore_errors=True)
     with pytest.raises(JSONDecodeError):
         _ = LoadDicts("../../../tmp/datasets/load_json_fail")
+
 
 # @pytest.mark.skip()
 def test_LoadDicts_load_json_empty():
     from random_forest_mc.utils import LoadDicts
 
-    _ = LoadDicts("../../../tmp/datasets/load_json_empty", ignore_errors = True)
+    _ = LoadDicts("../../../tmp/datasets/load_json_empty", ignore_errors=True)
     with pytest.raises(JSONDecodeError):
         _ = LoadDicts("../../../tmp/datasets/load_json_empty")
+
 
 # @pytest.mark.skip()
 def test_LoadDicts_load_json_id():
@@ -62,6 +65,7 @@ def test_LoadDicts_load_json_id():
 
     ld = LoadDicts("../../../tmp/datasets/load_json_id")
     assert len(ld.not_attr) > 0
+
 
 # @pytest.mark.skip()
 def test_RandomForestMC():
