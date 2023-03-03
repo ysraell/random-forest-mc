@@ -42,12 +42,12 @@ def test_LoadDicts_content():
 
 
 # @pytest.mark.skip()
-def test_LoadDicts_load_json_fail():
+def test_LoadDicts_load_csv_like():
     from random_forest_mc.utils import LoadDicts
 
-    _ = LoadDicts("../../../tmp/datasets/load_json_fail", ignore_errors=True)
+    _ = LoadDicts("../../../tmp/datasets/load_csv_like", ignore_errors=True)
     with pytest.raises(JSONDecodeError):
-        _ = LoadDicts("../../../tmp/datasets/load_json_fail")
+        _ = LoadDicts("../../../tmp/datasets/load_csv_like")
 
 
 # @pytest.mark.skip()
