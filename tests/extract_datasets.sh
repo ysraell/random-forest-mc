@@ -15,7 +15,7 @@ echo "" >/tmp/datasets/load_json_empty/empty.json
 mkdir -p /tmp/datasets/load_json_csv_like
 echo 'a,"!WE@",3' >/tmp/datasets/load_json_csv_like/csv_like.json
 
-mkdir -p /tmp/datasets/load_json_csv_like
-echo '{"a": 1}' >/tmp/datasets/load_json_csv_like/csv_like.json
+mkdir -p /tmp/datasets/load_json_keyword
+echo '{"a": 1}' >/tmp/datasets/load_json_keyword/True.json
 
 #EOF
