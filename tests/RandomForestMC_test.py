@@ -44,6 +44,7 @@ def test_LoadDicts_content():
 def test_LoadDicts_load_json_fail():
     from random_forest_mc.utils import LoadDicts
 
+    _ = LoadDicts("../../../tmp/datasets/load_json_fail", ignore_errors = True)
     with pytest.raises(JSONDecodeError):
         _ = LoadDicts("../../../tmp/datasets/load_json_fail")
 
@@ -51,6 +52,7 @@ def test_LoadDicts_load_json_fail():
 def test_LoadDicts_load_json_empty():
     from random_forest_mc.utils import LoadDicts
 
+    _ = LoadDicts("../../../tmp/datasets/load_json_empty", ignore_errors = True)
     with pytest.raises(JSONDecodeError):
         _ = LoadDicts("../../../tmp/datasets/load_json_empty")
 
