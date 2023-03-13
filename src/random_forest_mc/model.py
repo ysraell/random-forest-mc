@@ -52,7 +52,7 @@ TypeTree = Dict
 
 # Value type of classes
 # TypeClassVal: TypeAlias = Any
-TypeClassVal = Any
+TypeClassVal = Any  # !Review if is not forced to be str!
 
 # Type of the leaf
 # TypeLeaf: TypeAlias = Dict[TypeClassVal, float]
@@ -161,16 +161,12 @@ class DecisionTreeMC(UserDict):
                     functionalUseTree(tree_node_split["<"]),
                 ]
             val = row[node]
-            if tree_node_split["feat_type"] == "numeric":
-                if val >= tree_node_split["split_val"]:
-                    return functionalUseTree(tree_node_split[">="])
-                else:
-                    return functionalUseTree(tree_node_split["<"])
-            else:
-                if val == tree_node_split["split_val"]:
-                    return functionalUseTree(tree_node_split[">="])
-                else:
-                    return functionalUseTree(tree_node_split["<"])
+            if val == tree_node_split["split_val"] or (
+                tree_node_split["feat_type"] == "numeric"
+                and val > tree_node_split["split_val"]
+            ):
+                return functionalUseTree(tree_node_split[">="])
+            return functionalUseTree(tree_node_split["<"])
 
         return functionalUseTree(Tree)
 
