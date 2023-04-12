@@ -9,6 +9,7 @@
 
 ### TODO v1.1:
 
+- Add [`memray`](https://github.com/bloomberg/memray) in the automated test process. 
 - Fix multithread logic.
 - Mssing data issue:
     - Data Imputation using the Forest (with and without true label).
