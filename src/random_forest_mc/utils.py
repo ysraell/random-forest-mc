@@ -62,6 +62,9 @@ class LoadDicts:
         for item in self.List:
             yield self.Dict[item]
 
+    def __get__(self, key):
+        return self.Dict[key]
+
     def __repr__(self) -> str:
         return "LoadDicts: {}".format(", ".join(self.List))
 
