@@ -52,6 +52,16 @@ class LoadDicts:
                     raise e
                 print(e)
 
+    def __len__(self):
+        return len(self.List)
+
+    def __getitem__(self, index):
+        return self.Dict[self.List[index]]
+
+    def __next__(self):
+        for item in self.List:
+            yield self.Dict[item]
+
     def __repr__(self) -> str:
         return "LoadDicts: {}".format(", ".join(self.List))
 

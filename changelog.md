@@ -3,6 +3,7 @@
     1) fix: `survived_score` getting wrong value. When the Tree is not dropped, the value got is `survived_score` and not th_val. Is not crictical, because generally the trees require many trees, so the score is got correctly.
     2) Add qaulity checks in `utils.LoadDicts`.
     3) Add input parameter `ignore_errors` in `utils.LoadDicts`.
+    4) Add iterable protocol in `utils.LoadDicts`.
 
 # v1.0.3
 
