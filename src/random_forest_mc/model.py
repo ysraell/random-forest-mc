@@ -15,6 +15,7 @@ from hashlib import md5
 from itertools import combinations
 from itertools import count as itertools_count
 from math import fsum
+from numbers import Number
 from numbers import Real
 from random import randint
 from random import sample
@@ -58,6 +59,10 @@ TypeClassVal = Any  # !Review if is not forced to be str!
 # TypeLeaf: TypeAlias = Dict[TypeClassVal, float]
 TypeLeaf = Dict[TypeClassVal, float]
 
+# How to format a dict with values to fill the missing ones
+featName = str
+featValue = Union[str, Number]
+dictValues = Dict[featName: featValue]
 
 class DatasetNotFound(Exception):
     """Exception raised for dataset not found.
@@ -81,8 +86,8 @@ class DecisionTreeMC(UserDict):
         data: dict,
         class_vals: List[TypeClassVal],
         survived_score: Optional[Real] = None,
-        features: Optional[List[str]] = None,
-        used_features: Optional[List[str]] = None,
+        features: Optional[List[featName]] = None,
+        used_features: Optional[List[featName]] = None,
     ):
         self.data = data
         self.class_vals = class_vals
@@ -273,9 +278,9 @@ class RandomForestMC(UserList):
         self.min_samples_split = int(min_samples_split)
 
     def __repr__(self) -> str:
-        txt = "RandomForestMC(len(Forest)={},n_trees={},model_version={},module_version={})"
+        txt = "{}(len(Forest)={},n_trees={},model_version={},module_version={})"
         return txt.format(
-            len(self.data), self.n_trees, self.model_version, self.version
+            self.__class__.__name__, len(self.data), self.n_trees, self.model_version, self.version
         )
 
     def __eq__(self, other):
@@ -440,7 +445,7 @@ class RandomForestMC(UserList):
         return ds_T, ds_V
 
     # Sample the features.
-    def sampleFeats(self, feature_cols: List[str]) -> List[str]:
+    def sampleFeats(self, feature_cols: List[str]) -> List[featName]:
         feature_cols.remove(self.target_col)
         n_samples = randint(self.min_feature, self.max_feature)  # noqa: S311
         out = sample(feature_cols, min(len(feature_cols), n_samples))
@@ -489,12 +494,12 @@ class RandomForestMC(UserList):
             return (ds.loc[1].to_frame().T, ds.loc[0].to_frame().T, ds[feat].loc[1])
 
     def plantTree(
-        self, ds_train: pd.DataFrame, feature_list: List[str]
+        self, ds_train: pd.DataFrame, feature_list: List[featName]
     ) -> DecisionTreeMC:
 
         # Functional process.
         def growTree(
-            F: List[str], ds: pd.DataFrame, depth: int = 1
+            F: List[featName], ds: pd.DataFrame, depth: int = 1
         ) -> Union[TypeTree, TypeLeaf]:
 
             if (depth >= self.max_depth) or (ds[self.target_col].nunique() == 1):
@@ -680,7 +685,7 @@ class RandomForestMC(UserList):
     def trees2depths(self) -> List[List[str]]:
         return [tree.depths for tree in self.data]
 
-    def tree2feats(self, Tree) -> List[str]:
+    def tree2feats(self, Tree) -> List[featName]:
         set_keys = set(re_feat_name.findall(str(Tree)))
         set_feat_keys = set([f"'{f}':" for f in self.feature_cols])
         found_feat_keys = set_keys.intersection(set_feat_keys)
@@ -701,7 +706,7 @@ class RandomForestMC(UserList):
 
     def featImportance(
         self, Forest: Optional[List[TypeTree]] = None
-    ) -> Dict[str, float]:
+    ) -> Dict[featName, float]:
         if Forest is None:
             Forest = self.data
         n_trees = len(Forest)
@@ -712,12 +717,12 @@ class RandomForestMC(UserList):
 
     def sampleClassFeatImportance(
         self, row: dsRow, Class: TypeClassVal
-    ) -> Dict[str, float]:
+    ) -> Dict[featName, float]:
         return self.featImportance(self.sampleClass2trees(row=row, Class=Class))
 
     def featScoreMean(
         self, Forest: Optional[List[TypeTree]] = None
-    ) -> Dict[str, float]:
+    ) -> Dict[featName, float]:
         if Forest is None:
             Forest = self.data
         # Hadouken!!
@@ -737,12 +742,12 @@ class RandomForestMC(UserList):
 
     def sampleClassFeatScoreMean(
         self, row: dsRow, Class: TypeClassVal
-    ) -> Dict[str, float]:
+    ) -> Dict[featName, float]:
         return self.featScoreMean(self.sampleClass2trees(row=row, Class=Class))
 
     def featPairImportance(
         self, disable_progress_bar=False, Forest: Optional[List[TypeTree]] = None
-    ) -> Dict[Tuple[str, str], float]:
+    ) -> Dict[Tuple[featName, featName], float]:
         if Forest is None:
             Forest = self.data
         pair_count = defaultdict(int)
@@ -758,7 +763,7 @@ class RandomForestMC(UserList):
 
     def sampleClassFeatPairImportance(
         self, row: dsRow, Class: TypeClassVal
-    ) -> Dict[Tuple[str, str], float]:
+    ) -> Dict[Tuple[featName, featName], float]:
         return self.featPairImportance(self.sampleClass2trees(row=row, Class=Class))
 
     def featCorrDataFrame(
