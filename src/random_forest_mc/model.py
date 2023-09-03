@@ -62,7 +62,7 @@ TypeLeaf = Dict[TypeClassVal, float]
 # How to format a dict with values to fill the missing ones
 featName = str
 featValue = Union[str, Number]
-dictValues = Dict[featName: featValue]
+dictValues = Dict[featName, featValue]
 
 class DatasetNotFound(Exception):
     """Exception raised for dataset not found.
