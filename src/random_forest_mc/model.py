@@ -64,6 +64,9 @@ featName = str
 featValue = Union[str, Number]
 dictValues = Dict[featName, featValue]
 
+# Row (dsRow) or Matrix (Pandas DataFrame)
+rowOrMatrix = Union[dsRow, pd.DataFrame]
+
 
 # Custom exception when missing values not found
 class MissingValuesNotFound(Exception):
@@ -91,6 +94,21 @@ class DatasetNotFound(Exception):
     def __init__(
         self,
         message="Dataset not found! Please, give a dataset for functions fit() or process_dataset().",
+    ):
+        super().__init__(message)
+
+
+# Custom exception when no dataset given
+class dictValuesAllFeaturesMissing(Exception):
+    """Exception raised when all features in 'dict_values' are not found in the trained model.
+
+    Attributes:
+        message -- explanation of the error
+    """
+
+    def __init__(
+        self,
+        message="All features in the given dictionary 'dict_values' are not found int he trained model (forest).",
     ):
         super().__init__(message)
 
@@ -372,12 +390,12 @@ class RandomForestMC(UserList):
         )
 
     def predict_proba(
-        self, row_or_matrix: Union[dsRow, pd.DataFrame], prob_output: bool = True
+        self, row_or_matrix: rowOrMatrix, prob_output: bool = True
     ) -> Union[TypeLeaf, List[TypeClassVal], List[TypeLeaf]]:
         return self.predict(row_or_matrix, prob_output)
 
     def predict(
-        self, row_or_matrix: Union[dsRow, pd.DataFrame], prob_output: bool = False
+        self, row_or_matrix: rowOrMatrix, prob_output: bool = False
     ) -> Union[TypeLeaf, List[TypeClassVal], List[TypeLeaf]]:
         if isinstance(row_or_matrix, dsRow):
             return self.useForest(row_or_matrix)
@@ -883,12 +901,7 @@ class RandomForestMC(UserList):
             return None
         return pd.concat(list_out, axis=1).transpose().reset_index(drop=True)
 
-    def predictMissingValues(
-        self,
-        row_or_matrix: Union[dsRow, pd.DataFrame],
-        dict_values: dictValues,
-        use_all_Tress: bool = True,
-    ):
+    def _validationMissingValues(self, dict_values: dictValues) -> None:
         used_features = set()
         for Tree in self:
             used_features |= set(Tree.used_features)
@@ -898,6 +911,12 @@ class RandomForestMC(UserList):
             log.warning(
                 f"The Forest model have not the following feature(s): [{_tmp}]."
             )
+        if len(set(dict_values.keys())) == len(not_have_feats):
+            raise dictValuesAllFeaturesMissing
+
+    def _genFilledDataMissing(
+        self, row_or_matrix: rowOrMatrix, dict_values: dictValues
+    ) -> Tuple[pd.DataFrame, pd.DataFrame]:
 
         if isinstance(row_or_matrix, dsRow):
             df_data_miss = self._fill_row_missing(row_or_matrix, dict_values)
@@ -918,21 +937,30 @@ class RandomForestMC(UserList):
                 raise MissingValuesNotFound
             df_data_miss = pd.concat(df_data_miss).reset_index(drop=True)
 
+        return row_or_matrix, df_data_miss
+
+    def predictMissingValues(self, row_or_matrix: rowOrMatrix, dict_values: dictValues):
+
+        self._validationMissingValues(dict_values)
+
+        row_or_matrix, df_data_miss = self._genFilledDataMissing(
+            row_or_matrix, dict_values
+        )
+
         df_predict = pd.DataFrame.from_dict(self.predict_proba(df_data_miss))
         df_predict = pd.concat([df_data_miss, df_predict], axis=1)
 
         out = []
         for i, row in row_or_matrix.reset_index(drop=True).iterrows():
-            conds = []
+
             missing_cols = []
-            for col in dict_values.keys():
+            cols = list(dict_values.keys())
+            cond = df_data_miss[cols[0]] == row[cols[0]]
+            for col in cols[1:]:
                 if not pd.isna(row[col]):
-                    conds.append(df_data_miss[col] == row[col])
-                else:
-                    missing_cols.append(col)
-            cond = conds.pop()
-            while conds:
-                cond = cond & conds.pop()
+                    cond = cond & (df_data_miss[col] == row[col])
+                    continue
+                missing_cols.append(col)
 
             df_tmp = df_predict.loc[cond]
             df_tmp = (
