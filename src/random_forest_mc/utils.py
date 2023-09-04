@@ -51,10 +51,10 @@ class LoadDicts:
                 if not ignore_errors:
                     raise e
                 print(e)
-                
+
     def __len__(self):
         return len(self.List)
-    
+
     def items(self):
         for item in self.List:
             yield item, self.Dict[item]

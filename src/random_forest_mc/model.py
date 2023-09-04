@@ -64,6 +64,23 @@ featName = str
 featValue = Union[str, Number]
 dictValues = Dict[featName, featValue]
 
+
+# Custom exception when missing values not found
+class MissingValuesNotFound(Exception):
+    """Exception raised for missing values not found.
+
+    Attributes:
+        message -- explanation of the error
+    """
+
+    def __init__(
+        self,
+        message="Dataset or row without missing values! Please, give a dataset or row with missing values using 'NaN'.",
+    ):
+        super().__init__(message)
+
+
+# Custom exception when no dataset given
 class DatasetNotFound(Exception):
     """Exception raised for dataset not found.
 
@@ -79,6 +96,20 @@ class DatasetNotFound(Exception):
 
 
 class DecisionTreeMC(UserDict):
+    """Tree for decision. Can be used alone.
+    Is originally designed to be trained and used
+    with the class 'RandomForestMC'.
+
+    Args:
+        UserDict (_type_): _description_
+
+    Raises:
+        TypeError: _description_
+
+    Returns:
+        _type_: _description_
+    """
+
     typer_error_msg = typer_error_msg.format("DecisionTreeMC")
 
     def __init__(
@@ -88,7 +119,16 @@ class DecisionTreeMC(UserDict):
         survived_score: Optional[Real] = None,
         features: Optional[List[featName]] = None,
         used_features: Optional[List[featName]] = None,
-    ):
+    ) -> None:
+        """_summary_
+
+        Args:
+            data (dict): _description_
+            class_vals (List[TypeClassVal]): _description_
+            survived_score (Optional[Real], optional): _description_. Defaults to None.
+            features (Optional[List[featName]], optional): _description_. Defaults to None.
+            used_features (Optional[List[featName]], optional): _description_. Defaults to None.
+        """
         self.data = data
         self.class_vals = class_vals
         self.survived_score = survived_score
@@ -206,6 +246,24 @@ class DecisionTreeMC(UserDict):
 
 
 class RandomForestMC(UserList):
+    """_summary_
+
+    Args:
+        UserList (_type_): _description_
+
+    Raises:
+        TypeError: _description_
+        TypeError: _description_
+        TypeError: _description_
+        ValueError: _description_
+        ValueError: _description_
+        DatasetNotFound: _description_
+        DatasetNotFound: _description_
+
+    Returns:
+        _type_: _description_
+    """
+
     typer_error_msg = typer_error_msg.format("RandomForestMC")
 
     def __init__(
@@ -226,6 +284,25 @@ class RandomForestMC(UserList):
         max_depth: Optional[int] = None,
         min_samples_split: int = 1,
     ) -> None:
+        """_summary_
+
+        Args:
+            n_trees (int, optional): _description_. Defaults to 16.
+            target_col (str, optional): _description_. Defaults to "target".
+            batch_train_pclass (int, optional): _description_. Defaults to 10.
+            batch_val_pclass (int, optional): _description_. Defaults to 10.
+            max_discard_trees (int, optional): _description_. Defaults to 10.
+            delta_th (float, optional): _description_. Defaults to 0.1.
+            th_start (float, optional): _description_. Defaults to 0.9.
+            get_best_tree (bool, optional): _description_. Defaults to True.
+            min_feature (Optional[int], optional): _description_. Defaults to None.
+            max_feature (Optional[int], optional): _description_. Defaults to None.
+            th_decease_verbose (bool, optional): _description_. Defaults to False.
+            temporal_features (bool, optional): _description_. Defaults to False.
+            split_with_replace (bool, optional): _description_. Defaults to False.
+            max_depth (Optional[int], optional): _description_. Defaults to None.
+            min_samples_split (int, optional): _description_. Defaults to 1.
+        """
         self.__version__ = __version__
         self.version = __version__
         self.model_version = __version__
@@ -280,7 +357,11 @@ class RandomForestMC(UserList):
     def __repr__(self) -> str:
         txt = "{}(len(Forest)={},n_trees={},model_version={},module_version={})"
         return txt.format(
-            self.__class__.__name__, len(self.data), self.n_trees, self.model_version, self.version
+            self.__class__.__name__,
+            len(self.data),
+            self.n_trees,
+            self.model_version,
+            self.version,
         )
 
     def __eq__(self, other):
@@ -787,6 +868,82 @@ class RandomForestMC(UserList):
         self, row: dsRow, Class: TypeClassVal
     ) -> pd.DataFrame:
         return self.featCorrDataFrame(self.sampleClass2trees(row=row, Class=Class))
+
+    @staticmethod
+    def _fill_row_missing(row: dsRow, dict_values: dictValues) -> pd.DataFrame:
+        list_out = []
+        for col, vals in dict_values.items():
+            if pd.isna(row[col]):
+                for val in vals:
+                    _row = row.copy()
+                    _row[col] = val
+                    list_out.append(_row)
+        if len(list_out) == 0:
+            log.warning("Filling rows process: found row without missing data!")
+            return None
+        return pd.concat(list_out, axis=1).transpose().reset_index(drop=True)
+
+    def predictMissingValues(
+        self,
+        row_or_matrix: Union[dsRow, pd.DataFrame],
+        dict_values: dictValues,
+        use_all_Tress: bool = True,
+    ):
+        used_features = set()
+        for Tree in self:
+            used_features |= set(Tree.used_features)
+        not_have_feats = set(dict_values.keys()) - used_features
+        if not_have_feats:
+            _tmp = ", ".join(not_have_feats)
+            log.warning(
+                f"The Forest model have not the following feature(s): [{_tmp}]."
+            )
+
+        if isinstance(row_or_matrix, dsRow):
+            df_data_miss = self._fill_row_missing(row_or_matrix, dict_values)
+            if df_data_miss is None:
+                raise MissingValuesNotFound
+            row_or_matrix = (
+                pd.DataFrame(row_or_matrix).transpose().reset_index(drop=True)
+            )
+
+        elif isinstance(row_or_matrix, pd.DataFrame):
+            row_or_matrix = row_or_matrix.reset_index(drop=True)
+            df_data_miss = []
+            for _, row in row_or_matrix.iterrows():
+                _tmp = self._fill_row_missing(row, dict_values)
+                if _tmp is not None:
+                    df_data_miss.append(_tmp)
+            if len(df_data_miss) == 0:
+                raise MissingValuesNotFound
+            df_data_miss = pd.concat(df_data_miss).reset_index(drop=True)
+
+        df_predict = pd.DataFrame.from_dict(self.predict_proba(df_data_miss))
+        df_predict = pd.concat([df_data_miss, df_predict], axis=1)
+
+        out = []
+        for i, row in row_or_matrix.reset_index(drop=True).iterrows():
+            conds = []
+            missing_cols = []
+            for col in dict_values.keys():
+                if not pd.isna(row[col]):
+                    conds.append(df_data_miss[col] == row[col])
+                else:
+                    missing_cols.append(col)
+            cond = conds.pop()
+            while conds:
+                cond = cond & conds.pop()
+
+            df_tmp = df_predict.loc[cond]
+            df_tmp = (
+                pd.concat([pd.DataFrame(row).transpose(), df_tmp])
+                .drop_duplicates()
+                .reset_index(drop=True)
+            )
+            df_tmp["row_id"] = i
+            out.append(df_tmp)
+
+        return pd.concat(out).reset_index(drop=True)
 
 
 # EOF
