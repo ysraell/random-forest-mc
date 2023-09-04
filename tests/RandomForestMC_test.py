@@ -22,7 +22,7 @@ path_dict = "/tmp/datasets/model_dict.json"
 def test_version():
     from random_forest_mc import __version__
 
-    assert __version__ == "1.0.3"
+    assert __version__ == "1.1.0"
 
 
 # @pytest.mark.skip()
