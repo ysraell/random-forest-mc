@@ -855,6 +855,9 @@ def test_RandomForestMC_predictMissingValues():
     check.greater(len(df_tmp), 0)
 
     with pytest.raises(MissingValuesNotFound):
+        _ = cls.predictMissingValues(dataset.loc[0], dict_values)
+
+    with pytest.raises(MissingValuesNotFound):
         _ = cls.predictMissingValues(dataset.sample(n=20), dict_values)
 
     _dict_values = {"Not Feature": [1, 2, 3], "Not Feature 2": [4, 5, 6]}
