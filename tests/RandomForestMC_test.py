@@ -801,7 +801,11 @@ def test_RandomForestMC_fullCycle_creditcard_Parallel_process():
 
 # @pytest.mark.skip()
 def test_RandomForestMC_predictMissingValues():
-    from random_forest_mc.model import RandomForestMC, MissingValuesNotFound, dictValuesAllFeaturesMissing
+    from random_forest_mc.model import (
+        RandomForestMC,
+        MissingValuesNotFound,
+        dictValuesAllFeaturesMissing,
+    )
     from random_forest_mc.utils import LoadDicts
 
     # Load basics:
@@ -822,22 +826,24 @@ def test_RandomForestMC_predictMissingValues():
     target_col = params["target_col"]
     cls = RandomForestMC(target_col=target_col)
     cls.fit(dataset)
-    
+
     # Create some missing data
     df_tmp = dataset.sample(frac=0.2).reset_index(drop=True)
-    mask_random = np.random.choice([True, False], size=df_tmp[ds_cols].shape, p=[0.7, 0.3])
+    mask_random = np.random.choice(
+        [True, False], size=df_tmp[ds_cols].shape, p=[0.7, 0.3]
+    )
     dataset_missing_values = df_tmp[ds_cols].mask(~mask_random)
     dataset_missing_values[target_col] = df_tmp[target_col]
-    
+
     dict_values = {col: dataset[col].unique().tolist() for col in ds_cols}
-    
+
     for i, row in dataset_missing_values.iterrows():
         if row.isna().any():
             break
     df_tmp = cls.predictMissingValues(row, dict_values)
     check.is_instance(df_tmp, pd.DataFrame)
     check.greater(len(df_tmp), 0)
-    
+
     while True:
         df_tmp = dataset_missing_values.sample(n=20)
         if df_tmp.isna().any().any():
@@ -845,13 +851,13 @@ def test_RandomForestMC_predictMissingValues():
     df_tmp = cls.predictMissingValues(df_tmp, dict_values)
     check.is_instance(df_tmp, pd.DataFrame)
     check.greater(len(df_tmp), 0)
-    
+
     with pytest.raises(MissingValuesNotFound):
         _ = cls.predictMissingValues(dataset.sample(n=20), dict_values)
- 
-    _dict_values = {'Not Feature': [1, 2, 3], 'Not Feature 2': [4, 5, 6]}
+
+    _dict_values = {"Not Feature": [1, 2, 3], "Not Feature 2": [4, 5, 6]}
     with pytest.raises(dictValuesAllFeaturesMissing):
-        _ = cls.predictMissingValues(dataset.sample(n=20), dict_values)   
+        _ = cls.predictMissingValues(dataset.sample(n=20), _dict_values)
 
 
 # EOF
