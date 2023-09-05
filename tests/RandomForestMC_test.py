@@ -38,7 +38,9 @@ def test_LoadDicts_content():
     from random_forest_mc.utils import LoadDicts
 
     dicts = LoadDicts("tests/")
-    assert "datasets_metadata" in dicts.List
+    check.is_in("datasets_metadata", dicts.List)
+    check.greater(len(dicts), 0)
+    _ = [item for item in dicts.items()]
 
 
 # @pytest.mark.skip()

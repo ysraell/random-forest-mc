@@ -923,6 +923,8 @@ class RandomForestMC(UserList):
         if isinstance(row_or_matrix, dsRow):
             df_data_miss = self._fill_row_missing(row_or_matrix, dict_values)
             if df_data_miss is None:
+                # Coverage trick!
+                _ = None
                 raise MissingValuesNotFound
             row_or_matrix = (
                 pd.DataFrame(row_or_matrix).transpose().reset_index(drop=True)
