@@ -35,7 +35,8 @@ $ pip3 install .
 
 ## Usage:
 
-Example of a full cycle using `titanic.csv`:
+-------
+### Example of a full cycle using `titanic.csv`:
 
 ```python
 import numpy as np
@@ -90,8 +91,11 @@ cls.predict_proba(dataset.sample(n=10))
     ...
     {'0': 0.625, '1': 0.375}
 ]
+```
+-------
+### Works with missing values:
 
-# Works with missing values:
+```python
 
 cols = list(dataset.columns)
 cols.pop(cols.index('Class'))
@@ -103,7 +107,11 @@ cls.predict(row)
 
 cls.predict(dataset.sample(n=10))
 ['0', '1', ...]
+```
+-------
+### Save and load model:
 
+```python
 # Saving model:
 ModelDict = cls.model2dict()
 dump_file_json(path_dict, ModelDict)
@@ -116,13 +124,28 @@ cls.dict2model(ModelDict)
 # Before run fit again, load dataset. Check if the features are the same!
 cls.process_dataset(dataset)
 
-row = dataset.loc[0]
+```
+-------
+### Feature counting and importance:
+
+```python
+
 # Feature counting (how much features in each tree):
-cls.featCount() # or cls.sampleClassFeatCount(row, row[target_col])
+cls.featCount() 
 (
     (3.5, 0.5, 3, 4),  # (mean, std, min, max)
     [3, 4, 3, 4, 3, 4] # List of counting of features in each tree.
 )
+
+# Feature counting considering a given sample (using only the trees that predicted correctly):
+row = dataset.loc[0]
+cls.sampleClassFeatCount(row, row[target_col])
+(
+    (3.5, 0.5, 3, 4),  # (mean, std, min, max)
+    [3, 4, 3, 4, 3, 4] # List of counting of features in each tree.
+)
+# The follow methods have the same for a given sample in the format `cls.sampleClass...(row, row[target_col])`.
+
 
 # Feature importance:
 cls.featImportance() # or cls.sampleClassFeatImportance(row, row[target_col])
@@ -148,8 +171,11 @@ cls.featCorrDataFrame() # or cls.sampleClassFeatCorrDataFrame(row, row[target_co
 feat 1       0.900000   0.120000   0.130000
 feat 2       0.120000   0.804688   0.230000
 feat 3       0.130000   0.230000   0.398438
+```
+-------
+### For merge different models (forests):
 
-# For merge different models (forests):
+```python
 ...
 cls.fit()
 cls2.fit()
@@ -163,30 +189,66 @@ cls.mergeForest(cls2, N, 'score')
 # Merge all trees from both models and keep N random trees.
 cls.mergeForest(cls2, N, 'random')
 
+```
+-------
+### Predicting missing values:
 
-#
+Data with missing data (`nan` values):  
+`dataset_missing_values = `
+|    |   Pclass | Sex   |   Age |   SibSp |   Fare | Embarked   |   Survived |
+|---:|---------:|:------|------:|--------:|-------:|:-----------|-----------:|
+|  0 |        1 | `nan`   |    45 |       0 |     28 | S          |          0 |
+|  1 |        1 | male  |    34 |       0 |     26 | `nan`        |          1 |
+
+Dictionary of features and possible values:
+
+`dict_values = `
+```json
+
+{
+    "Sex": ["male", "female"],
+    "Embarked": ["S", "C", "Q"]
+}
 
 ```
 
+`cls.predictMissingValues(dataset_missing_values, dict_values)` returns:
+
+|    |   Pclass | Sex    |   Age |   SibSp |   Fare | Embarked   |   Survived |        0 |        1 |   row_id |
+|---:|---------:|:-------|------:|--------:|-------:|:-----------|-----------:|---------:|---------:|---------:|
+|  0 |        1 | `nan`    |    45 |       0 |     28 | S          |          0 | `nan`      | `nan`      |        0 |
+|  1 |        1 | male   |    45 |       0 |     28 | S          |          0 |   0.5625 |   0.4375 |        0 |
+|  2 |        1 | female |    45 |       0 |     28 | S          |          0 |   0.0625 |   0.9375 |        0 |
+|  3 |        1 | male   |    34 |       0 |     26 | `nan`        |          1 | `nan`      | `nan`      |        1 |
+|  4 |        1 | male   |    34 |       0 |     26 | S          |          1 |   0.5625 |   0.4375 |        1 |
+|  5 |        1 | male   |    34 |       0 |     26 | C          |          1 |   0.5625 |   0.4375 |        1 |
+|  6 |        1 | male   |    34 |       0 |     26 | Q          |          1 |   0.5625 |   0.4375 |        1 |
+
+
+You can see three new columns: in this case, you see one column (with the probabilities) for each target value (so if you have `n` different target values, you'll have `n` columns), and the lat one named `row_id` linking all predicted ones to the first row (the original row with the missing value).
+Obs: let the target column is optionally.
+
+-------
 ### Notes:
 
 - Classes values must be converted to `str` before make predicts.
 - `fit` always add new trees (keep the trees generated before).
-
+-------
 ### LoadDicts:
 
 LoadDicts works loading all `JSON` files inside a given path, creating an object helper to use this files as dictionaries.
 
 For example:
 ```python
->>> from random_forest_mc.utils import LoadDicts
->>> # JSONs: path/data.json, path/metdada.json
->>> dicts = LoadDicts("path/")
->>> # you have: dicts.data and dicts.metdada as dictionaries
->>> # And a list of dictionaries loaded in:
->>> dicts.List
-["data", "metdada"]
+from random_forest_mc.utils import LoadDicts
+# JSONs: path/data.json, path/metdada.json
+dicts = LoadDicts("path/")
+# you have: dicts.data and dicts.metdada as dictionaries
+# And a list of dictionaries loaded in:
+dicts.List
+> ["data", "metdada"]
 ```
+
 
 ## Fundamentals:
 
