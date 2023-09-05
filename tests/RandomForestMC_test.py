@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 import pytest
 import pytest_check as check
+from json import JSONDecodeError
 
 
 def flat(a):
@@ -21,7 +22,7 @@ path_dict = "/tmp/datasets/model_dict.json"
 def test_version():
     from random_forest_mc import __version__
 
-    assert __version__ == "1.0.3"
+    assert __version__ == "1.1.0"
 
 
 # @pytest.mark.skip()
@@ -37,7 +38,35 @@ def test_LoadDicts_content():
     from random_forest_mc.utils import LoadDicts
 
     dicts = LoadDicts("tests/")
-    assert "datasets_metadata" in dicts.List
+    check.is_in("datasets_metadata", dicts.List)
+    check.greater(len(dicts), 0)
+    _ = [item for item in dicts.items()]
+
+
+# @pytest.mark.skip()
+def test_LoadDicts_load_json_csv_like():
+    from random_forest_mc.utils import LoadDicts
+
+    _ = LoadDicts("../../../tmp/datasets/load_json_csv_like", ignore_errors=True)
+    with pytest.raises(JSONDecodeError):
+        _ = LoadDicts("../../../tmp/datasets/load_json_csv_like")
+
+
+# @pytest.mark.skip()
+def test_LoadDicts_load_json_empty():
+    from random_forest_mc.utils import LoadDicts
+
+    _ = LoadDicts("../../../tmp/datasets/load_json_empty", ignore_errors=True)
+    with pytest.raises(JSONDecodeError):
+        _ = LoadDicts("../../../tmp/datasets/load_json_empty")
+
+
+# @pytest.mark.skip()
+def test_LoadDicts_load_json_keyword():
+    from random_forest_mc.utils import LoadDicts
+
+    ld = LoadDicts("../../../tmp/datasets/load_json_keyword")
+    assert len(ld.not_attr) > 0
 
 
 # @pytest.mark.skip()
@@ -770,6 +799,70 @@ def test_RandomForestMC_fullCycle_creditcard_Parallel_process():
     _ = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
     _ = cls.testForestProbs(ds)
     check.equal(cls.Forest_size, n_trees)
+
+
+# @pytest.mark.skip()
+def test_RandomForestMC_predictMissingValues():
+    from random_forest_mc.model import (
+        RandomForestMC,
+        MissingValuesNotFound,
+        dictValuesAllFeaturesMissing,
+    )
+    from random_forest_mc.utils import LoadDicts
+
+    # Load basics:
+    dicts = LoadDicts("tests/")
+    dataset_dict = dicts.datasets_metadata
+    ds_name = "titanic"
+    params = dataset_dict[ds_name]
+    dataset = (
+        pd.read_csv(params["csv_path"])[params["ds_cols"] + [params["target_col"]]]
+        .dropna()
+        .reset_index(drop=True)
+    )
+    dataset["Age"] = dataset["Age"].astype(np.uint8)
+    dataset["SibSp"] = dataset["SibSp"].astype(np.uint8)
+    dataset["Pclass"] = dataset["Pclass"].astype(str)
+    dataset["Fare"] = dataset["Fare"].astype(np.uint32)
+    ds_cols = params["ds_cols"]
+    target_col = params["target_col"]
+    cls = RandomForestMC(target_col=target_col)
+    cls.fit(dataset)
+
+    # Create some missing data
+    df_tmp = dataset.sample(frac=0.2).reset_index(drop=True)
+    mask_random = np.random.choice(
+        [True, False], size=df_tmp[ds_cols].shape, p=[0.7, 0.3]
+    )
+    dataset_missing_values = df_tmp[ds_cols].mask(~mask_random)
+    dataset_missing_values[target_col] = df_tmp[target_col]
+
+    dict_values = {col: dataset[col].unique().tolist() for col in ds_cols}
+
+    for i, row in dataset_missing_values.iterrows():
+        if row.isna().any():
+            break
+    df_tmp = cls.predictMissingValues(row, dict_values)
+    check.is_instance(df_tmp, pd.DataFrame)
+    check.greater(len(df_tmp), 0)
+
+    while True:
+        df_tmp = dataset_missing_values.sample(n=20)
+        if df_tmp.isna().any().any():
+            break
+    df_tmp = cls.predictMissingValues(df_tmp, dict_values)
+    check.is_instance(df_tmp, pd.DataFrame)
+    check.greater(len(df_tmp), 0)
+
+    with pytest.raises(MissingValuesNotFound):
+        _ = cls.predictMissingValues(dataset.loc[0], dict_values)
+
+    with pytest.raises(MissingValuesNotFound):
+        _ = cls.predictMissingValues(dataset.sample(n=20), dict_values)
+
+    _dict_values = {"Not Feature": [1, 2, 3], "Not Feature 2": [4, 5, 6]}
+    with pytest.raises(dictValuesAllFeaturesMissing):
+        _ = cls.predictMissingValues(dataset.sample(n=20), _dict_values)
 
 
 # EOF

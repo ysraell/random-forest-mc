@@ -6,4 +6,4 @@ export PATH="$PYENV_ROOT/bin:$PATH"
 eval "$(pyenv init --path)"
 pyenv local `cat .python-version`
 
-poetry shell
+#poetry shell

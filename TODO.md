@@ -9,6 +9,8 @@
 
 ### TODO v1.1:
 
+- Add [`memray`](https://github.com/bloomberg/memray) in the automated test process. 
+- Add the different Python versions in the automated tests.
 - Fix multithread logic.
 - Mssing data issue:
     - Data Imputation using the Forest (with and without true label).
@@ -21,10 +23,8 @@
 - Create a notebook with [Memray](https://github.com/bloomberg/memray) applied to the model with different datasets.
 - Discover how automate the unit tests for test with each compatible minor version.
 - Add parameter for limit depth, min sample to leaf, min feature completed cycles.
-- Find out how prevent the follow error msg: `cannot take a larger sample than population when 'replace=false'`. It's maybe interesting to have duplicate rows because during the growing the tree we may consider a different structure of decision reusing values (feature). In fact, the algorithm will prevent the creation of a duplicated decision node. We may set as a input parameter (boolean), or in the same way but with a third parameter to change to `True` when we got a error. Consider a possible performance decreasing this third parameter (using `try` may works?).
 - Add parameter for active validation score (like loss) for each set of a given number of trees generated.
 - Add a set of functions for generate perfomance metrics: like trees generation/validation time.
-- Review the usage of `defaultdict` and try use `dict.setdefault`.
 - Review the use of the threshold (TH) for validation process. How we could set the dynamic portion? How spread the TH? The set of rows, for a set of rounds, not reaching the TH, drop and get next? Dynamicaly decreasing the TH for each N sets of rows without sucess?
 - Docstring.
 
