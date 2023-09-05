@@ -912,6 +912,8 @@ class RandomForestMC(UserList):
                 f"The Forest model have not the following feature(s): [{_tmp}]."
             )
         if len(set(dict_values.keys())) == len(not_have_feats):
+            # Coverage trick!
+            _ = None
             raise dictValuesAllFeaturesMissing
 
     def _genFilledDataMissing(
@@ -934,6 +936,8 @@ class RandomForestMC(UserList):
                 if _tmp is not None:
                     df_data_miss.append(_tmp)
             if len(df_data_miss) == 0:
+                # Coverage trick!
+                _ = None
                 raise MissingValuesNotFound
             df_data_miss = pd.concat(df_data_miss).reset_index(drop=True)
 

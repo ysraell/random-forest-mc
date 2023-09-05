@@ -163,6 +163,9 @@ cls.mergeForest(cls2, N, 'score')
 # Merge all trees from both models and keep N random trees.
 cls.mergeForest(cls2, N, 'random')
 
+
+#
+
 ```
 
 ### Notes:

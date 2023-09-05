@@ -801,7 +801,7 @@ def test_RandomForestMC_fullCycle_creditcard_Parallel_process():
 
 # @pytest.mark.skip()
 def test_RandomForestMC_predictMissingValues():
-    from random_forest_mc.model import RandomForestMC, MissingValuesNotFound
+    from random_forest_mc.model import RandomForestMC, MissingValuesNotFound, dictValuesAllFeaturesMissing
     from random_forest_mc.utils import LoadDicts
 
     # Load basics:
@@ -848,7 +848,10 @@ def test_RandomForestMC_predictMissingValues():
     
     with pytest.raises(MissingValuesNotFound):
         _ = cls.predictMissingValues(dataset.sample(n=20), dict_values)
-    
+ 
+    _dict_values = {'Not Feature': [1, 2, 3], 'Not Feature 2': [4, 5, 6]}
+    with pytest.raises(dictValuesAllFeaturesMissing):
+        _ = cls.predictMissingValues(dataset.sample(n=20), dict_values)   
 
 
 # EOF
