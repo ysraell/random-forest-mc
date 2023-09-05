@@ -805,7 +805,7 @@ def test_RandomForestMC_predictMissingValues():
     from random_forest_mc.utils import LoadDicts
 
     # Load basics:
-    dicts = LoadDicts("../../random-forest-mc/tests/")
+    dicts = LoadDicts("tests/")
     dataset_dict = dicts.datasets_metadata
     ds_name = "titanic"
     params = dataset_dict[ds_name]
