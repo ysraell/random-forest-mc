@@ -3,6 +3,7 @@ from typing import Any, NewType
 import numpy as np
 from keyword import iskeyword
 import datetime
+from pathlib import Path
 
 def json_encoder(object):
     if isinstance(object, np.generic):
