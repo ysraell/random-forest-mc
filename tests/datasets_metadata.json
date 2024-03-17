@@ -9,7 +9,7 @@
             "Embarked"
         ],
         "target_col": "Survived",
-        "csv_path": "/tmp/datasets/titanic.csv"
+        "csv_path": "/titanic.csv"
     },
     "iris": {
         "ds_cols": [
@@ -19,7 +19,7 @@
             "petal.width"
         ],
         "target_col": "variety",
-        "csv_path": "/tmp/datasets/iris.csv"
+        "csv_path": "/iris.csv"
     },
     "creditcard": {
         "ds_cols": [
@@ -54,7 +54,7 @@
             "Amount"
         ],
         "target_col": "Class",
-        "csv_path": "/tmp/datasets/creditcard.csv"
+        "csv_path": "/creditcard.csv"
     },
     "creditcard_trans_int": {
         "ds_cols": [
@@ -89,7 +89,7 @@
             "Amount"
         ],
         "target_col": "Class",
-        "csv_path": "/tmp/datasets/creditcard_trans_int.csv"
+        "csv_path": "/creditcard_trans_int.csv"
     },
     "creditcard_trans_float": {
         "ds_cols": [
@@ -124,6 +124,6 @@
             "Amount"
         ],
         "target_col": "Class",
-        "csv_path": "/tmp/datasets/creditcard_trans_float.csv"
+        "csv_path": "/creditcard_trans_float.csv"
     }
 }

@@ -7,7 +7,12 @@
 
 - Add methods from [scikit-survival](https://scikit-survival.readthedocs.io/en/stable/user_guide/random-survival-forest.html) for comparison.
 
-### TODO v1.1:
+### TODO v1.1.1:
+
+~~- Add `NaN`, `None`, `Null` cheking before use and generate the Tree.~~
+~~- Remove `self.dataset = dataset.dropna()` (l. 509, `model.py`).~~
+
+### TODO v1.2:
 
 - Add [`memray`](https://github.com/bloomberg/memray) in the automated test process. 
 - Add the different Python versions in the automated tests.

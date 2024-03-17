@@ -6,6 +6,7 @@ Random forests: extremely randomized trees with dynamic tree selection Monte Car
 The module structure is the following:
 
 """
+
 import logging as log
 import re
 from collections import defaultdict
@@ -734,7 +735,7 @@ class RandomForestMC(UserList):
                     (Tree(row), score)
                     for Tree, score in zip(self.data, self.survived_scores)
                 ]
-                for (predp, score) in pred_probs:
+                for predp, score in pred_probs:
                     for class_val, prob in predp.items():
                         class_probs[class_val] += prob * score
                 return {

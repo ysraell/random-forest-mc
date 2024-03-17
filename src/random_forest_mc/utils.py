@@ -1,32 +1,29 @@
 import json
+from typing import Any, NewType
 import numpy as np
-from typing import Any
 from keyword import iskeyword
+import datetime
 from pathlib import Path
 
-# For backward compatibility with 3.7
-# from typing import TypeAlias
 
-
-def np_encoder(object):
+def json_encoder(object):
     if isinstance(object, np.generic):
-        # Coverage trick!
-        _ = None
         return object.item()
+    if isinstance(object, (datetime.date, datetime.datetime)):
+        return object.isoformat()
 
 
-# DictsPathType: TypeAlias = str
-DictsPathType = str
+DictsPathType = NewType("DictsPath", str)
 
 
 def load_file_json(path: DictsPathType):
-    with open(path, "r") as f:
+    with open(Path(path), "r") as f:
         return json.load(f)
 
 
 def dump_file_json(path: DictsPathType, var: Any):
-    with open(path, "w") as f:
-        return json.dump(var, f, indent=4, default=np_encoder)
+    with open(Path(path), "w") as f:
+        return json.dump(var, f, indent=4, default=json_encoder)
 
 
 class LoadDicts:
@@ -52,15 +49,22 @@ class LoadDicts:
                     raise e
                 print(e)
 
-    def __len__(self):
+    def __repr__(self) -> str:
+        return "LoadDicts: {}".format(", ".join(self.List))
+
+    def __len__(self) -> int:
         return len(self.List)
+
+    def __iter__(self) -> int:
+        for item in self.List:
+            yield self.Dict[item]
+
+    def __getitem__(self, key):
+        return self.Dict[key]
 
     def items(self):
         for item in self.List:
             yield item, self.Dict[item]
-
-    def __repr__(self) -> str:
-        return "LoadDicts: {}".format(", ".join(self.List))
 
 
 # EOF
