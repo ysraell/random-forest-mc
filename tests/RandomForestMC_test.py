@@ -12,7 +12,7 @@ from json import JSONDecodeError
 from pathlib import Path
 
 
-path_to_dataset = "d:/tmp/datasets"
+path_to_dataset = "/tmp/datasets"
 
 
 def flat(a):

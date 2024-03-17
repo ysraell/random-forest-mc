@@ -9,8 +9,8 @@
 
 ### TODO v1.1.1:
 
-- Add `NaN`, `None`, `Null` cheking before use and generate the Tree.
-- Remove `self.dataset = dataset.dropna()` (l. 509, `model.py`).
+~~- Add `NaN`, `None`, `Null` cheking before use and generate the Tree.~~
+~~- Remove `self.dataset = dataset.dropna()` (l. 509, `model.py`).~~
 
 ### TODO v1.2:
 
