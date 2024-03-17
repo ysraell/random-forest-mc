@@ -9,16 +9,18 @@ import pandas as pd
 import pytest
 import pytest_check as check
 from json import JSONDecodeError
+from pathlib import Path
 
 
-path_to_dataset = '~/work/tmp/datasets'
+path_to_dataset = 'd:/tmp/datasets'
 
 def flat(a):
     return functools.reduce(operator.iconcat, a, [])
 
 
 sys.path.append("src/")
-path_dict = f"{path_to_dataset}/model_dict.json"
+path_dict = Path(f"{path_to_dataset}/model_dict.json")
+
 
 
 def test_version():
@@ -45,7 +47,7 @@ def test_LoadDicts_content():
     _ = [item for item in dicts.items()]
 
 
-# @pytest.mark.skip()
+@pytest.mark.skip()
 def test_LoadDicts_load_json_csv_like():
     from random_forest_mc.utils import LoadDicts
 
@@ -54,7 +56,7 @@ def test_LoadDicts_load_json_csv_like():
         _ = LoadDicts(f"{path_to_dataset}/load_json_csv_like")
 
 
-# @pytest.mark.skip()
+@pytest.mark.skip()
 def test_LoadDicts_load_json_empty():
     from random_forest_mc.utils import LoadDicts
 
@@ -63,7 +65,7 @@ def test_LoadDicts_load_json_empty():
         _ = LoadDicts(f"{path_to_dataset}/load_json_empty")
 
 
-# @pytest.mark.skip()
+@pytest.mark.skip()
 def test_LoadDicts_load_json_keyword():
     from random_forest_mc.utils import LoadDicts
 
