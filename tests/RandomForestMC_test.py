@@ -12,7 +12,8 @@ from json import JSONDecodeError
 from pathlib import Path
 
 
-path_to_dataset = 'd:/tmp/datasets'
+path_to_dataset = "d:/tmp/datasets"
+
 
 def flat(a):
     return functools.reduce(operator.iconcat, a, [])
@@ -20,7 +21,6 @@ def flat(a):
 
 sys.path.append("src/")
 path_dict = Path(f"{path_to_dataset}/model_dict.json")
-
 
 
 def test_version():
@@ -126,7 +126,9 @@ def test_RandomForestMC_fit():
     ds_name = "titanic"
     params = dataset_dict[ds_name]
     dataset = (
-        pd.read_csv(path_to_dataset + params["csv_path"])[params["ds_cols"] + [params["target_col"]]]
+        pd.read_csv(path_to_dataset + params["csv_path"])[
+            params["ds_cols"] + [params["target_col"]]
+        ]
         .dropna()
         .reset_index(drop=True)
     )
@@ -185,7 +187,9 @@ def test_RandomForestMC_fitParallel():
     ds_name = "titanic"
     params = dataset_dict[ds_name]
     dataset = (
-        pd.read_csv(path_to_dataset + params["csv_path"])[params["ds_cols"] + [params["target_col"]]]
+        pd.read_csv(path_to_dataset + params["csv_path"])[
+            params["ds_cols"] + [params["target_col"]]
+        ]
         .dropna()
         .reset_index(drop=True)
     )
@@ -210,7 +214,9 @@ def test_RandomForestMC_fit_max_depth():
     ds_name = "titanic"
     params = dataset_dict[ds_name]
     dataset = (
-        pd.read_csv(path_to_dataset + params["csv_path"])[params["ds_cols"] + [params["target_col"]]]
+        pd.read_csv(path_to_dataset + params["csv_path"])[
+            params["ds_cols"] + [params["target_col"]]
+        ]
         .dropna()
         .reset_index(drop=True)
     )
@@ -247,7 +253,9 @@ def test_RandomForestMC_fit_min_samples_split():
     ds_name = "titanic"
     params = dataset_dict[ds_name]
     dataset = (
-        pd.read_csv(path_to_dataset + params["csv_path"])[params["ds_cols"] + [params["target_col"]]]
+        pd.read_csv(path_to_dataset + params["csv_path"])[
+            params["ds_cols"] + [params["target_col"]]
+        ]
         .dropna()
         .reset_index(drop=True)
     )
@@ -282,7 +290,9 @@ def test_RandomForestMC_fitParallel_featImportance():
     ds_name = "titanic"
     params = dataset_dict[ds_name]
     dataset = (
-        pd.read_csv(path_to_dataset + params["csv_path"])[params["ds_cols"] + [params["target_col"]]]
+        pd.read_csv(path_to_dataset + params["csv_path"])[
+            params["ds_cols"] + [params["target_col"]]
+        ]
         .dropna()
         .reset_index(drop=True)
     )
@@ -339,7 +349,9 @@ def test_RandomForestMC_fitParallel_sampleClassFeatImportance():
     params = dataset_dict[ds_name]
     target_col = params["target_col"]
     dataset = (
-        pd.read_csv(path_to_dataset + params["csv_path"])[params["ds_cols"] + [params["target_col"]]]
+        pd.read_csv(path_to_dataset + params["csv_path"])[
+            params["ds_cols"] + [params["target_col"]]
+        ]
         .dropna()
         .reset_index(drop=True)
     )
@@ -399,7 +411,9 @@ def test_RandomForestMC_fit_get_best_tree_False():
     ds_name = "titanic"
     params = dataset_dict[ds_name]
     dataset = (
-        pd.read_csv(path_to_dataset + params["csv_path"])[params["ds_cols"] + [params["target_col"]]]
+        pd.read_csv(path_to_dataset + params["csv_path"])[
+            params["ds_cols"] + [params["target_col"]]
+        ]
         .dropna()
         .reset_index(drop=True)
     )
@@ -426,7 +440,9 @@ def test_RandomForestMC_fitParallel_get_best_tree_False():
     ds_name = "titanic"
     params = dataset_dict[ds_name]
     dataset = (
-        pd.read_csv(path_to_dataset + params["csv_path"])[params["ds_cols"] + [params["target_col"]]]
+        pd.read_csv(path_to_dataset + params["csv_path"])[
+            params["ds_cols"] + [params["target_col"]]
+        ]
         .dropna()
         .reset_index(drop=True)
     )
@@ -453,7 +469,9 @@ def test_RandomForestMC_save_load_model():
     ds_name = "titanic"
     params = dataset_dict[ds_name]
     dataset = (
-        pd.read_csv(path_to_dataset + params["csv_path"])[params["ds_cols"] + [params["target_col"]]]
+        pd.read_csv(path_to_dataset + params["csv_path"])[
+            params["ds_cols"] + [params["target_col"]]
+        ]
         .dropna()
         .reset_index(drop=True)
     )
@@ -486,7 +504,9 @@ def test_RandomForestMC_predictl():
     ds_name = "titanic"
     params = dataset_dict[ds_name]
     dataset = (
-        pd.read_csv(path_to_dataset + params["csv_path"])[params["ds_cols"] + [params["target_col"]]]
+        pd.read_csv(path_to_dataset + params["csv_path"])[
+            params["ds_cols"] + [params["target_col"]]
+        ]
         .dropna()
         .reset_index(drop=True)
     )
@@ -523,7 +543,9 @@ def test_RandomForestMC_mergeForest_dropduplicated():
     ds_name = "titanic"
     params = dataset_dict[ds_name]
     dataset = (
-        pd.read_csv(path_to_dataset + params["csv_path"])[params["ds_cols"] + [params["target_col"]]]
+        pd.read_csv(path_to_dataset + params["csv_path"])[
+            params["ds_cols"] + [params["target_col"]]
+        ]
         .dropna()
         .reset_index(drop=True)
     )
@@ -580,7 +602,9 @@ def test_RandomForestMC_fullCycle_titanic():
     ds_name = "titanic"
     params = dataset_dict[ds_name]
     dataset = (
-        pd.read_csv(path_to_dataset + params["csv_path"])[params["ds_cols"] + [params["target_col"]]]
+        pd.read_csv(path_to_dataset + params["csv_path"])[
+            params["ds_cols"] + [params["target_col"]]
+        ]
         .dropna()
         .reset_index(drop=True)
     )
@@ -628,7 +652,9 @@ def test_RandomForestMC_fullCycle_titanic_Parallel_process():
     ds_name = "titanic"
     params = dataset_dict[ds_name]
     dataset = (
-        pd.read_csv(path_to_dataset + params["csv_path"])[params["ds_cols"] + [params["target_col"]]]
+        pd.read_csv(path_to_dataset + params["csv_path"])[
+            params["ds_cols"] + [params["target_col"]]
+        ]
         .dropna()
         .reset_index(drop=True)
     )
@@ -676,7 +702,9 @@ def test_RandomForestMC_fullCycle_iris():
     ds_name = "iris"
     params = dataset_dict[ds_name]
     dataset = (
-        pd.read_csv(path_to_dataset + params["csv_path"])[params["ds_cols"] + [params["target_col"]]]
+        pd.read_csv(path_to_dataset + params["csv_path"])[
+            params["ds_cols"] + [params["target_col"]]
+        ]
         .dropna()
         .reset_index(drop=True)
     )
@@ -724,7 +752,9 @@ def test_RandomForestMC_fullCycle_creditcard():
     ds_name = "creditcard_trans_float"
     params = dataset_dict[ds_name]
     dataset = (
-        pd.read_csv(path_to_dataset + params["csv_path"])[params["ds_cols"] + [params["target_col"]]]
+        pd.read_csv(path_to_dataset + params["csv_path"])[
+            params["ds_cols"] + [params["target_col"]]
+        ]
         .dropna()
         .reset_index(drop=True)
     )
@@ -750,7 +780,9 @@ def test_RandomForestMC_fullCycle_creditcard_missing_values():
     ds_name = "creditcard_trans_float"
     params = dataset_dict[ds_name]
     dataset = (
-        pd.read_csv(path_to_dataset + params["csv_path"])[params["ds_cols"] + [params["target_col"]]]
+        pd.read_csv(path_to_dataset + params["csv_path"])[
+            params["ds_cols"] + [params["target_col"]]
+        ]
         .dropna()
         .reset_index(drop=True)
     )
@@ -787,7 +819,9 @@ def test_RandomForestMC_fullCycle_creditcard_Parallel_process():
     ds_name = "creditcard_trans_float"
     params = dataset_dict[ds_name]
     dataset = (
-        pd.read_csv(path_to_dataset + params["csv_path"])[params["ds_cols"] + [params["target_col"]]]
+        pd.read_csv(path_to_dataset + params["csv_path"])[
+            params["ds_cols"] + [params["target_col"]]
+        ]
         .dropna()
         .reset_index(drop=True)
     )
@@ -820,7 +854,9 @@ def test_RandomForestMC_predictMissingValues():
     ds_name = "titanic"
     params = dataset_dict[ds_name]
     dataset = (
-        pd.read_csv(path_to_dataset + params["csv_path"])[params["ds_cols"] + [params["target_col"]]]
+        pd.read_csv(path_to_dataset + params["csv_path"])[
+            params["ds_cols"] + [params["target_col"]]
+        ]
         .dropna()
         .reset_index(drop=True)
     )
