@@ -42,7 +42,9 @@ import numpy as np
 import pandas as pd
 
 from random_forest_mc.model import RandomForestMC
-from random_forest_mc.utils import LoadDicts, load_file_json, dump_file_json
+from random_forest_mc.utils import (
+    LoadDicts, load_file_json, dump_file_json
+)
 
 dicts = LoadDicts("tests/")
 dataset_dict = dicts.datasets_metadata
@@ -224,8 +226,10 @@ Dictionary of features and possible values:
 |  6 |        1 | male   |    34 |       0 |     26 | Q          |          1 |   0.5625 |   0.4375 |        1 |
 
 
-You can see three new columns: in this case, you see one column (with the probabilities) for each target value (so if you have `n` different target values, you'll have `n` columns), and the lat one named `row_id` linking all predicted ones to the first row (the original row with the missing value).
-Obs: let the target column is optionally.
+You can see three new columns: in this case, you see one column (with the probabilities) for each target value (so if you have `n` different target values, you'll have `n` columns), and the last one named `row_id` linking all predicted ones to the first row (the original row with the missing value).
+Observations:
+- For the first row (`row_id = 0`) we have the highest propability (`0.9375`) when `sex = female`. We can predict this value as the best prediction for this missing value. Or, if we know the target (a truth value for the target), we can choose the value with the highest probability that match with the correct target value. The same is not possible to do with the second row (`row_id = 1`), doesn't matter which value predicted, the final probilities will be the same.
+- Let the target column is optionally.
 
 -------
 ### Notes:
