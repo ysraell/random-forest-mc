@@ -2,6 +2,7 @@
 
 ### BUGS:
 - Fix automated version collect from `pyproject.toml`.
+- Review warning `DeprecationWarning: This process (pid=000000) is multi-threaded, use of fork() may lead to deadlocks in the child. pid = os.fork()`, in Python 3.12.4-5.
 
 ### TODO Utils:
 
