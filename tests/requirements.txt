@@ -1,0 +1,10 @@
+pytest
+coverage
+pytest-cov
+flake8
+black
+pytest-check
+pandas
+numpy
+tqdm
+pip

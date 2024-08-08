@@ -1,3 +1,12 @@
+# v1.1.2
+
+    1) Add the different Python versions in the automated tests.
+
+# v1.1.1
+
+    1) Add `NaN`, `None`, `Null` cheking before use and generate the Tree.
+    2) Remove `self.dataset = dataset.dropna()` (l. 509, `model.py`).
+
 # v1.1.0
 
     1) Fix utils.
