@@ -147,9 +147,10 @@ cls.sampleClassFeatCount(row, row[target_col])
     (3.5, 0.5, 3, 4),  # (mean, std, min, max)
     [3, 4, 3, 4, 3, 4] # List of counting of features in each tree.
 )
+
+
 # The follow methods have the same for a given sample in the
   format `cls.sampleClass...(row, row[target_col])`.
-
 
 # Feature importance:
 cls.featImportance() # or cls.sampleClassFeatImportance(row, row[target_col])
@@ -237,7 +238,7 @@ Observations:
 -------
 ### Notes:
 
-- Classes values must be converted to `str` before make predicts.
+- The value in the classes must be converted to `str` before make predicts.
 - `fit` always add new trees (keep the trees generated before).
 -------
 ### LoadDicts:
