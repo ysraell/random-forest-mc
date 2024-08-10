@@ -147,7 +147,8 @@ cls.sampleClassFeatCount(row, row[target_col])
     (3.5, 0.5, 3, 4),  # (mean, std, min, max)
     [3, 4, 3, 4, 3, 4] # List of counting of features in each tree.
 )
-# The follow methods have the same for a given sample in the format `cls.sampleClass...(row, row[target_col])`.
+# The follow methods have the same for a given sample in the
+  format `cls.sampleClass...(row, row[target_col])`.
 
 
 # Feature importance:
