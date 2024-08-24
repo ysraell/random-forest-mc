@@ -65,6 +65,9 @@ class LoadDicts:
     def items(self):
         for item in self.List:
             yield item, self.Dict[item]
-
+    
+    def add(self, other) -> None:
+        for item_name in other.List:
+            self.Dict[item_name] = other.Dict[item_name]
 
 # EOF
