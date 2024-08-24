@@ -69,5 +69,6 @@ class LoadDicts:
     def add(self, other) -> None:
         for item_name in other.List:
             self.Dict[item_name] = other.Dict[item_name]
+        self.List.extend(other.List)
 
 # EOF
