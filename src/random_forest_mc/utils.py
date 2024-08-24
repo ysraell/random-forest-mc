@@ -30,7 +30,7 @@ class LoadDicts:
     def __init__(
         self, dict_path: DictsPathType = "./data", ignore_errors: bool = False
     ):
-        Dicts_glob = Path().glob(f"{dict_path}/*.json")
+        Dicts_glob = Path(dict_path).glob("*.json")
         self.List = []
         self.Dict = {}
         self.not_attr = []
