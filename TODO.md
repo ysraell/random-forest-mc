@@ -1,8 +1,10 @@
 # TODO and bugs.
 
 ### BUGS:
-- Fix automated version collect from `pyproject.toml`.
+- Getting `RecursionError` when using `fitParallel` (tqdm/concurrent).
+- Review warning `SettingWithCopyWarning`in model.py:494 `dataset[self.target_col] = dataset[self.target_col].astype(str)`
 - Review warning `DeprecationWarning: This process (pid=000000) is multi-threaded, use of fork() may lead to deadlocks in the child. pid = os.fork()`, in Python 3.12.4-5.
+- Fix automated version collect from `pyproject.toml`.
 
 ### TODO Utils:
 
