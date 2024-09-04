@@ -15,6 +15,7 @@
 
 ### TODO v1.2:
 
+- Use the trees in parallel processing.
 - Add [`memray`](https://github.com/bloomberg/memray) in the automated test process. 
 - Fix multithread logic.
 - Create new forests from a cross merging between other forests, for a given amount of trees for the output forest:~
