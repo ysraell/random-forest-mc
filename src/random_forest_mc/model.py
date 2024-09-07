@@ -469,7 +469,7 @@ class RandomForestMC(UserList):
     def validFeaturesTemporal(self):
         return all([x.split("_")[-1].isnumeric() for x in self.feature_cols])
 
-    def drop_duplicated_trees(self) -> None:
+    def drop_duplicated_trees(self) -> int:
         conds = (
             pd.DataFrame(
                 [md5(str(Tree).encode("utf-8")).hexdigest() for Tree in self.data]
@@ -481,6 +481,7 @@ class RandomForestMC(UserList):
         self.survived_scores = [
             score for score, cond in zip(self.survived_scores, conds) if cond
         ]
+        return sum(~conds)
 
     @property
     def Forest_size(self) -> int:
