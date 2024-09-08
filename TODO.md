@@ -12,23 +12,27 @@
 ### TODO v1.1.2:
 
 ~~- Add the different Python versions in the automated tests.~~
+~~- Discover how automate the unit tests for test with each compatible midle version.~~
 
 ### TODO v1.2:
 
+- Remove `split_train_val_replace`.
+- Add the possibility to duplicate rows only in train data (`ds_T`).
 - Use the trees in parallel processing.
-- Add [`memray`](https://github.com/bloomberg/memray) in the automated test process. 
-- Fix multithread logic.
+- Docstring.
+~~- Add parameter for active validation score (like loss) for each set of a given number of trees generated.~~
+- Add a training process that you can use a validation dataset to compute the performance after the cretion of a set of trees (like epochs).
 - Create new forests from a cross merging between other forests, for a given amount of trees for the output forest:~
     - by optimization, based on a GA and MC approaches, using a given test dataset;
     - Design as a subclass of the `RandomForestMC` for optimization approaches and a function for randomness and sorted merging.
+
+### TODO v1.3:
+- Add [`memray`](https://github.com/bloomberg/memray) in the automated test process.
 - Create a notebook with [Memray](https://github.com/bloomberg/memray) applied to the model with different datasets.
-- Discover how automate the unit tests for test with each compatible minor version.
-- Add parameter for active validation score (like loss) for each set of a given number of trees generated.
 - Add a set of functions for generate perfomance metrics: like trees generation/validation time.
-- Docstring.
 
 ### TODO V2.0:
-
+- Fix multithread logic.
 - Extender for predict by regression.
 - Refactor to use NumPy or built in Python features as core data operations.
 - Tree management framework: to remove or add new trees, version management for set of trees.
