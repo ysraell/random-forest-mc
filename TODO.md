@@ -16,6 +16,7 @@
 
 ### TODO v1.2:
 
+- Add in the `dict2model` the possibility to add and not only replace the current Forest. E.g.: dict2model(Dict, add = False) -> Default: False.
 - Remove `split_train_val_replace`.
 - Add the possibility to duplicate rows only in train data (`ds_T`).
 - Use the trees in parallel processing.
