@@ -409,12 +409,7 @@ class RandomForestMC(UserList):
     def mergeForest(self, otherForest, N: int = -1, by: str = "add"):
         if not isinstance(otherForest, RandomForestMC):
             raise TypeError(self.typer_error_msg)
-        same_model = all(
-            [right in otherForest.feature_cols for right in self.feature_cols]
-        ) and all([left in self.feature_cols for left in otherForest.feature_cols])
-        if not same_model:
-            raise ValueError("Both forests must have the same set of features.")
-
+        
         same_model = all(
             [right in otherForest.class_vals for right in self.class_vals]
         ) and all([left in self.class_vals for left in otherForest.class_vals])
