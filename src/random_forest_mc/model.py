@@ -199,7 +199,11 @@ class DecisionTreeMC(UserDict):
 
     def tree2dict(self) -> dict:
         return {attr: getattr(self, attr) for attr in self.attr_to_save}
-
+    
+    @property
+    def md5hexdigest(self) -> List[str]:
+        return md5(str(self).encode("utf-8")).hexdigest()
+    
     @property
     def depths(self) -> List[str]:
         str_tree_splitted = str(self).split(" ")
@@ -467,7 +471,7 @@ class RandomForestMC(UserList):
     def drop_duplicated_trees(self) -> int:
         conds = ~(
             pd.DataFrame(
-                [md5(str(Tree).encode("utf-8")).hexdigest() for Tree in self.data]
+                [Tree.md5hexdigest for Tree in self.data]
             )  # noqa: S303
             .duplicated()
             .to_list()
