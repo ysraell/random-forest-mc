@@ -465,7 +465,7 @@ class RandomForestMC(UserList):
         return all([x.split("_")[-1].isnumeric() for x in self.feature_cols])
 
     def drop_duplicated_trees(self) -> int:
-        conds = (
+        conds = ~(
             pd.DataFrame(
                 [md5(str(Tree).encode("utf-8")).hexdigest() for Tree in self.data]
             )  # noqa: S303
