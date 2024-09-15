@@ -16,11 +16,12 @@
 
 ### TODO v1.2:
 
+~~- Fix bug with function `drop_duplicated_trees` that is keeping the duplicated only.~~
 - Add in the `dict2model` the possibility to add and not only replace the current Forest. E.g.: dict2model(Dict, add = False) -> Default: False.
 - Remove `split_train_val_replace`.
 - Add the possibility to duplicate rows only in train data (`ds_T`).
 - Use the trees in parallel processing.
-- Docstring.
+- Docstring.  
 ~~- Add parameter for active validation score (like loss) for each set of a given number of trees generated.~~
 - Add a training process that you can use a validation dataset to compute the performance after the cretion of a set of trees (like epochs).
 - Create new forests from a cross merging between other forests, for a given amount of trees for the output forest:~
