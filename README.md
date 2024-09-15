@@ -26,7 +26,7 @@ Install using `pip`:
 $ pip3 install random-forest-mc
 ```
 
-Install from this repo:
+Install from this repo (check version, `dev` version possible):
 
 ```bash
 $ git clone https://github.com/ysraell/random-forest-mc.git
