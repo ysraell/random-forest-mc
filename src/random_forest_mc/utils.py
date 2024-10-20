@@ -4,7 +4,11 @@ import numpy as np
 from keyword import iskeyword
 import datetime
 from pathlib import Path
+import functools
+import operator
 
+def flat(a):
+    return functools.reduce(operator.iconcat, a, [])
 
 def json_encoder(object):
     if isinstance(object, np.generic):
