@@ -26,7 +26,7 @@ path_dict = Path(f"{path_to_dataset}/model_dict.json")
 def test_version():
     from random_forest_mc import __version__
 
-    assert __version__ == "1.1.1"
+    assert __version__ == "1.2.0-dev"
 
 
 # @pytest.mark.skip()
