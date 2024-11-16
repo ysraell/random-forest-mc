@@ -746,20 +746,30 @@ class RandomForestMC(UserList):
 
     def testForest(self, ds: pd.DataFrame) -> List[TypeClassVal]:
         return [self.maxProbClas(self.useForest(row)) for _, row in ds.iterrows()]
-    
+
     def _testForest_func(self, row: dsRow):
         return self.maxProbClas(self.useForest(row))
 
-    def testForestParallel(self, ds: pd.DataFrame, max_workers: Optional[int] = None) -> List[TypeClassVal]: 
+    def testForestParallel(
+        self, ds: pd.DataFrame, max_workers: Optional[int] = None, chunksize: Optional[int] = None
+    ) -> List[TypeClassVal]:
         ds_iterator = [row for _, row in ds.iterrows()]
-        return process_map(self._testForest_func, ds_iterator, desc="Testing the forest", max_workers=max_workers)
+        chunksize = int(np.ceil(len(ds_iterator) / (2 * (max_workers or 1)))) if chunksize is None else chunksize
+        return process_map(
+            self._testForest_func, ds_iterator, desc="Testing the forest", max_workers=max_workers, chunksize=chunksize
+        )
 
     def testForestProbs(self, ds: pd.DataFrame) -> List[TypeLeaf]:
         return [self.useForest(row) for _, row in ds.iterrows()]
-    
-    def testForestProbsParallel(self, ds: pd.DataFrame, max_workers: Optional[int] = None) -> List[TypeClassVal]: 
+
+    def testForestProbsParallel(
+        self, ds: pd.DataFrame, max_workers: Optional[int] = None, chunksize: Optional[int] = None
+    ) -> List[TypeClassVal]:
         ds_iterator = [row for _, row in ds.iterrows()]
-        return process_map(self.useForest, ds_iterator, desc="Testing the forest", max_workers=max_workers)
+        chunksize = int(np.ceil(len(ds_iterator) / (2 * (max_workers or 1)))) if chunksize is None else chunksize
+        return process_map(
+            self.useForest, ds_iterator, desc="Testing the forest", max_workers=max_workers, chunksize=chunksize
+        )
 
     def sampleClass2trees(self, row: dsRow, Class: TypeClassVal) -> List[TypeTree]:
         return [Tree for Tree in self.data if self.maxProbClas(Tree(row)) == Class]
