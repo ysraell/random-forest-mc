@@ -20,7 +20,7 @@
 - Add in the `dict2model` the possibility to add and not only replace the current Forest. E.g.: dict2model(Dict, add = False) -> Default: False.
 - Remove `split_train_val_replace`.
 - Add the possibility to duplicate rows only in train data (`ds_T`).
-- Use the trees in parallel processing.
+~~- Use the trees in parallel processing.~~
 - Docstring.  
 ~~- Add parameter for active validation score (like loss) for each set of a given number of trees generated.~~
 - Add a training process that you can use a validation dataset to compute the performance after the cretion of a set of trees (like epochs).
