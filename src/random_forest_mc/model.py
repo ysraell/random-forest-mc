@@ -457,25 +457,7 @@ class RandomForestMC(UserList):
         return out
 
     def dict2model(self, dict_model: dict, add: bool = False) -> None:
-        if add:
-            self.data.extend(
-                [
-                    DecisionTreeMC(
-                        Tree["data"],
-                        Tree["class_vals"],
-                        Tree["survived_score"],
-                        Tree["features"],
-                        Tree["used_features"],
-                    )
-                    for Tree in dict_model["Forest"]
-                ]
-            )
-            self.survived_scores.extend(dict_model["survived_scores"])
-        for attr in self.attr_to_save:
-            setattr(self, attr, dict_model[attr])
-        self.model_version = self.version
-        self.version = self.__version__
-        self.data = [
+        new_trees = [
             DecisionTreeMC(
                 Tree["data"],
                 Tree["class_vals"],
@@ -485,6 +467,14 @@ class RandomForestMC(UserList):
             )
             for Tree in dict_model["Forest"]
         ]
+        if add:
+            self.data.extend(new_trees)
+            self.survived_scores.extend(dict_model["survived_scores"])
+        for attr in self.attr_to_save:
+            setattr(self, attr, dict_model[attr])
+        self.model_version = self.version
+        self.version = self.__version__
+        self.data = new_trees
 
     def validFeaturesTemporal(self):
         return all([x.split("_")[-1].isnumeric() for x in self.feature_cols])
@@ -536,9 +526,7 @@ class RandomForestMC(UserList):
         idx_val = []
         for val in self.class_vals:
             idx_list = (
-                self.dataset.query(f'{self.target_col} == "{val}"')
-                .sample(n=self._N, replace=False)
-                .index.to_list()
+                self.dataset.query(f'{self.target_col} == "{val}"').sample(n=self._N, replace=False).index.to_list()
             )
             idx_train.extend(idx_list[: self.batch_train_pclass])
             idx_val.extend(idx_list[self.batch_train_pclass :])  # noqa E203

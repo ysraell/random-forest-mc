@@ -230,6 +230,7 @@ def test_RandomForestMC_testParallel():
     )
     cls.fitParallel(dataset=dataset, max_workers=4)
     _ = cls.testForestParallel(dataset, max_workers=4)
+    _ = cls.testForestProbsParallel(dataset, max_workers=4)
 
 # @pytest.mark.skip()
 def test_RandomForestMC_fit_max_depth():
