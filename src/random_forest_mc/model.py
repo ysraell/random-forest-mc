@@ -3,8 +3,6 @@ Forest of trees-based ensemble methods.
 
 Random forests: extremely randomized trees with dynamic tree selection Monte Carlo based.
 
-The module structure is the following:
-
 """
 
 import logging as log
@@ -745,6 +743,9 @@ class RandomForestMC(UserList):
                 return {class_val: y_pred.count(class_val) / len(y_pred) for class_val in self.class_vals}
 
     def testForest(self, ds: pd.DataFrame) -> List[TypeClassVal]:
+        return [self.maxProbClas(self.useForest(row)) for _, row in ds.iterrows()]
+
+    def testForestParallel(self, ds: pd.DataFrame) -> List[TypeClassVal]:
         return [self.maxProbClas(self.useForest(row)) for _, row in ds.iterrows()]
 
     def _testForest_func(self, row: dsRow):

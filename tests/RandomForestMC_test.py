@@ -26,7 +26,7 @@ path_dict = Path(f"{path_to_dataset}/model_dict.json")
 def test_version():
     from random_forest_mc import __version__
 
-    assert __version__ == "1.2.0-dev"
+    assert __version__ == "1.2.0"
 
 
 # @pytest.mark.skip()
@@ -141,6 +141,7 @@ def test_RandomForestMC_fit():
         max_discard_trees=20,
         th_decease_verbose=True,
         temporal_features=True,
+        got_best_tree_verbose=True
     )
     cls.process_dataset(dataset)
     check.is_false(cls.temporal_features)
