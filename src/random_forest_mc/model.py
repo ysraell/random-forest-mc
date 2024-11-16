@@ -745,6 +745,9 @@ class RandomForestMC(UserList):
     def testForest(self, ds: pd.DataFrame) -> List[TypeClassVal]:
         return [self.maxProbClas(self.useForest(row)) for _, row in ds.iterrows()]
 
+    def testForestParallel(self, ds: pd.DataFrame, max_workers: Optional[int] = None) -> List[TypeClassVal]: 
+        return process_map(self.useForest, ds.iterrows(), desc="Testing the forest", max_workers=max_workers)
+
     def testForestProbs(self, ds: pd.DataFrame) -> List[TypeLeaf]:
         return [self.useForest(row) for _, row in ds.iterrows()]
 

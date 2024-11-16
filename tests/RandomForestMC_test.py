@@ -205,6 +205,33 @@ def test_RandomForestMC_fitParallel():
 
 
 # @pytest.mark.skip()
+def test_RandomForestMC_testParallel():
+    from random_forest_mc.model import RandomForestMC
+    from random_forest_mc.utils import LoadDicts
+
+    dicts = LoadDicts("tests/")
+    dataset_dict = dicts.datasets_metadata
+    ds_name = "titanic"
+    params = dataset_dict[ds_name]
+    dataset = (
+        pd.read_csv(path_to_dataset + params["csv_path"])[
+            params["ds_cols"] + [params["target_col"]]
+        ]
+        .dropna()
+        .reset_index(drop=True)
+    )
+    dataset["Age"] = dataset["Age"].astype(np.uint8)
+    dataset["SibSp"] = dataset["SibSp"].astype(np.uint8)
+    dataset["Pclass"] = dataset["Pclass"].astype(str)
+    dataset["Fare"] = dataset["Fare"].astype(np.uint32)
+    dataset.insert(len(dataset.columns), "coluna_vazia", "None")
+    cls = RandomForestMC(
+        target_col=params["target_col"], max_discard_trees=20, th_decease_verbose=True
+    )
+    cls.fitParallel(dataset=dataset, max_workers=4)
+    _ = cls.testParallel(dataset=dataset, max_workers=4)
+
+# @pytest.mark.skip()
 def test_RandomForestMC_fit_max_depth():
     from random_forest_mc.model import RandomForestMC
     from random_forest_mc.utils import LoadDicts
