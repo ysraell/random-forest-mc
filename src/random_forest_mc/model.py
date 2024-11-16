@@ -304,6 +304,7 @@ class RandomForestMC(UserList):
         split_with_replace: bool = False,
         max_depth: Optional[int] = None,
         min_samples_split: int = 1,
+        got_best_tree_verbose: bool = False,
     ) -> None:
         """_summary_
 
@@ -374,6 +375,7 @@ class RandomForestMC(UserList):
         self.weighted_tree = False
         self.max_depth = getrecursionlimit() if max_depth is None else int(max_depth)
         self.min_samples_split = int(min_samples_split)
+        self.got_best_tree_verbose = got_best_tree_verbose
 
     def __repr__(self) -> str:
         txt = "{}(len(Forest)={},n_trees={},model_version={},module_version={})"
@@ -657,8 +659,8 @@ class RandomForestMC(UserList):
                 else:
                     Threshold_for_drop -= self.delta_th
                     log.info("New threshold for drop: {:.4f}".format(Threshold_for_drop))
-
-        log.info("Got best tree: {:.4f}".format(max_th_val))
+        if self.got_best_tree_verbose:
+            log.info("Got best tree: {:.4f}".format(max_th_val))
         Tree.survived_score = max_th_val
         Tree.features = self.feature_cols
         Tree.used_features = self.tree2feats(Tree)
@@ -744,12 +746,20 @@ class RandomForestMC(UserList):
 
     def testForest(self, ds: pd.DataFrame) -> List[TypeClassVal]:
         return [self.maxProbClas(self.useForest(row)) for _, row in ds.iterrows()]
+    
+    def _testForest_func(self, row: dsRow):
+        return self.maxProbClas(self.useForest(row))
 
     def testForestParallel(self, ds: pd.DataFrame, max_workers: Optional[int] = None) -> List[TypeClassVal]: 
-        return process_map(self.useForest, ds.iterrows(), desc="Testing the forest", max_workers=max_workers)
+        ds_iterator = [row for _, row in ds.iterrows()]
+        return process_map(self._testForest_func, ds_iterator, desc="Testing the forest", max_workers=max_workers)
 
     def testForestProbs(self, ds: pd.DataFrame) -> List[TypeLeaf]:
         return [self.useForest(row) for _, row in ds.iterrows()]
+    
+    def testForestProbsParallel(self, ds: pd.DataFrame, max_workers: Optional[int] = None) -> List[TypeClassVal]: 
+        ds_iterator = [row for _, row in ds.iterrows()]
+        return process_map(self.useForest, ds_iterator, desc="Testing the forest", max_workers=max_workers)
 
     def sampleClass2trees(self, row: dsRow, Class: TypeClassVal) -> List[TypeTree]:
         return [Tree for Tree in self.data if self.maxProbClas(Tree(row)) == Class]
