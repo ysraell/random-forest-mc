@@ -8,6 +8,6 @@ do
     pyenv install -s $version
     pyenv local $version
     pip install -U -r tests/requirements.txt
-    pip install .
+    pip uninstall -y random-forest-mc
     bash -x tests/run_tests.sh
 done

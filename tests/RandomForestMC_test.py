@@ -519,7 +519,7 @@ def test_RandomForestMC_save_load_model():
     cls.dict2model(ModelDict)
     cls.dict2model(ModelDict, add=True)
     check.equal(cls.Forest_size, Forest_size)
-    check.almost_equal(sum(cls.survived_scores), sum_survived_scores)
+    check.almost_equal(sum(cls.survived_scores), 2 * sum_survived_scores)
 
 
 # @pytest.mark.skip()
