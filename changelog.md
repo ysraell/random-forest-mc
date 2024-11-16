@@ -1,3 +1,12 @@
+### v1.2.0:
+
+- Fix bug with function `drop_duplicated_trees` that is keeping the duplicated only.
+- Add in the `dict2model` the possibility to add and not only replace the current Forest. E.g.: dict2model(Dict, add = False) -> Default: False.
+- Remove `split_train_val_replace`.
+- Use the trees in parallel processing.
+- Docstring.  
+- Add parameter for active validation score (like loss) for each set of a given number of trees generated.
+
 # v1.1.2
 
     1) Add the different Python versions in the automated tests.

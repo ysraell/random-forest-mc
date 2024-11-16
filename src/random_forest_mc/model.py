@@ -342,7 +342,6 @@ class RandomForestMC(UserList):
         self.max_discard_trees = max_discard_trees
         self.temporal_features = temporal_features
         self.n_trees = n_trees
-        self.split_train_val_replace = split_with_replace
         self.dataset = None
         self.feat_types = ["numeric", "categorical"]
         self.numeric_cols = None
@@ -457,7 +456,21 @@ class RandomForestMC(UserList):
         out["Forest"] = [Tree.tree2dict() for Tree in self.data]
         return out
 
-    def dict2model(self, dict_model: dict) -> None:
+    def dict2model(self, dict_model: dict, add: bool = False) -> None:
+        if add:
+            self.data.extend(
+                [
+                    DecisionTreeMC(
+                        Tree["data"],
+                        Tree["class_vals"],
+                        Tree["survived_score"],
+                        Tree["features"],
+                        Tree["used_features"],
+                    )
+                    for Tree in dict_model["Forest"]
+                ]
+            )
+            self.survived_scores.extend(dict_model["survived_scores"])
         for attr in self.attr_to_save:
             setattr(self, attr, dict_model[attr])
         self.model_version = self.version
@@ -514,9 +527,8 @@ class RandomForestMC(UserList):
             self.temporal_features = False
             log.warning("Temporal features ordering disable: you do not have all orderable features!")
 
-        if not self.split_train_val_replace:
-            min_class = self.dataset[self.target_col].value_counts().min()
-            self._N = min(self._N, min_class)
+        min_class = self.dataset[self.target_col].value_counts().min()
+        self._N = min(self._N, min_class)
 
     # Splits the data to build the decision tree.
     def split_train_val(self) -> Tuple[pd.DataFrame, pd.DataFrame]:
@@ -525,7 +537,7 @@ class RandomForestMC(UserList):
         for val in self.class_vals:
             idx_list = (
                 self.dataset.query(f'{self.target_col} == "{val}"')
-                .sample(n=self._N, replace=self.split_train_val_replace)
+                .sample(n=self._N, replace=False)
                 .index.to_list()
             )
             idx_train.extend(idx_list[: self.batch_train_pclass])
