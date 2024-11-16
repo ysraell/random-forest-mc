@@ -229,7 +229,7 @@ def test_RandomForestMC_testParallel():
         target_col=params["target_col"], max_discard_trees=20, th_decease_verbose=True
     )
     cls.fitParallel(dataset=dataset, max_workers=4)
-    _ = cls.testParallel(dataset=dataset, max_workers=4)
+    _ = cls.testForestParallel(dataset, max_workers=4)
 
 # @pytest.mark.skip()
 def test_RandomForestMC_fit_max_depth():
