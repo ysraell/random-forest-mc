@@ -26,7 +26,7 @@ path_dict = Path(f"{path_to_dataset}/model_dict.json")
 def test_version():
     from random_forest_mc import __version__
 
-    assert __version__ == "1.1.1"
+    assert __version__ == "1.2.0"
 
 
 # @pytest.mark.skip()
@@ -141,6 +141,7 @@ def test_RandomForestMC_fit():
         max_discard_trees=20,
         th_decease_verbose=True,
         temporal_features=True,
+        got_best_tree_verbose=True
     )
     cls.process_dataset(dataset)
     check.is_false(cls.temporal_features)
@@ -203,6 +204,34 @@ def test_RandomForestMC_fitParallel():
     )
     cls.fitParallel(dataset=dataset, max_workers=4)
 
+
+# @pytest.mark.skip()
+def test_RandomForestMC_testParallel():
+    from random_forest_mc.model import RandomForestMC
+    from random_forest_mc.utils import LoadDicts
+
+    dicts = LoadDicts("tests/")
+    dataset_dict = dicts.datasets_metadata
+    ds_name = "titanic"
+    params = dataset_dict[ds_name]
+    dataset = (
+        pd.read_csv(path_to_dataset + params["csv_path"])[
+            params["ds_cols"] + [params["target_col"]]
+        ]
+        .dropna()
+        .reset_index(drop=True)
+    )
+    dataset["Age"] = dataset["Age"].astype(np.uint8)
+    dataset["SibSp"] = dataset["SibSp"].astype(np.uint8)
+    dataset["Pclass"] = dataset["Pclass"].astype(str)
+    dataset["Fare"] = dataset["Fare"].astype(np.uint32)
+    dataset.insert(len(dataset.columns), "coluna_vazia", "None")
+    cls = RandomForestMC(
+        target_col=params["target_col"], max_discard_trees=20, th_decease_verbose=True
+    )
+    cls.fitParallel(dataset=dataset, max_workers=4)
+    _ = cls.testForestParallel(dataset, max_workers=4)
+    _ = cls.testForestProbsParallel(dataset, max_workers=4)
 
 # @pytest.mark.skip()
 def test_RandomForestMC_fit_max_depth():
@@ -490,8 +519,9 @@ def test_RandomForestMC_save_load_model():
     cls = RandomForestMC(target_col=params["target_col"])
     cls.process_dataset(dataset)
     cls.dict2model(ModelDict)
+    cls.dict2model(ModelDict, add=True)
     check.equal(cls.Forest_size, Forest_size)
-    check.almost_equal(sum(cls.survived_scores), sum_survived_scores)
+    check.almost_equal(sum(cls.survived_scores), 2 * sum_survived_scores)
 
 
 # @pytest.mark.skip()

@@ -7,8 +7,10 @@ from pathlib import Path
 import functools
 import operator
 
+
 def flat(a):
     return functools.reduce(operator.iconcat, a, [])
+
 
 def json_encoder(object):
     if isinstance(object, np.generic):
@@ -31,9 +33,7 @@ def dump_file_json(path: DictsPathType, var: Any):
 
 
 class LoadDicts:
-    def __init__(
-        self, dict_path: DictsPathType = "./data", ignore_errors: bool = False
-    ):
+    def __init__(self, dict_path: DictsPathType = "./data", ignore_errors: bool = False):
         Dicts_glob = Path(dict_path).glob("*.json")
         self.List = []
         self.Dict = {}
@@ -69,10 +69,11 @@ class LoadDicts:
     def items(self):
         for item in self.List:
             yield item, self.Dict[item]
-    
+
     def add(self, other) -> None:
         for item_name in other.List:
             self.Dict[item_name] = other.Dict[item_name]
         self.List.extend(other.List)
+
 
 # EOF
