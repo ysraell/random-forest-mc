@@ -19,13 +19,13 @@
 ~~- Add parameter for active validation score (like loss) for each set of a given number of trees generated.~~
 
 ### TODO v1.3:
+- Add `Python 3.13` in the unit tests.  
+- Time report generation in the unit tests. 
 - Add a training process that you can use a validation dataset to compute the performance after the cretion of a set of trees (like epochs).
 - Create new forests from a cross merging between other forests, for a given amount of trees for the output forest:~
     - by optimization, based on a GA and MC approaches, using a given test dataset;
     - Design as a subclass of the `RandomForestMC` for optimization approaches and a function for randomness and sorted merging.
-
-### TODO v1.3:
-- Add [`memray`](https://github.com/bloomberg/memray) in the automated test process.
+- Add [`memray`](https://github.com/bloomberg/memray) in the automated test process.  
 - Create a notebook with [Memray](https://github.com/bloomberg/memray) applied to the model with different datasets.
 - Add a set of functions for generate perfomance metrics: like trees generation/validation time.
 
