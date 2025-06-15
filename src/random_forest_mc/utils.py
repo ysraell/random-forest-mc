@@ -11,6 +11,24 @@ import operator
 def flat(a):
     return functools.reduce(operator.iconcat, a, [])
 
+def flatten_nested_list(lst):
+    """
+    Flatten a multi-level nested list into a single level list.
+    
+    Args:
+        lst: A list that may contain other lists and non-list elements.
+        
+    Returns:
+        A new list with all elements from the original list, flattened into one level.
+    """
+    result = []
+    for item in lst:
+        if isinstance(item, list):
+            result.extend(flatten_nested_list(item))
+        else:
+            result.append(item)
+    return result
+
 
 def json_encoder(object):
     if isinstance(object, np.generic):
