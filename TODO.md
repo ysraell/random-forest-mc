@@ -19,6 +19,7 @@
 ~~- Add parameter for active validation score (like loss) for each set of a given number of trees generated.~~
 
 ### TODO v1.3:
+- Investigate how use the new ML-focused features from `Python 3.13` can be use here.
 - Add `Python 3.13` in the unit tests.  
 - Time report generation in the unit tests. 
 - Add a training process that you can use a validation dataset to compute the performance after the cretion of a set of trees (like epochs).
