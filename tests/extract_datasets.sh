@@ -8,7 +8,7 @@ if [ -z "$TMP_DIR" ]; then
     exit 1
 fi
 
-DATASETS_DIR=$TMP_DIR/datasets/
+DATASETS_DIR="${TMP_DIR%/}/datasets" 
 mkdir -p $DATASETS_DIR
 
 for bziped2 in `ls tests/datasets/*.bz2`;
@@ -25,5 +25,7 @@ echo 'a,"!WE@",3' >$DATASETS_DIR/load_json_csv_like/csv_like.json
 
 mkdir -p $DATASETS_DIR/load_json_keyword
 echo '{"a": 1}' >$DATASETS_DIR/load_json_keyword/True.json
+
+echo "{ \"datasets_dir\": \"$DATASETS_DIR\" }" > env_datasets.json
 
 #EOF
