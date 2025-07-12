@@ -64,7 +64,8 @@ class BaseRandomForestMC(UserList):
         self.feature_cols = None
         self.type_of_cols = None
         self.class_vals = None
-        self.reset_forest()
+        self.data = []
+        self.survived_scores = []
         self.attr_to_save = [
             "min_feature",
             "max_feature",
