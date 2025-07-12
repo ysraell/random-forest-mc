@@ -17,7 +17,7 @@ from typing import Union
 import numpy as np
 import pandas as pd
 from tqdm.contrib.concurrent import process_map
-from tree import DecisionTreeMC, PandasSeriesRow, TypeClassVal, TypeLeaf, rowOrMatrix
+from tree import DecisionTreeMC, PandasSeriesRow, TypeClassVal, LeafDict, rowOrMatrix
 
 from .__init__ import __version__
 
@@ -99,12 +99,12 @@ class BaseRandomForestMC(UserList):
 
     def predict_proba(
         self, row_or_matrix: rowOrMatrix, prob_output: bool = True
-    ) -> Union[TypeLeaf, List[TypeLeaf]]:
+    ) -> Union[LeafDict, List[LeafDict]]:
         return self.predict(row_or_matrix, prob_output)
 
     def predict(
         self, row_or_matrix: rowOrMatrix, prob_output: bool = False
-    ) -> Union[TypeLeaf, List[TypeClassVal], List[TypeLeaf]]:
+    ) -> Union[LeafDict, List[TypeClassVal], List[LeafDict]]:
         if isinstance(row_or_matrix, PandasSeriesRow):
             return self.useForest(row_or_matrix)
         if isinstance(row_or_matrix, pd.DataFrame):
@@ -216,10 +216,10 @@ class BaseRandomForestMC(UserList):
         return self.data
 
     @staticmethod
-    def maxProbClas(leaf: TypeLeaf) -> TypeClassVal:
+    def maxProbClas(leaf: LeafDict) -> TypeClassVal:
         return sorted(leaf.items(), key=lambda x: x[1], reverse=True)[0][0]
 
-    def useForest(self, row: PandasSeriesRow) -> TypeLeaf:
+    def useForest(self, row: PandasSeriesRow) -> LeafDict:
         if self.soft_voting:
             if self.weighted_tree:
                 class_probs = defaultdict(float)
@@ -290,7 +290,7 @@ class BaseRandomForestMC(UserList):
             chunksize=chunksize,
         )
 
-    def testForestProbs(self, ds: pd.DataFrame) -> List[TypeLeaf]:
+    def testForestProbs(self, ds: pd.DataFrame) -> List[LeafDict]:
         return [self.useForest(row) for _, row in ds.iterrows()]
 
     def testForestProbsParallel(
