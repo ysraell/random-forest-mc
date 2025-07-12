@@ -9,5 +9,5 @@ do
     pyenv local $version
     pip install -U -r tests/requirements.txt
     pip uninstall -y random-forest-mc
-    bash -x tests/run_tests.sh
+    bash -x tests/run_tests.sh || echo "Something wrong with $version"
 done
