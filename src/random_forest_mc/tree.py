@@ -8,7 +8,6 @@ Random forests: extremely randomized trees with dynamic tree selection Monte Car
 from collections import UserDict
 from hashlib import md5
 from math import fsum
-from numbers import Number
 from numbers import Real
 from typing import Any
 from typing import Dict
@@ -23,24 +22,17 @@ from .__init__ import __version__
 typer_error_msg = "Both objects must be instances of '{}' class."
 
 # a row of pd.DataFrame.iterrows()
-# PandasSeriesRow: TypeAlias = pd.core.series.Series
-PandasSeriesRow = pd.core.series.Series
-
-# A tree composed by a assimetric tree of dictionaries:
-# TreeDict: TypeAlias = Dict
-TreeDict = Dict
+PandasSeriesRow = pd.Series
 
 # Value type of classes
-# TypeClassVal: TypeAlias = Any
 TypeClassVal = Any  # !Review if is not forced to be str!
 
 # Type of the leaf
-# LeafDict: TypeAlias = Dict[TypeClassVal, float]
 LeafDict = Dict[TypeClassVal, float]
 
 # How to format a dict with values to fill the missing ones
 featName = str
-featValue = Union[str, Number]
+featValue = Union[str, Real]
 dictValues = Dict[featName, featValue]
 
 # Row (dsRow) or Matrix (Pandas DataFrame)
@@ -70,7 +62,7 @@ class DecisionTreeMC(UserDict):
         "module_version",
         "attr_to_save",
     ]
-    typer_error_msg = typer_error_msg.format("DecisionTreeMC")
+    typer_error_msg = "Both objects must be instances of 'DecisionTreeMC' class."
 
     def __init__(
         self,
@@ -142,19 +134,41 @@ class DecisionTreeMC(UserDict):
         return {attr: getattr(self, attr) for attr in self.attr_to_save}
 
     @property
-    def md5hexdigest(self) -> List[str]:
-        return md5(str(self).encode("utf-8")).hexdigest()
+    def md5hexdigest(self) -> str:
+        """Return the MD5 hexdigest of the tree structure for a unique signature."""
+        # Sorting keys is required to have a deterministic hash
+        import json
+        tree_str = json.dumps(self.data, sort_keys=True)
+        return md5(tree_str.encode("utf-8")).hexdigest()
+
+    def _get_depths(self, sub_tree: Dict, depths: List[int]) -> None:
+        """Recursively traverses the tree to collect node depths."""
+        if not isinstance(sub_tree, dict) or not sub_tree:
+            return
+
+        # The first key is the feature name, or "leaf"
+        node_key = list(sub_tree.keys())[0]
+        if node_key == "leaf":
+            return
+
+        node_content = sub_tree[node_key]
+        if isinstance(node_content, dict):
+            if "depth" in node_content:
+                depths.append(node_content["depth"])
+
+            if "split" in node_content:
+                split_node = node_content["split"]
+                if isinstance(split_node, dict):
+                    if ">=" in split_node:
+                        self._get_depths(split_node[">="], depths)
+                    if "<" in split_node:
+                        self._get_depths(split_node["<"], depths)
 
     @property
-    def depths(self) -> List[str]:
-        str_tree_splitted = str(self).split(" ")
+    def depths(self) -> List[int]:
+        """Return a list of all node depths in the tree."""
         depths = []
-        while str_tree_splitted:
-            term = str_tree_splitted.pop(0)
-            if term == "'depth':":
-                depths.append(
-                    int(str_tree_splitted.pop(0).split("#")[0].replace("'", ""))
-                )
+        self._get_depths(self.data, depths)
         return depths
 
     @staticmethod

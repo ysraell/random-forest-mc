@@ -9,10 +9,7 @@ import re
 from collections import defaultdict
 from collections import UserList
 from math import fsum
-from numbers import Number
 from random import shuffle
-from typing import Any
-from typing import Dict
 from typing import List
 from typing import Optional
 from typing import Union
@@ -20,63 +17,21 @@ from typing import Union
 import numpy as np
 import pandas as pd
 from tqdm.contrib.concurrent import process_map
-from tree import DecisionTreeMC
+from tree import DecisionTreeMC, PandasSeriesRow, TypeClassVal, TypeLeaf, rowOrMatrix
 
 from .__init__ import __version__
-
-# For backward compatibility with 3.7
-# from typing import TypeAlias
-
-typer_error_msg = "Both objects must be instances of '{}' class."
 
 # For extract the feature names from the tree-dict.
 re_feat_name = re.compile("\\'[\\w\\s]+'\\:")
 
-# a row of pd.DataFrame.iterrows()
-# dsRow: TypeAlias = pd.core.series.Series
-dsRow = pd.core.series.Series
-
-# A tree composed by a assimetric tree of dictionaries:
-# TypeTree: TypeAlias = Dict
-TypeTree = Dict
-
-# Value type of classes
-# TypeClassVal: TypeAlias = Any
-TypeClassVal = Any  # !Review if is not forced to be str!
-
-# Type of the leaf
-# TypeLeaf: TypeAlias = Dict[TypeClassVal, float]
-TypeLeaf = Dict[TypeClassVal, float]
-
-# How to format a dict with values to fill the missing ones
-featName = str
-featValue = Union[str, Number]
-dictValues = Dict[featName, featValue]
-
-# Row (dsRow) or Matrix (Pandas DataFrame)
-rowOrMatrix = Union[dsRow, pd.DataFrame]
-
-
 class BaseRandomForestMC(UserList):
-    """_summary_
+    """Base class for Random Forest Monte Carlo.
 
-    Args:
-        UserList (_type_): _description_
-
-    Raises:
-        TypeError: _description_
-        TypeError: _description_
-        TypeError: _description_
-        ValueError: _description_
-        ValueError: _description_
-        DatasetNotFound: _description_
-        DatasetNotFound: _description_
-
-    Returns:
-        _type_: _description_
+    This class extends UserList to manage a collection of DecisionTreeMC objects,
+    providing core functionalities for forest-based predictions and operations.
     """
 
-    typer_error_msg = typer_error_msg.format("RandomForestMC")
+    typer_error_msg = "Both objects must be instances of 'RandomForestMC' class."
 
     def __init__(
         self,
@@ -86,14 +41,14 @@ class BaseRandomForestMC(UserList):
         max_feature: Optional[int] = None,
         temporal_features: bool = False,
     ) -> None:
-        """_summary_
+        """Initializes the BaseRandomForestMC object.
 
         Args:
-            n_trees (int, optional): _description_. Defaults to 16.
-            target_col (str, optional): _description_. Defaults to "target".
-            min_feature (Optional[int], optional): _description_. Defaults to None.
-            max_feature (Optional[int], optional): _description_. Defaults to None.
-            temporal_features (bool, optional): _description_. Defaults to False.
+            n_trees (int, optional): The number of trees in the forest. Defaults to 16.
+            target_col (str, optional): The name of the target column. Defaults to "target".
+            min_feature (Optional[int], optional): Minimum number of features to consider for each tree. Defaults to None.
+            max_feature (Optional[int], optional): Maximum number of features to consider for each tree. Defaults to None.
+            temporal_features (bool, optional): Whether to consider temporal features. Defaults to False.
         """
         self.__version__ = __version__
         self.version = __version__
@@ -144,19 +99,19 @@ class BaseRandomForestMC(UserList):
 
     def predict_proba(
         self, row_or_matrix: rowOrMatrix, prob_output: bool = True
-    ) -> Union[TypeLeaf, List[TypeClassVal], List[TypeLeaf]]:
+    ) -> Union[TypeLeaf, List[TypeLeaf]]:
         return self.predict(row_or_matrix, prob_output)
 
     def predict(
         self, row_or_matrix: rowOrMatrix, prob_output: bool = False
     ) -> Union[TypeLeaf, List[TypeClassVal], List[TypeLeaf]]:
-        if isinstance(row_or_matrix, dsRow):
+        if isinstance(row_or_matrix, PandasSeriesRow):
             return self.useForest(row_or_matrix)
         if isinstance(row_or_matrix, pd.DataFrame):
             if prob_output:
                 return self.testForestProbs(row_or_matrix)
             return self.testForest(row_or_matrix)
-        raise TypeError(f"The input argument must be '{dsRow}' or '{pd.DataFrame}'.")
+        raise TypeError("The input argument must be a Pandas Series or a Pandas DataFrame.")
 
     def mergeForest(self, otherForest, N: int = -1, by: str = "add"):
         if not isinstance(otherForest, BaseRandomForestMC):
@@ -264,7 +219,7 @@ class BaseRandomForestMC(UserList):
     def maxProbClas(leaf: TypeLeaf) -> TypeClassVal:
         return sorted(leaf.items(), key=lambda x: x[1], reverse=True)[0][0]
 
-    def useForest(self, row: dsRow) -> TypeLeaf:
+    def useForest(self, row: PandasSeriesRow) -> TypeLeaf:
         if self.soft_voting:
             if self.weighted_tree:
                 class_probs = defaultdict(float)
@@ -312,7 +267,7 @@ class BaseRandomForestMC(UserList):
     def testForest(self, ds: pd.DataFrame) -> List[TypeClassVal]:
         return [self.maxProbClas(self.useForest(row)) for _, row in ds.iterrows()]
 
-    def _testForest_func(self, row: dsRow):
+    def _testForest_func(self, row: PandasSeriesRow):
         return self.maxProbClas(self.useForest(row))
 
     def testForestParallel(
