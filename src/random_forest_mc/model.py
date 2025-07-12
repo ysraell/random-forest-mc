@@ -12,8 +12,7 @@ from itertools import combinations
 from itertools import count as itertools_count
 from math import fsum
 from numbers import Real
-from random import randint
-from random import sample
+from numpy import random as np_random
 from typing import List
 from typing import Optional
 from typing import Tuple
@@ -125,7 +124,7 @@ class RandomForestMC(BaseRandomForestMC):
             got_best_tree_verbose (bool, optional): Whether to log when the best tree is found. Defaults to False.
         """
 
-        super.__init__(
+        super().__init__(
             n_trees=n_trees,
             target_col=target_col,
             min_feature=min_feature,
@@ -141,7 +140,6 @@ class RandomForestMC(BaseRandomForestMC):
         self.th_start = th_start
         self.delta_th = delta_th
         self.max_discard_trees = max_discard_trees
-        self.dataset = None
         self.dataset = None
         self.max_depth = getrecursionlimit() if max_depth is None else int(max_depth)
         self.min_samples_split = int(min_samples_split)
@@ -166,6 +164,7 @@ class RandomForestMC(BaseRandomForestMC):
         self.feature_cols = feature_cols
         self.type_of_cols = type_of_cols
         self.dataset = dataset.dropna()
+        log.warning("Rows with missing values were dropped from the dataset.")
         self.class_vals = dataset[self.target_col].unique().tolist()
 
         if self.temporal_features and (not self.validFeaturesTemporal()):
@@ -196,16 +195,14 @@ class RandomForestMC(BaseRandomForestMC):
         )
         for col in self.feature_cols:
             if ds_T[col].nunique() == 1:
-                # Coverage trick!
-                _ = None
                 ds_T.drop(columns=col, inplace=True)
         return ds_T, ds_V
 
     # Sample the features.
     def sampleFeats(self, feature_cols: List[str]) -> List[featName]:
         feature_cols.remove(self.target_col)
-        n_samples = randint(self.min_feature, self.max_feature)  # noqa: S311
-        out = sample(feature_cols, min(len(feature_cols), n_samples))
+        n_samples = np_random.randint(self.min_feature, self.max_feature + 1)
+        out = np_random.sample(feature_cols, min(len(feature_cols), n_samples))
         if not self.temporal_features:
             return out
         return sorted(out, key=lambda x: int(x.split("_")[-1]))
@@ -228,7 +225,6 @@ class RandomForestMC(BaseRandomForestMC):
                 ds_a = ds.query(f"{feat} >= {split_val}").reset_index(drop=True)
                 ds_b = ds.query(f"{feat} < {split_val}").reset_index(drop=True)
                 if (ds_a.shape[0] == 0) or (ds_b.shape[0] == 0):
-                    # I know that is a trick!
                     ds_a = ds.query(f"{feat} > {split_val}").reset_index(drop=True)
                     ds_b = ds.query(f"{feat} <= {split_val}").reset_index(drop=True)
 
@@ -312,7 +308,6 @@ class RandomForestMC(BaseRandomForestMC):
                         max_Tree = Tree
                         max_th_val = th_val
             else:
-                # Coverage trick!
                 max_th_val = th_val
                 break
             if next(dropped_trees_counter) >= self.max_discard_trees:
@@ -412,10 +407,11 @@ class RandomForestMC(BaseRandomForestMC):
         if Forest is None:
             Forest = self.data
         n_trees = len(Forest)
-        return {
-            feat: fsum([f"'{feat}'" in str(Tree) for Tree in Forest]) / n_trees
-            for feat in self.feature_cols
-        }
+        importance = defaultdict(int)
+        for tree in Forest:
+            for feat in tree.used_features:
+                importance[feat] += 1
+        return {feat: count / n_trees for feat, count in importance.items()}
 
     def sampleClassFeatImportance(
         self, row: PandasSeriesRow, Class: TypeClassVal
@@ -428,19 +424,11 @@ class RandomForestMC(BaseRandomForestMC):
         if Forest is None:
             Forest = self.data
         # Hadouken!!
-        return {
-            feat: np.mean(
-                [
-                    x
-                    for x in [
-                        (f"'{feat}'" in str(Tree)) * score
-                        for Tree, score in zip(Forest, self.survived_scores)
-                    ]
-                    if x > 0
-                ]
-            )
-            for feat in self.feature_cols
-        }
+        scores = defaultdict(list)
+        for Tree, score in zip(Forest, self.survived_scores):
+            for feat in Tree.used_features:
+                scores[feat].append(score)
+        return {feat: np.mean(s) for feat, s in scores.items()}
 
     def sampleClassFeatScoreMean(
         self, row: PandasSeriesRow, Class: TypeClassVal
@@ -457,10 +445,10 @@ class RandomForestMC(BaseRandomForestMC):
         for Tree in tqdm(
             Forest, disable=disable_progress_bar, desc="Counting pair occurences"
         ):
+            used_features_in_tree = set(Tree.used_features)
             for pair in combinations(self.feature_cols, 2):
-                pair_count[pair] += (
-                    f"'{pair[0]}'" in str(Tree) and f"'{pair[1]}'" in str(Tree)
-                ) / n_trees
+                if pair[0] in used_features_in_tree and pair[1] in used_features_in_tree:
+                    pair_count[pair] += 1 / n_trees
         return dict(pair_count)
 
     def sampleClassFeatPairImportance(
@@ -515,8 +503,6 @@ class RandomForestMC(BaseRandomForestMC):
                 f"The Forest model have not the following feature(s): [{_tmp}]."
             )
         if len(set(dict_values.keys())) == len(not_have_feats):
-            # Coverage trick!
-            _ = None
             raise DictValuesAllFeaturesMissing
 
     def _genFilledDataMissing(
@@ -526,8 +512,6 @@ class RandomForestMC(BaseRandomForestMC):
         if isinstance(row_or_matrix, PandasSeriesRow):
             df_data_miss = self._fill_row_missing(row_or_matrix, dict_values)
             if df_data_miss is None:
-                # Coverage trick!
-                _ = None
                 raise MissingValuesNotFound
             row_or_matrix = (
                 pd.DataFrame(row_or_matrix).transpose().reset_index(drop=True)
