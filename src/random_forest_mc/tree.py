@@ -21,13 +21,7 @@ import pandas as pd
 
 from .__init__ import __version__
 
-# For backward compatibility with 3.7
-# from typing import TypeAlias
-
 typer_error_msg = "Both objects must be instances of '{}' class."
-
-# For extract the feature names from the tree-dict.
-re_feat_name = re.compile("\\'[\\w\\s]+'\\:")
 
 # a row of pd.DataFrame.iterrows()
 # dsRow: TypeAlias = pd.core.series.Series
@@ -69,7 +63,15 @@ class DecisionTreeMC(UserDict):
         _type_: _description_
     """
 
-    __slots__ = ["data", "class_vals", "survived_score", "features", "used_features", "module_version", "attr_to_save"]
+    __slots__ = [
+        "data",
+        "class_vals",
+        "survived_score",
+        "features",
+        "used_features",
+        "module_version",
+        "attr_to_save",
+    ]
     typer_error_msg = typer_error_msg.format("DecisionTreeMC")
 
     def __init__(
@@ -152,12 +154,14 @@ class DecisionTreeMC(UserDict):
         while str_tree_splitted:
             term = str_tree_splitted.pop(0)
             if term == "'depth':":
-                depths.append(int(str_tree_splitted.pop(0).split("#")[0].replace("'", "")))
+                depths.append(
+                    int(str_tree_splitted.pop(0).split("#")[0].replace("'", ""))
+                )
         return depths
 
     @staticmethod
     def _useTree(Tree, row: dsRow) -> TypeLeaf:
-        def functionalUseTree(subTree):
+        def functionalUseTree(subTree) -> TypeLeaf:
             node = list(subTree.keys())[0]
             if node == "leaf":
                 return subTree["leaf"]
@@ -169,7 +173,8 @@ class DecisionTreeMC(UserDict):
                 ]
             val = row[node]
             if val == tree_node_split["split_val"] or (
-                tree_node_split["feat_type"] == "numeric" and val > tree_node_split["split_val"]
+                tree_node_split["feat_type"] == "numeric"
+                and val > tree_node_split["split_val"]
             ):
                 return functionalUseTree(tree_node_split[">="])
             return functionalUseTree(tree_node_split["<"])
