@@ -21,6 +21,7 @@ from typing import List
 from typing import Optional
 from typing import Tuple
 from typing import Union
+from sys import getrecursionlimit
 
 import numpy as np
 import pandas as pd
@@ -149,21 +150,25 @@ class RandomForestMC(BaseRandomForestMC):
         super.__init__(
             n_trees=n_trees,
             target_col=target_col,
-            batch_train_pclass=batch_train_pclass,
-            batch_val_pclass=batch_val_pclass,
-            max_discard_trees=max_discard_trees,
-            delta_th=delta_th,
-            th_start=th_start,
-            get_best_tree=get_best_tree,
             min_feature=min_feature,
             max_feature=max_feature,
-            th_decease_verbose=th_decease_verbose,
             temporal_features=temporal_features,
-            max_depth=max_depth,
-            min_samples_split=min_samples_split,
-            got_best_tree_verbose=got_best_tree_verbose,
         )
         self.split_with_replace = split_with_replace
+        if th_decease_verbose:
+            log.basicConfig(level=log.INFO)
+        self.batch_train_pclass = batch_train_pclass
+        self.batch_val_pclass = batch_val_pclass
+        self._N = batch_train_pclass + batch_val_pclass
+        self.th_start = th_start
+        self.delta_th = delta_th
+        self.max_discard_trees = max_discard_trees
+        self.dataset = None
+        self.dataset = None
+        self.max_depth = getrecursionlimit() if max_depth is None else int(max_depth)
+        self.min_samples_split = int(min_samples_split)
+        self.got_best_tree_verbose = got_best_tree_verbose
+        self.get_best_tree = get_best_tree
 
     def process_dataset(self, dataset: pd.DataFrame) -> None:
         dataset[self.target_col] = dataset[self.target_col].astype(str)

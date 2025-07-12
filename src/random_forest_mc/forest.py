@@ -5,14 +5,12 @@ Random forests: extremely randomized trees with dynamic tree selection Monte Car
 
 """
 
-import logging as log
 import re
 from collections import defaultdict
 from collections import UserList
 from math import fsum
 from numbers import Number
 from random import shuffle
-from sys import getrecursionlimit
 from typing import Any
 from typing import Dict
 from typing import List
@@ -84,73 +82,36 @@ class BaseRandomForestMC(UserList):
         self,
         n_trees: int = 16,
         target_col: str = "target",
-        batch_train_pclass: int = 10,
-        batch_val_pclass: int = 10,
-        max_discard_trees: int = 10,
-        delta_th: float = 0.1,
-        th_start: float = 1.0,
-        get_best_tree: bool = True,
         min_feature: Optional[int] = None,
         max_feature: Optional[int] = None,
-        th_decease_verbose: bool = False,
         temporal_features: bool = False,
-        max_depth: Optional[int] = None,
-        min_samples_split: int = 1,
-        got_best_tree_verbose: bool = False,
     ) -> None:
         """_summary_
 
         Args:
             n_trees (int, optional): _description_. Defaults to 16.
             target_col (str, optional): _description_. Defaults to "target".
-            batch_train_pclass (int, optional): _description_. Defaults to 10.
-            batch_val_pclass (int, optional): _description_. Defaults to 10.
-            max_discard_trees (int, optional): _description_. Defaults to 10.
-            delta_th (float, optional): _description_. Defaults to 0.1.
-            th_start (float, optional): _description_. Defaults to 0.9.
-            get_best_tree (bool, optional): _description_. Defaults to True.
             min_feature (Optional[int], optional): _description_. Defaults to None.
             max_feature (Optional[int], optional): _description_. Defaults to None.
-            th_decease_verbose (bool, optional): _description_. Defaults to False.
             temporal_features (bool, optional): _description_. Defaults to False.
-            split_with_replace (bool, optional): _description_. Defaults to False.
-            max_depth (Optional[int], optional): _description_. Defaults to None.
-            min_samples_split (int, optional): _description_. Defaults to 1.
         """
         self.__version__ = __version__
         self.version = __version__
         self.model_version = __version__
-        if th_decease_verbose:
-            log.basicConfig(level=log.INFO)
         self.target_col = target_col
-        self.get_best_tree = get_best_tree
-        self.batch_train_pclass = batch_train_pclass
-        self.batch_val_pclass = batch_val_pclass
-        self._N = batch_train_pclass + batch_val_pclass
         self.min_feature = min_feature
         self.max_feature = max_feature
-        self.th_start = th_start
-        self.delta_th = delta_th
-        self.max_discard_trees = max_discard_trees
         self.temporal_features = temporal_features
         self.n_trees = n_trees
-        self.dataset = None
         self.feat_types = ["numeric", "categorical"]
         self.numeric_cols = None
         self.feature_cols = None
         self.type_of_cols = None
-        self.dataset = None
         self.class_vals = None
         self.reset_forest()
         self.attr_to_save = [
-            "batch_train_pclass",
-            "batch_val_pclass",
-            "_N",
             "min_feature",
             "max_feature",
-            "th_start",
-            "delta_th",
-            "max_discard_trees",
             "n_trees",
             "class_vals",
             "survived_scores",
@@ -160,13 +121,9 @@ class BaseRandomForestMC(UserList):
             "type_of_cols",
             "target_col",
             "class_vals",
-            "min_samples_split",
         ]
         self.soft_voting = False
         self.weighted_tree = False
-        self.max_depth = getrecursionlimit() if max_depth is None else int(max_depth)
-        self.min_samples_split = int(min_samples_split)
-        self.got_best_tree_verbose = got_best_tree_verbose
 
     def __repr__(self) -> str:
         txt = "{}(len(Forest)={},n_trees={},model_version={},module_version={})"
