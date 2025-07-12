@@ -5,7 +5,6 @@ Random forests: extremely randomized trees with dynamic tree selection Monte Car
 
 """
 
-import re
 from collections import UserDict
 from hashlib import md5
 from math import fsum
@@ -24,20 +23,20 @@ from .__init__ import __version__
 typer_error_msg = "Both objects must be instances of '{}' class."
 
 # a row of pd.DataFrame.iterrows()
-# dsRow: TypeAlias = pd.core.series.Series
-dsRow = pd.core.series.Series
+# PandasSeriesRow: TypeAlias = pd.core.series.Series
+PandasSeriesRow = pd.core.series.Series
 
 # A tree composed by a assimetric tree of dictionaries:
-# TypeTree: TypeAlias = Dict
-TypeTree = Dict
+# TreeDict: TypeAlias = Dict
+TreeDict = Dict
 
 # Value type of classes
 # TypeClassVal: TypeAlias = Any
 TypeClassVal = Any  # !Review if is not forced to be str!
 
 # Type of the leaf
-# TypeLeaf: TypeAlias = Dict[TypeClassVal, float]
-TypeLeaf = Dict[TypeClassVal, float]
+# LeafDict: TypeAlias = Dict[TypeClassVal, float]
+LeafDict = Dict[TypeClassVal, float]
 
 # How to format a dict with values to fill the missing ones
 featName = str
@@ -45,7 +44,7 @@ featValue = Union[str, Number]
 dictValues = Dict[featName, featValue]
 
 # Row (dsRow) or Matrix (Pandas DataFrame)
-rowOrMatrix = Union[dsRow, pd.DataFrame]
+rowOrMatrix = Union[PandasSeriesRow, pd.DataFrame]
 
 
 class DecisionTreeMC(UserDict):
@@ -116,7 +115,7 @@ class DecisionTreeMC(UserDict):
         txt = "DecisionTreeMC(survived_score={},module_version={})"
         return txt.format(self.survived_score, self.module_version)
 
-    def __call__(self, row: dsRow) -> TypeLeaf:
+    def __call__(self, row: PandasSeriesRow) -> LeafDict:
         return self.useTree(row)
 
     def __eq__(self, other) -> bool:
@@ -159,8 +158,8 @@ class DecisionTreeMC(UserDict):
         return depths
 
     @staticmethod
-    def _useTree(Tree, row: dsRow) -> TypeLeaf:
-        def functionalUseTree(subTree) -> TypeLeaf:
+    def _useTree(tree, row: PandasSeriesRow) -> LeafDict:
+        def functionalUseTree(subTree) -> LeafDict:
             node = list(subTree.keys())[0]
             if node == "leaf":
                 return subTree["leaf"]
@@ -178,11 +177,11 @@ class DecisionTreeMC(UserDict):
                 return functionalUseTree(tree_node_split[">="])
             return functionalUseTree(tree_node_split["<"])
 
-        return functionalUseTree(Tree)
+        return functionalUseTree(tree)
 
-    def useTree(self, row: dsRow) -> TypeLeaf:
-        Tree = self.data.copy()
-        out = self._useTree(Tree, row)
+    def useTree(self, row: PandasSeriesRow) -> LeafDict:
+        tree = self.data.copy()
+        out = self._useTree(tree, row)
         if isinstance(out, dict):
             return out
         leafes = []
