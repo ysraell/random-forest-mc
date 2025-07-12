@@ -13,6 +13,7 @@ do
 done
 
 # with JIT:
+# use https://github.com/AdrianDAlessandro/pyenv-suffix
 for version in `cat tests/versions-jit-nogil.txt |grep -v '#'`;
 do
     export PYENV_VERSION_SUFFIX="-jit" 
