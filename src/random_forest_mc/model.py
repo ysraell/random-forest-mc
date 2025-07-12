@@ -12,7 +12,7 @@ from itertools import combinations
 from itertools import count as itertools_count
 from math import fsum
 from numbers import Real
-from numpy import random as np_random
+from random import sample as random_sample
 from typing import List
 from typing import Optional
 from typing import Tuple
@@ -210,8 +210,8 @@ class RandomForestMC(BaseRandomForestMC):
     # Sample the features.
     def sampleFeats(self, feature_cols: List[str]) -> List[featName]:
         feature_cols.remove(self.target_col)
-        n_samples = np_random.randint(self.min_feature, self.max_feature + 1)
-        out = np_random.sample(feature_cols, min(len(feature_cols), n_samples))
+        n_samples = np.random.randint(self.min_feature, self.max_feature + 1)
+        out = random_sample(feature_cols, min(len(feature_cols), n_samples))
         if not self.temporal_features:
             return out
         return sorted(out, key=lambda x: int(x.split("_")[-1]))

@@ -14,6 +14,7 @@ from typing import Dict
 from typing import List
 from typing import Optional
 from typing import Union
+import json
 
 import pandas as pd
 
@@ -137,7 +138,6 @@ class DecisionTreeMC(UserDict):
     def md5hexdigest(self) -> str:
         """Return the MD5 hexdigest of the tree structure for a unique signature."""
         # Sorting keys is required to have a deterministic hash
-        import json
 
         tree_str = json.dumps(self.data, sort_keys=True)
         return md5(tree_str.encode("utf-8")).hexdigest()

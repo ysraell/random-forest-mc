@@ -21,7 +21,7 @@ def create_dummy_decision_tree(
     tree = DecisionTreeMC(data, class_vals, survived_score, features, used_features)
     # Mock the __call__ method for easier testing of useForest
     tree.__call__ = MagicMock(return_value={"classA": 1.0, "classB": 0.0})
-    tree.md5hexdigest = "dummy_hash"
+    _ = tree.md5hexdigest
     return tree
 
 

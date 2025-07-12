@@ -884,7 +884,7 @@ def test_RandomForestMC_predictMissingValues():
     from random_forest_mc.model import (
         RandomForestMC,
         MissingValuesNotFound,
-        dictValuesAllFeaturesMissing,
+        DictValuesAllFeaturesMissing,
     )
     from random_forest_mc.utils import LoadDicts
 
@@ -941,7 +941,7 @@ def test_RandomForestMC_predictMissingValues():
         _ = cls.predictMissingValues(dataset.sample(n=20), dict_values)
 
     _dict_values = {"Not Feature": [1, 2, 3], "Not Feature 2": [4, 5, 6]}
-    with pytest.raises(dictValuesAllFeaturesMissing):
+    with pytest.raises(DictValuesAllFeaturesMissing):
         _ = cls.predictMissingValues(dataset.sample(n=20), _dict_values)
 
 
