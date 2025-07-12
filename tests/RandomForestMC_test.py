@@ -15,11 +15,13 @@ from typing import NewType
 
 DictsPathType = NewType("DictsPath", str)
 
+
 def load_file_json(path: DictsPathType):
     with open(Path(path), "r") as f:
         return json.load(f)
 
-path_to_dataset = load_file_json('env_datasets.json')["datasets_dir"]
+
+path_to_dataset = load_file_json("env_datasets.json")["datasets_dir"]
 
 
 def flat(a):
@@ -148,7 +150,7 @@ def test_RandomForestMC_fit():
         max_discard_trees=20,
         th_decease_verbose=True,
         temporal_features=True,
-        got_best_tree_verbose=True
+        got_best_tree_verbose=True,
     )
     cls.process_dataset(dataset)
     check.is_false(cls.temporal_features)
@@ -239,6 +241,7 @@ def test_RandomForestMC_testParallel():
     cls.fitParallel(dataset=dataset, max_workers=4)
     _ = cls.testForestParallel(dataset, max_workers=4)
     _ = cls.testForestProbsParallel(dataset, max_workers=4)
+
 
 # @pytest.mark.skip()
 def test_RandomForestMC_fit_max_depth():

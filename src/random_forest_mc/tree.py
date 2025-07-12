@@ -49,18 +49,17 @@ rowOrMatrix = Union[dsRow, pd.DataFrame]
 
 
 class DecisionTreeMC(UserDict):
-    """Tree for decision. Can be used alone.
-    Is originally designed to be trained and used
-    with the class 'RandomForestMC'.
+    """A single decision tree used for making predictions.
+
+    This class represents a single decision tree that can be used for classification tasks.
+    It is designed to be part of a RandomForestMC ensemble but can also be used as a standalone model.
 
     Args:
-        UserDict (_type_): _description_
-
-    Raises:
-        TypeError: _description_
-
-    Returns:
-        _type_: _description_
+        data (dict): The tree structure, represented as a nested dictionary.
+        class_vals (List[TypeClassVal]): A list of all possible class values.
+        survived_score (Optional[Real]): The score of the tree, used for ranking within the forest.
+        features (Optional[List[featName]]): A list of all features used in the dataset.
+        used_features (Optional[List[featName]]): A list of features actually used in this tree.
     """
 
     __slots__ = [
@@ -82,14 +81,14 @@ class DecisionTreeMC(UserDict):
         features: Optional[List[featName]] = None,
         used_features: Optional[List[featName]] = None,
     ) -> None:
-        """_summary_
+        """Initializes the DecisionTreeMC object.
 
         Args:
-            data (dict): _description_
-            class_vals (List[TypeClassVal]): _description_
-            survived_score (Optional[Real], optional): _description_. Defaults to None.
-            features (Optional[List[featName]], optional): _description_. Defaults to None.
-            used_features (Optional[List[featName]], optional): _description_. Defaults to None.
+            data (dict): The dictionary representing the tree structure.
+            class_vals (List[TypeClassVal]): The list of possible class values.
+            survived_score (Optional[Real], optional): The survival score of the tree. Defaults to None.
+            features (Optional[List[featName]], optional): The list of all features. Defaults to None.
+            used_features (Optional[List[featName]], optional): The list of features used in this tree. Defaults to None.
         """
         self.data = data
         self.class_vals = class_vals
