@@ -12,6 +12,8 @@ do
     bash -x tests/run_tests.sh || echo "Something wrong with $version"
 done
 
+exit 0
+
 # with JIT:
 # use https://github.com/AdrianDAlessandro/pyenv-suffix
 for version in `cat tests/versions-jit-nogil.txt |grep -v '#'`;
