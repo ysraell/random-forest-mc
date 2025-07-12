@@ -256,6 +256,12 @@ dicts.List
 > ["data", "metdada"]
 ```
 
+### Run unit tests:
+
+Extract the datasets and metada files:
+```bash
+./tests/extract_datasets.sh
+```
 
 ## Fundamentals:
 
