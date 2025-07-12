@@ -24,7 +24,7 @@ def create_mock_tree(
         used_features if used_features is not None else ["feature1"]
     )
     mock_tree.md5hexdigest = "dummy_hash"
-    mock_tree.__call__.return_value = {
+    mock_tree.useTree.return_value = {
         "classA": 1.0,
         "classB": 0.0,
     }  # Default return for tree call
