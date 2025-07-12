@@ -24,8 +24,8 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 from tqdm.contrib.concurrent import process_map
-from forest import BaseRandomForestMC
-from tree import (
+from .forest import BaseRandomForestMC
+from .tree import (
     DecisionTreeMC,
     TypeClassVal,
     LeafDict,

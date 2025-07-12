@@ -17,7 +17,7 @@ from typing import Union
 import numpy as np
 import pandas as pd
 from tqdm.contrib.concurrent import process_map
-from tree import DecisionTreeMC, PandasSeriesRow, TypeClassVal, LeafDict, rowOrMatrix
+from .tree import DecisionTreeMC, PandasSeriesRow, TypeClassVal, LeafDict, rowOrMatrix
 
 from .__init__ import __version__
 
