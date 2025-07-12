@@ -25,13 +25,22 @@ import pandas as pd
 from tqdm import tqdm
 from tqdm.contrib.concurrent import process_map
 from forest import BaseRandomForestMC
-from tree import DecisionTreeMC, TypeClassVal, LeafDict, rowOrMatrix, featName, PandasSeriesRow
+from tree import (
+    DecisionTreeMC,
+    TypeClassVal,
+    LeafDict,
+    rowOrMatrix,
+    featName,
+    PandasSeriesRow,
+)
 
 
 # For extract the feature names from the tree-dict.
 re_feat_name = re.compile("\\'[\\w\\s]+'\\:")
 
 DictValues = Dict[featName, Union[str, Real]]
+
+
 # Custom exception when missing values not found
 class MissingValuesNotFound(Exception):
     """Exception raised for missing values not found.
@@ -219,7 +228,6 @@ class RandomForestMC(BaseRandomForestMC):
         self, feat, ds: pd.DataFrame
     ) -> Tuple[pd.DataFrame, pd.DataFrame, Union[Real, str]]:
         if ds.shape[0] > 2:
-
             if feat in self.numeric_cols:
                 split_val = float(ds[feat].quantile())
                 ds_a = ds.query(f"{feat} >= {split_val}").reset_index(drop=True)
@@ -249,12 +257,10 @@ class RandomForestMC(BaseRandomForestMC):
     def plantTree(
         self, ds_train: pd.DataFrame, feature_list: List[featName]
     ) -> DecisionTreeMC:
-
         # Functional process.
         def growTree(
             F: List[featName], ds: pd.DataFrame, depth: int = 1
         ) -> Union[DecisionTreeMC, LeafDict]:
-
             if (depth >= self.max_depth) or (ds[self.target_col].nunique() == 1):
                 return self.genLeaf(ds, depth)
 
@@ -329,7 +335,6 @@ class RandomForestMC(BaseRandomForestMC):
     def fit(
         self, dataset: Optional[pd.DataFrame] = None, disable_progress_bar: bool = False
     ) -> None:
-
         if dataset is not None:
             self.process_dataset(dataset)
 
@@ -357,7 +362,6 @@ class RandomForestMC(BaseRandomForestMC):
         disable_progress_bar: bool = False,
         max_workers: Optional[int] = None,
     ):
-
         if dataset is not None:
             self.process_dataset(dataset)
 
@@ -375,7 +379,9 @@ class RandomForestMC(BaseRandomForestMC):
         self.data.extend(Tree_list)
         self.survived_scores.extend([Tree.survived_score for Tree in Tree_list])
 
-    def sampleClass2trees(self, row: PandasSeriesRow, Class: TypeClassVal) -> List[DecisionTreeMC]:
+    def sampleClass2trees(
+        self, row: PandasSeriesRow, Class: TypeClassVal
+    ) -> List[DecisionTreeMC]:
         return [Tree for Tree in self.data if self.maxProbClas(Tree(row)) == Class]
 
     @property
@@ -447,7 +453,10 @@ class RandomForestMC(BaseRandomForestMC):
         ):
             used_features_in_tree = set(Tree.used_features)
             for pair in combinations(self.feature_cols, 2):
-                if pair[0] in used_features_in_tree and pair[1] in used_features_in_tree:
+                if (
+                    pair[0] in used_features_in_tree
+                    and pair[1] in used_features_in_tree
+                ):
                     pair_count[pair] += 1 / n_trees
         return dict(pair_count)
 
@@ -479,7 +488,9 @@ class RandomForestMC(BaseRandomForestMC):
         return self.featCorrDataFrame(self.sampleClass2trees(row=row, Class=Class))
 
     @staticmethod
-    def _fill_row_missing(row: PandasSeriesRow, dict_values: DictValues) -> pd.DataFrame:
+    def _fill_row_missing(
+        row: PandasSeriesRow, dict_values: DictValues
+    ) -> pd.DataFrame:
         list_out = []
         for col, vals in dict_values.items():
             if pd.isna(row[col]):
@@ -508,7 +519,6 @@ class RandomForestMC(BaseRandomForestMC):
     def _genFilledDataMissing(
         self, row_or_matrix: rowOrMatrix, dict_values: DictValues
     ) -> Tuple[pd.DataFrame, pd.DataFrame]:
-
         if isinstance(row_or_matrix, PandasSeriesRow):
             df_data_miss = self._fill_row_missing(row_or_matrix, dict_values)
             if df_data_miss is None:
@@ -533,7 +543,6 @@ class RandomForestMC(BaseRandomForestMC):
         return row_or_matrix, df_data_miss
 
     def predictMissingValues(self, row_or_matrix: rowOrMatrix, dict_values: DictValues):
-
         self._validationMissingValues(dict_values)
 
         row_or_matrix, df_data_miss = self._genFilledDataMissing(
@@ -545,7 +554,6 @@ class RandomForestMC(BaseRandomForestMC):
 
         out = []
         for i, row in row_or_matrix.reset_index(drop=True).iterrows():
-
             missing_cols = []
             cols = list(dict_values.keys())
             cond = df_data_miss[cols[0]] == row[cols[0]]

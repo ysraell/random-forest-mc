@@ -24,6 +24,7 @@ from .__init__ import __version__
 # For extract the feature names from the tree-dict.
 re_feat_name = re.compile("\\'[\\w\\s]+'\\:")
 
+
 class BaseRandomForestMC(UserList):
     """Base class for Random Forest Monte Carlo.
 
@@ -111,7 +112,9 @@ class BaseRandomForestMC(UserList):
             if prob_output:
                 return self.testForestProbs(row_or_matrix)
             return self.testForest(row_or_matrix)
-        raise TypeError("The input argument must be a Pandas Series or a Pandas DataFrame.")
+        raise TypeError(
+            "The input argument must be a Pandas Series or a Pandas DataFrame."
+        )
 
     def mergeForest(self, otherForest, N: int = -1, by: str = "add"):
         if not isinstance(otherForest, BaseRandomForestMC):

@@ -1,12 +1,12 @@
 import pytest
-import json
-from hashlib import md5
 import pandas as pd
-import numpy as np
-from src.random_forest_mc.tree import DecisionTreeMC, PandasSeriesRow, LeafDict, TypeClassVal
+from src.random_forest_mc.tree import DecisionTreeMC
+
 
 # Helper function to create a dummy tree for testing
-def create_dummy_tree(data=None, class_vals=None, survived_score=None, features=None, used_features=None):
+def create_dummy_tree(
+    data=None, class_vals=None, survived_score=None, features=None, used_features=None
+):
     if data is None:
         data = {
             "feature1": {
@@ -21,6 +21,7 @@ def create_dummy_tree(data=None, class_vals=None, survived_score=None, features=
     if class_vals is None:
         class_vals = ["classA", "classB"]
     return DecisionTreeMC(data, class_vals, survived_score, features, used_features)
+
 
 class TestDecisionTreeMC:
     def test_init(self):
@@ -62,7 +63,11 @@ class TestDecisionTreeMC:
             _ = tree1 == "not_a_tree"
 
     def test_tree2dict(self):
-        tree = create_dummy_tree(survived_score=0.75, features=["feature1", "feature2"], used_features=["feature1"])
+        tree = create_dummy_tree(
+            survived_score=0.75,
+            features=["feature1", "feature2"],
+            used_features=["feature1"],
+        )
         tree_dict = tree.tree2dict()
         assert isinstance(tree_dict, dict)
         assert tree_dict["data"] == tree.data
@@ -74,7 +79,7 @@ class TestDecisionTreeMC:
 
     def test_md5hexdigest(self):
         tree1 = create_dummy_tree()
-        tree2 = create_dummy_tree() # Same data, should have same hash
+        tree2 = create_dummy_tree()  # Same data, should have same hash
         tree3_data = {
             "feature2": {
                 "split": {
@@ -85,7 +90,9 @@ class TestDecisionTreeMC:
                 }
             }
         }
-        tree3 = create_dummy_tree(data=tree3_data) # Different data, should have different hash
+        tree3 = create_dummy_tree(
+            data=tree3_data
+        )  # Different data, should have different hash
 
         assert tree1.md5hexdigest == tree2.md5hexdigest
         assert tree1.md5hexdigest != tree3.md5hexdigest
@@ -117,7 +124,9 @@ class TestDecisionTreeMC:
             }
         }
         tree_simple = create_dummy_tree(data=tree_data_simple)
-        assert tree_simple.depths == [] # Depths are extracted from the 'depth' key in the leaf, not the split node
+        assert (
+            tree_simple.depths == []
+        )  # Depths are extracted from the 'depth' key in the leaf, not the split node
 
         # Tree with more complex structure and depth info
         tree_data_complex = {
@@ -147,7 +156,7 @@ class TestDecisionTreeMC:
         # If the 'depth' was directly under 'f1' or 'f2' nodes, it would be captured.
         # Let's adjust the dummy tree to reflect how depths are stored in the actual code.
         # The 'depth' is stored in the leaf node.
-        assert tree_complex.depths == [] # No 'depth' key directly under 'f1' or 'f2'
+        assert tree_complex.depths == []  # No 'depth' key directly under 'f1' or 'f2'
 
         # Let's create a tree that actually has depths in the leaf nodes as per genLeaf in model.py
         tree_data_with_leaf_depths = {
@@ -161,7 +170,9 @@ class TestDecisionTreeMC:
             }
         }
         tree_with_leaf_depths = create_dummy_tree(data=tree_data_with_leaf_depths)
-        assert tree_with_leaf_depths.depths == [] # The current _get_depths implementation does not extract from leaf.
+        assert (
+            tree_with_leaf_depths.depths == []
+        )  # The current _get_depths implementation does not extract from leaf.
 
         # Re-reading the _get_depths method:
         # It checks if 'depth' is in node_content (which is the dict under the feature name, e.g., {"split": ...})
@@ -175,23 +186,23 @@ class TestDecisionTreeMC:
         # If depth was stored like this:
         tree_data_alt_depth = {
             "f1": {
-                "depth": "1#", # Depth at the node level
+                "depth": "1#",  # Depth at the node level
                 "split": {
                     "feat_type": "numeric",
                     "split_val": 10,
                     ">=": {
                         "f2": {
-                            "depth": "2#", # Depth at the node level
+                            "depth": "2#",  # Depth at the node level
                             "split": {
                                 "feat_type": "categorical",
                                 "split_val": "A",
                                 ">=": {"leaf": {"c1": 1.0}, "depth": "3#"},
                                 "<": {"leaf": {"c2": 1.0}, "depth": "3#"},
-                            }
+                            },
                         }
                     },
                     "<": {"leaf": {"c3": 1.0}, "depth": "2#"},
-                }
+                },
             }
         }
         tree_alt_depth = create_dummy_tree(data=tree_data_alt_depth)
@@ -205,7 +216,13 @@ class TestDecisionTreeMC:
         # The `genLeaf` function in `model.py` puts `depth` inside the leaf dictionary.
         # This means `tree.depths` will always be empty with current `plantTree` and `genLeaf` logic.
         # I will add a test case that reflects this current behavior.
-        assert tree_alt_depth.depths == ["1#", "2#"] # This would be the expected output if depth was stored as shown in tree_data_alt_depth
+        assert (
+            tree_alt_depth.depths
+            == [
+                "1#",
+                "2#",
+            ]
+        )  # This would be the expected output if depth was stored as shown in tree_data_alt_depth
 
         # Test with a tree structure that matches the current `genLeaf` output (depth in leaf)
         tree_data_leaf_depth = {
@@ -219,10 +236,10 @@ class TestDecisionTreeMC:
             }
         }
         tree_leaf_depth = create_dummy_tree(data=tree_data_leaf_depth)
-        assert tree_leaf_depth.depths == [] # As per current _get_depths implementation
+        assert tree_leaf_depth.depths == []  # As per current _get_depths implementation
 
     def test_useTree_numeric_split(self):
-        tree = create_dummy_tree() # Uses default dummy tree with numeric split
+        tree = create_dummy_tree()  # Uses default dummy tree with numeric split
         row_gt = pd.Series({"feature1": 0.6})
         result_gt = tree.useTree(row_gt)
         assert result_gt == {"classA": 0.8, "classB": 0.2}
@@ -231,7 +248,7 @@ class TestDecisionTreeMC:
         result_lt = tree.useTree(row_lt)
         assert result_lt == {"classA": 0.1, "classB": 0.9}
 
-        row_eq = pd.Series({"feature1": 0.5}) # Should go to >= branch
+        row_eq = pd.Series({"feature1": 0.5})  # Should go to >= branch
         result_eq = tree.useTree(row_eq)
         assert result_eq == {"classA": 0.8, "classB": 0.2}
 
@@ -258,7 +275,7 @@ class TestDecisionTreeMC:
 
     def test_useTree_missing_feature_in_row(self):
         tree = create_dummy_tree()
-        row = pd.Series({"another_feature": 1.0}) # Missing 'feature1'
+        row = pd.Series({"another_feature": 1.0})  # Missing 'feature1'
         # When feature is not in row.index, it should return a list of leafes
         # and then combine them.
         result = tree.useTree(row)
@@ -299,7 +316,7 @@ class TestDecisionTreeMC:
         row3 = pd.Series({"featA": 4})
         assert tree.useTree(row3) == {"c3": 1.0}
 
-        row4 = pd.Series({"featA": 6, "featC": "Z"}) # Missing featB
+        row4 = pd.Series({"featA": 6, "featC": "Z"})  # Missing featB
         # Should combine results from both branches of featB
         # Branch 1 (featB == X): {"c1": 1.0}
         # Branch 2 (featB != X): {"c2": 1.0}
@@ -340,7 +357,7 @@ class TestDecisionTreeMC:
             }
         }
         tree = create_dummy_tree(data=tree_data, class_vals=["A", "B", "C", "D"])
-        row = pd.Series({"some_other_feat": 10}) # No f1, f2, f3
+        row = pd.Series({"some_other_feat": 10})  # No f1, f2, f3
 
         result = tree.useTree(row)
         # Should average all 4 leaves: A, B, C, D

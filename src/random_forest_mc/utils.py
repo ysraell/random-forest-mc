@@ -94,7 +94,7 @@ class LoadDicts:
         for item in self.List:
             yield item, self.Dict[item]
 
-    def add(self, other: 'LoadDicts') -> None:
+    def add(self, other: "LoadDicts") -> None:
         for item_name in other.List:
             self.Dict[item_name] = other.Dict[item_name]
         self.List.extend(other.List)

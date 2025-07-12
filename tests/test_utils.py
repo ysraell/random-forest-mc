@@ -14,12 +14,14 @@ from src.random_forest_mc.utils import (
     JSON_EXTENSION,
 )
 
+
 # Test for flat function
 def test_flat():
     assert flat([[1, 2], [3, 4]]) == [1, 2, 3, 4]
     assert flat([[1], [2, 3], []]) == [1, 2, 3]
     assert flat([]) == []
     assert flat([[]]) == []
+
 
 # Test for flatten_nested_list function
 def test_flatten_nested_list():
@@ -29,10 +31,12 @@ def test_flatten_nested_list():
     assert flatten_nested_list([1, 2, 3]) == [1, 2, 3]
     assert flatten_nested_list([[[1]]]) == [1]
 
+
 # Test for json_encoder function
 def test_json_encoder_numpy_generic():
     assert json_encoder(np.int64(5)) == 5
     assert json_encoder(np.float32(3.14)) == 3.14
+
 
 def test_json_encoder_datetime():
     dt_obj = datetime.datetime(2023, 1, 1, 10, 30, 0)
@@ -40,11 +44,13 @@ def test_json_encoder_datetime():
     date_obj = datetime.date(2023, 1, 1)
     assert json_encoder(date_obj) == "2023-01-01"
 
+
 def test_json_encoder_other_types():
     # Should return the object itself for types it doesn't handle
     assert json_encoder("test") == "test"
     assert json_encoder(123) == 123
     assert json_encoder({"a": 1}) == {"a": 1}
+
 
 # Test for load_file_json and dump_file_json
 def test_file_json_operations(tmp_path):
@@ -57,10 +63,12 @@ def test_file_json_operations(tmp_path):
     loaded_data = load_file_json(file_path)
     assert loaded_data == test_data
 
+
 def test_load_file_json_not_found(tmp_path):
     non_existent_file = tmp_path / "non_existent.json"
     with pytest.raises(FileNotFoundError):
         load_file_json(non_existent_file)
+
 
 def test_dump_file_json_with_numpy_and_datetime(tmp_path):
     data_with_special_types = {
@@ -73,6 +81,7 @@ def test_dump_file_json_with_numpy_and_datetime(tmp_path):
     assert loaded_data["np_int"] == 10
     assert loaded_data["dt_obj"] == "2024-07-12T00:00:00"
 
+
 # Test for LoadDicts class
 class TestLoadDicts:
     def setup_method(self, method):
@@ -83,7 +92,9 @@ class TestLoadDicts:
         self.file1_path = self.test_dir / "data1.json"
         self.file2_path = self.test_dir / "data2.json"
         self.invalid_file_path = self.test_dir / "invalid.json"
-        self.keyword_file_path = self.test_dir / "class.json" # 'class' is a Python keyword
+        self.keyword_file_path = (
+            self.test_dir / "class.json"
+        )  # 'class' is a Python keyword
 
         with open(self.file1_path, "w") as f:
             json.dump({"key1": "value1"}, f)
@@ -97,12 +108,13 @@ class TestLoadDicts:
     def teardown_method(self, method):
         # Clean up the temporary directory
         import shutil
+
         if self.test_dir.exists():
             shutil.rmtree(self.test_dir)
 
     def test_load_dicts_init_success(self):
         loader = LoadDicts(dict_path=self.test_dir)
-        assert len(loader) == 3 # data1, data2, class
+        assert len(loader) == 3  # data1, data2, class
         assert "data1" in loader.List
         assert "data2" in loader.List
         assert "class" in loader.List
@@ -111,13 +123,15 @@ class TestLoadDicts:
         assert loader.Dict["class"] == {"keyword_key": "keyword_value"}
         assert hasattr(loader, "data1")
         assert hasattr(loader, "data2")
-        assert not hasattr(loader, "class") # 'class' is a keyword, so it shouldn't be an attribute
+        assert not hasattr(
+            loader, "class"
+        )  # 'class' is a keyword, so it shouldn't be an attribute
         assert "class" in loader.not_attr
 
     def test_load_dicts_init_ignore_errors(self):
         loader = LoadDicts(dict_path=self.test_dir, ignore_errors=True)
         # Should load valid files and ignore invalid one
-        assert len(loader) == 3 # data1, data2, class
+        assert len(loader) == 3  # data1, data2, class
         assert "data1" in loader.List
         assert "data2" in loader.List
         assert "class" in loader.List
@@ -139,10 +153,10 @@ class TestLoadDicts:
 
         with pytest.raises(json.JSONDecodeError):
             LoadDicts(dict_path=temp_dir_for_error, ignore_errors=False)
-        
-        import shutil
-        shutil.rmtree(temp_dir_for_error)
 
+        import shutil
+
+        shutil.rmtree(temp_dir_for_error)
 
     def test_load_dicts_repr(self):
         loader = LoadDicts(dict_path=self.test_dir)
@@ -203,6 +217,7 @@ class TestLoadDicts:
         assert loader1.Dict["data3"] == {"key3": "value3"}
 
         import shutil
+
         shutil.rmtree(test_dir2)
 
     def test_default_dict_path_and_json_extension(self):

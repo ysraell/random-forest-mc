@@ -1,13 +1,15 @@
 import pytest
 import pandas as pd
-import numpy as np
 from collections import UserList
 from unittest.mock import MagicMock, patch
 from src.random_forest_mc.forest import BaseRandomForestMC
-from src.random_forest_mc.tree import DecisionTreeMC, PandasSeriesRow, LeafDict, TypeClassVal
+from src.random_forest_mc.tree import DecisionTreeMC
+
 
 # Helper function to create a dummy DecisionTreeMC
-def create_dummy_decision_tree(survived_score=0.5, data=None, class_vals=None, features=None, used_features=None):
+def create_dummy_decision_tree(
+    survived_score=0.5, data=None, class_vals=None, features=None, used_features=None
+):
     if data is None:
         data = {"leaf": {"classA": 1.0}}
     if class_vals is None:
@@ -22,6 +24,7 @@ def create_dummy_decision_tree(survived_score=0.5, data=None, class_vals=None, f
     tree.md5hexdigest = "dummy_hash"
     return tree
 
+
 class TestBaseRandomForestMC:
     def test_init(self):
         forest = BaseRandomForestMC()
@@ -35,7 +38,13 @@ class TestBaseRandomForestMC:
         assert isinstance(forest.data, UserList)
         assert forest.survived_scores == []
 
-        forest_custom = BaseRandomForestMC(n_trees=5, target_col="label", min_feature=2, max_feature=10, temporal_features=True)
+        forest_custom = BaseRandomForestMC(
+            n_trees=5,
+            target_col="label",
+            min_feature=2,
+            max_feature=10,
+            temporal_features=True,
+        )
         assert forest_custom.n_trees == 5
         assert forest_custom.target_col == "label"
         assert forest_custom.min_feature == 2
@@ -62,26 +71,32 @@ class TestBaseRandomForestMC:
         forest = BaseRandomForestMC(n_trees=2)
         forest.class_vals = ["classA", "classB"]
         forest.data = [
-            create_dummy_decision_tree(survived_score=0.8, data={
-                "f1": {
-                    "split": {
-                        "feat_type": "numeric",
-                        "split_val": 0.5,
-                        ">=": {"leaf": {"classA": 0.9, "classB": 0.1}},
-                        "<": {"leaf": {"classA": 0.2, "classB": 0.8}},
+            create_dummy_decision_tree(
+                survived_score=0.8,
+                data={
+                    "f1": {
+                        "split": {
+                            "feat_type": "numeric",
+                            "split_val": 0.5,
+                            ">=": {"leaf": {"classA": 0.9, "classB": 0.1}},
+                            "<": {"leaf": {"classA": 0.2, "classB": 0.8}},
+                        }
                     }
-                }
-            }),
-            create_dummy_decision_tree(survived_score=0.7, data={
-                "f2": {
-                    "split": {
-                        "feat_type": "categorical",
-                        "split_val": "X",
-                        ">=": {"leaf": {"classA": 0.3, "classB": 0.7}},
-                        "<": {"leaf": {"classA": 0.6, "classB": 0.4}},
+                },
+            ),
+            create_dummy_decision_tree(
+                survived_score=0.7,
+                data={
+                    "f2": {
+                        "split": {
+                            "feat_type": "categorical",
+                            "split_val": "X",
+                            ">=": {"leaf": {"classA": 0.3, "classB": 0.7}},
+                            "<": {"leaf": {"classA": 0.6, "classB": 0.4}},
+                        }
                     }
-                }
-            }),
+                },
+            ),
         ]
         forest.survived_scores = [0.8, 0.7]
         forest.feature_cols = ["f1", "f2"]
@@ -112,7 +127,7 @@ class TestBaseRandomForestMC:
         results_class_df = sample_forest.predict(df, prob_output=False)
         assert isinstance(results_class_df, list)
         assert len(results_class_df) == 2
-        assert results_class_df[0] == "classA" # Based on maxProbClas of 0.6 for classA
+        assert results_class_df[0] == "classA"  # Based on maxProbClas of 0.6 for classA
 
         with pytest.raises(TypeError):
             sample_forest.predict("not_a_series_or_df")
@@ -121,20 +136,32 @@ class TestBaseRandomForestMC:
         forest1 = BaseRandomForestMC(n_trees=2)
         forest1.class_vals = ["A", "B"]
         forest1.feature_cols = ["x", "y"]
-        forest1.data = [create_dummy_decision_tree(survived_score=0.1, class_vals=["A", "B"], features=["x", "y"])]
+        forest1.data = [
+            create_dummy_decision_tree(
+                survived_score=0.1, class_vals=["A", "B"], features=["x", "y"]
+            )
+        ]
         forest1.survived_scores = [0.1]
 
         forest2 = BaseRandomForestMC(n_trees=2)
         forest2.class_vals = ["A", "B"]
         forest2.feature_cols = ["x", "y"]
-        forest2.data = [create_dummy_decision_tree(survived_score=0.2, class_vals=["A", "B"], features=["x", "y"])]
+        forest2.data = [
+            create_dummy_decision_tree(
+                survived_score=0.2, class_vals=["A", "B"], features=["x", "y"]
+            )
+        ]
         forest2.survived_scores = [0.2]
 
         # Test merge by add
         forest1_copy = BaseRandomForestMC(n_trees=2)
         forest1_copy.class_vals = ["A", "B"]
         forest1_copy.feature_cols = ["x", "y"]
-        forest1_copy.data = [create_dummy_decision_tree(survived_score=0.1, class_vals=["A", "B"], features=["x", "y"])]
+        forest1_copy.data = [
+            create_dummy_decision_tree(
+                survived_score=0.1, class_vals=["A", "B"], features=["x", "y"]
+            )
+        ]
         forest1_copy.survived_scores = [0.1]
         forest1_copy.mergeForest(forest2, by="add")
         assert len(forest1_copy.data) == 2
@@ -144,17 +171,27 @@ class TestBaseRandomForestMC:
         forest1_copy = BaseRandomForestMC(n_trees=2)
         forest1_copy.class_vals = ["A", "B"]
         forest1_copy.feature_cols = ["x", "y"]
-        forest1_copy.data = [create_dummy_decision_tree(survived_score=0.1, class_vals=["A", "B"], features=["x", "y"])]
+        forest1_copy.data = [
+            create_dummy_decision_tree(
+                survived_score=0.1, class_vals=["A", "B"], features=["x", "y"]
+            )
+        ]
         forest1_copy.survived_scores = [0.1]
         forest1_copy.mergeForest(forest2, N=1, by="score")
         assert len(forest1_copy.data) == 1
-        assert forest1_copy.survived_scores == [0.2] # Only the tree with score 0.2 should remain
+        assert forest1_copy.survived_scores == [
+            0.2
+        ]  # Only the tree with score 0.2 should remain
 
         # Test merge by random (N=1) - difficult to test deterministically, so just check length
         forest1_copy = BaseRandomForestMC(n_trees=2)
         forest1_copy.class_vals = ["A", "B"]
         forest1_copy.feature_cols = ["x", "y"]
-        forest1_copy.data = [create_dummy_decision_tree(survived_score=0.1, class_vals=["A", "B"], features=["x", "y"])]
+        forest1_copy.data = [
+            create_dummy_decision_tree(
+                survived_score=0.1, class_vals=["A", "B"], features=["x", "y"]
+            )
+        ]
         forest1_copy.survived_scores = [0.1]
         forest1_copy.mergeForest(forest2, N=1, by="random")
         assert len(forest1_copy.data) == 1
@@ -184,7 +221,9 @@ class TestBaseRandomForestMC:
         assert forest.validFeaturesTemporal() is False
 
         forest.feature_cols = []
-        assert forest.validFeaturesTemporal() is True # All elements satisfy the condition vacuously
+        assert (
+            forest.validFeaturesTemporal() is True
+        )  # All elements satisfy the condition vacuously
 
     def test_setSoftVoting_and_setWeightedTrees(self):
         forest = BaseRandomForestMC()
@@ -217,7 +256,14 @@ class TestBaseRandomForestMC:
         forest.numeric_cols = ["x"]
         forest.feature_cols = ["x", "y"]
         forest.type_of_cols = {"x": "numeric", "y": "categorical"}
-        forest.data = [create_dummy_decision_tree(survived_score=0.9, class_vals=["A", "B"], features=["x", "y"], used_features=["x"])]
+        forest.data = [
+            create_dummy_decision_tree(
+                survived_score=0.9,
+                class_vals=["A", "B"],
+                features=["x", "y"],
+                used_features=["x"],
+            )
+        ]
         forest.survived_scores = [0.9]
 
         model_dict = forest.model2dict()
@@ -229,7 +275,9 @@ class TestBaseRandomForestMC:
 
         new_forest = BaseRandomForestMC()
         new_forest.dict2model(model_dict)
-        assert new_forest.n_trees == forest.n_trees # n_trees is not saved in attr_to_save, so it will be default
+        assert (
+            new_forest.n_trees == forest.n_trees
+        )  # n_trees is not saved in attr_to_save, so it will be default
         assert new_forest.min_feature == forest.min_feature
         assert new_forest.max_feature == forest.max_feature
         assert new_forest.class_vals == forest.class_vals
@@ -243,7 +291,14 @@ class TestBaseRandomForestMC:
         forest_to_add.numeric_cols = ["x"]
         forest_to_add.feature_cols = ["x", "y"]
         forest_to_add.type_of_cols = {"x": "numeric", "y": "categorical"}
-        forest_to_add.data = [create_dummy_decision_tree(survived_score=0.5, class_vals=["A", "B"], features=["x", "y"], used_features=["y"])]
+        forest_to_add.data = [
+            create_dummy_decision_tree(
+                survived_score=0.5,
+                class_vals=["A", "B"],
+                features=["x", "y"],
+                used_features=["y"],
+            )
+        ]
         forest_to_add.survived_scores = [0.5]
         model_dict_to_add = forest_to_add.model2dict()
 
@@ -255,8 +310,12 @@ class TestBaseRandomForestMC:
 
     def test_drop_duplicated_trees(self):
         tree1 = create_dummy_decision_tree(survived_score=0.1)
-        tree2 = create_dummy_decision_tree(survived_score=0.2) # Same hash as tree1
-        tree3 = create_dummy_decision_tree(survived_score=0.3, data={'leaf': {'classB': 1.0}}, used_features=["feature2"]) # Different hash
+        tree2 = create_dummy_decision_tree(survived_score=0.2)  # Same hash as tree1
+        tree3 = create_dummy_decision_tree(
+            survived_score=0.3,
+            data={"leaf": {"classB": 1.0}},
+            used_features=["feature2"],
+        )  # Different hash
 
         forest = BaseRandomForestMC()
         forest.data = [tree1, tree2, tree3]
@@ -265,9 +324,9 @@ class TestBaseRandomForestMC:
         initial_len = len(forest.data)
         dropped_count = forest.drop_duplicated_trees()
 
-        assert len(forest.data) == initial_len - 1 # One duplicate removed
-        assert dropped_count == 2 # Number of unique trees remaining
-        assert forest.data == [tree1, tree3] # tree2 should be removed
+        assert len(forest.data) == initial_len - 1  # One duplicate removed
+        assert dropped_count == 2  # Number of unique trees remaining
+        assert forest.data == [tree1, tree3]  # tree2 should be removed
         assert forest.survived_scores == [0.1, 0.3]
 
     def test_Forest_properties(self):
@@ -287,7 +346,9 @@ class TestBaseRandomForestMC:
         assert BaseRandomForestMC.maxProbClas(leaf2) == "classB"
 
         leaf3 = {"classA": 0.5, "classB": 0.5}
-        assert BaseRandomForestMC.maxProbClas(leaf3) == "classA" # First one in sorted order
+        assert (
+            BaseRandomForestMC.maxProbClas(leaf3) == "classA"
+        )  # First one in sorted order
 
     def test_useForest_soft_voting_weighted_tree(self, sample_forest):
         sample_forest.setSoftVoting(True)
@@ -385,7 +446,7 @@ class TestBaseRandomForestMC:
         assert results[0]["classA"] == pytest.approx(0.6)
         assert results[1]["classA"] == pytest.approx(0.6)
 
-    @patch('src.random_forest_mc.forest.process_map')
+    @patch("src.random_forest_mc.forest.process_map")
     def test_testForestParallel(self, mock_process_map, sample_forest):
         df = pd.DataFrame([{"f1": 0.6, "f2": "Y"}, {"f1": 0.1, "f2": "X"}])
         mock_process_map.return_value = ["classA", "classB"]
@@ -394,19 +455,25 @@ class TestBaseRandomForestMC:
         mock_process_map.assert_called_once()
         args, kwargs = mock_process_map.call_args
         assert args[0] == sample_forest._testForest_func
-        assert len(args[1]) == 2 # Two rows in df
+        assert len(args[1]) == 2  # Two rows in df
         assert kwargs["desc"] == "Testing the forest"
         assert results == ["classA", "classB"]
 
-    @patch('src.random_forest_mc.forest.process_map')
+    @patch("src.random_forest_mc.forest.process_map")
     def test_testForestProbsParallel(self, mock_process_map, sample_forest):
         df = pd.DataFrame([{"f1": 0.6, "f2": "Y"}, {"f1": 0.1, "f2": "X"}])
-        mock_process_map.return_value = [{'classA': 0.6, 'classB': 0.4}, {'classA': 0.5, 'classB': 0.5}]
+        mock_process_map.return_value = [
+            {"classA": 0.6, "classB": 0.4},
+            {"classA": 0.5, "classB": 0.5},
+        ]
 
         results = sample_forest.testForestProbsParallel(df, max_workers=2)
         mock_process_map.assert_called_once()
         args, kwargs = mock_process_map.call_args
         assert args[0] == sample_forest.useForest
-        assert len(args[1]) == 2 # Two rows in df
+        assert len(args[1]) == 2  # Two rows in df
         assert kwargs["desc"] == "Testing the forest"
-        assert results == [{'classA': 0.6, 'classB': 0.4}, {'classA': 0.5, 'classB': 0.5}]
+        assert results == [
+            {"classA": 0.6, "classB": 0.4},
+            {"classA": 0.5, "classB": 0.5},
+        ]
