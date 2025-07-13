@@ -19,6 +19,7 @@ import json
 import pandas as pd
 
 from .__init__ import __version__
+from .utils import json_encoder
 
 typer_error_msg = "Both objects must be instances of '{}' class."
 
@@ -138,38 +139,17 @@ class DecisionTreeMC(UserDict):
     def md5hexdigest(self) -> str:
         """Return the MD5 hexdigest of the tree structure for a unique signature."""
         # Sorting keys is required to have a deterministic hash
-
-        tree_str = json.dumps(self.data, sort_keys=True)
+        tree_str = json.dumps(self.data, sort_keys=True, default=json_encoder)
         return md5(tree_str.encode("utf-8")).hexdigest()
 
-    def _get_depths(self, sub_tree: Dict, depths: List[int]) -> None:
-        """Recursively traverses the tree to collect node depths."""
-        if not isinstance(sub_tree, dict) or not sub_tree:
-            return
-
-        # The first key is the feature name, or "leaf"
-        node_key = list(sub_tree.keys())[0]
-        if node_key == "leaf":
-            return
-
-        node_content = sub_tree[node_key]
-        if isinstance(node_content, dict):
-            if "depth" in node_content:
-                depths.append(node_content["depth"])
-
-            if "split" in node_content:
-                split_node = node_content["split"]
-                if isinstance(split_node, dict):
-                    if ">=" in split_node:
-                        self._get_depths(split_node[">="], depths)
-                    if "<" in split_node:
-                        self._get_depths(split_node["<"], depths)
-
     @property
-    def depths(self) -> List[int]:
-        """Return a list of all node depths in the tree."""
+    def depths(self) -> List[str]:
+        str_tree_splitted = str(self).split(" ")
         depths = []
-        self._get_depths(self.data, depths)
+        while str_tree_splitted:
+            term = str_tree_splitted.pop(0)
+            if term == "'depth':":
+                depths.append(int(str_tree_splitted.pop(0).split("#")[0].replace("'", "")))
         return depths
 
     @staticmethod

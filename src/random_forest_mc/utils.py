@@ -32,10 +32,10 @@ def flatten_nested_list(lst: list[Any]) -> list[Any]:
 
 
 def json_encoder(obj: Any) -> Any:
-    if isinstance(object, np.generic):
-        return object.item()
-    if isinstance(object, (datetime.date, datetime.datetime)):
-        return object.isoformat()
+    if isinstance(obj, np.generic):
+        return obj.item()
+    if isinstance(obj, (datetime.date, datetime.datetime)):
+        return obj.isoformat()
 
 
 DEFAULT_DICT_PATH = "./data"
