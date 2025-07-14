@@ -291,7 +291,7 @@ def test_RandomForestMC_fit_max_depth():
     dataset.insert(len(dataset.columns), "coluna_vazia", "None")
     max_depth = 2
     cls = RandomForestMC(
-        target_col=params["target_col"], max_discard_trees=20, th_decease_verbose=True, threaded_fit=True
+        target_col=params["target_col"], max_discard_trees=20, th_decease_verbose=True, threaded_fit=False
     )
     cls.fitParallel(dataset=dataset, max_workers=4)
     max_depth_got = max(flat(cls.trees2depths))
@@ -329,7 +329,7 @@ def test_RandomForestMC_fit_min_samples_split():
     dataset["Fare"] = dataset["Fare"].astype(np.uint32)
     dataset.insert(len(dataset.columns), "coluna_vazia", "None")
     cls = RandomForestMC(
-        target_col=params["target_col"], max_discard_trees=20, th_decease_verbose=True, threaded_fit=True
+        target_col=params["target_col"], max_discard_trees=20, th_decease_verbose=True, threaded_fit=False
     )
     cls.fitParallel(dataset=dataset, max_workers=4)
     max_depth_min_samples_split_1 = max(flat(cls.trees2depths))
@@ -364,7 +364,7 @@ def test_RandomForestMC_fitParallel_featImportance():
     dataset["SibSp"] = dataset["SibSp"].astype(np.uint8)
     dataset["Pclass"] = dataset["Pclass"].astype(str)
     dataset["Fare"] = dataset["Fare"].astype(np.uint32)
-    cls = RandomForestMC(target_col=params["target_col"], max_discard_trees=8, threaded_fit=True)
+    cls = RandomForestMC(target_col=params["target_col"], max_discard_trees=8, threaded_fit=False)
     cls.fitParallel(dataset=dataset, max_workers=4)
     featCount_stats, featCount_list = cls.featCount()
     featImportance = cls.featImportance()
@@ -423,7 +423,7 @@ def test_RandomForestMC_fitParallel_sampleClassFeatImportance():
     dataset["SibSp"] = dataset["SibSp"].astype(np.uint8)
     dataset["Pclass"] = dataset["Pclass"].astype(str)
     dataset["Fare"] = dataset["Fare"].astype(np.uint32)
-    cls = RandomForestMC(target_col=target_col, max_discard_trees=8, threaded_fit=True)
+    cls = RandomForestMC(target_col=target_col, max_discard_trees=8, threaded_fit=False)
     cls.fitParallel(dataset=dataset, max_workers=4)
     for row, Class in [
         (dataset.query(f'{target_col} == "1"').reset_index(drop=True).loc[0], "1"),
@@ -921,7 +921,7 @@ def test_RandomForestMC_fullCycle_creditcard_Parallel_process_threaded():
     )
     n_trees = 32
     cls = RandomForestMC(
-        n_trees=n_trees, target_col=params["target_col"], max_discard_trees=16, threaded_fit=True
+        n_trees=n_trees, target_col=params["target_col"], max_discard_trees=16, threaded_fit=False
     )
     cls.process_dataset(dataset)
     cls.fitParallel(max_workers=8)
