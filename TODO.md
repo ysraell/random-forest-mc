@@ -19,7 +19,7 @@
 
 ### TODO v1.3:
 - ~~Reorg the code in modules: tree, forest and tools. Move some methods from forest class to tools as a subclass.~~
-- Change the `tqdm.contrib.concurrent` to `asyncio`.
+- ~~Change the `tqdm.contrib.concurrent` to `asyncio`.~~ 
 - ~~Investigate how use the new ML-focused features from `Python 3.13` can be use here.~~
     - ~~Experiment with JIT.~~
     - ~~Experiment with GIL off.~~
