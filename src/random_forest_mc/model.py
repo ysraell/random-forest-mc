@@ -19,8 +19,7 @@ from typing import Tuple
 from typing import Union
 from typing import Dict
 from sys import getrecursionlimit
-import asyncio
-from time import time
+from concurrent.futures import ThreadPoolExecutor
 
 import numpy as np
 import pandas as pd
@@ -38,7 +37,7 @@ from .tree import (
 
 
 # For extract the feature names from the tree-dict.
-re_feat_name = re.compile("\\'[\\w\\s]+'\\:")
+re_feat_name = re.compile("\'[\\w\\s]+'\\:")
 
 DictValues = Dict[featName, Union[str, Real]]
 
@@ -365,30 +364,15 @@ class RandomForestMC(BaseRandomForestMC):
                 desc="Planting the forest",
             )
         else:
-
-            async def async_survivedTree():
-                return await asyncio.to_thread(self.survivedTree)
-
-            async def main():
-                _Tree_list = []
-                count_tree = self.n_trees
-                log.info(f"Total of {self.n_trees} trees to be planted:")
-                while True:
-                    if count_tree <= 0:
-                        break
-                    Total = min(max_workers, count_tree)
-                    log.info(f"Planting {Total} trees...")
-                    count_tree -= max_workers
-                    tasks = [async_survivedTree() for _ in range(Total)]
-                    trees = []
-                    t = time()
-                    trees = await asyncio.gather(*tasks)
-                    dt = (time() - t) / 60
-                    log.info(f"Time to plant {Total} trees: {dt:.4f} min.")
-                    _Tree_list.extend(trees)
-                return Tree_list
-
-            Tree_list = asyncio.run(main())
+            with ThreadPoolExecutor(max_workers=max_workers) as executor:
+                Tree_list = list(
+                    tqdm(
+                        executor.map(self.survivedTree, range(self.n_trees)),
+                        total=self.n_trees,
+                        disable=disable_progress_bar,
+                        desc="Planting the forest",
+                    )
+                )
 
         self.data.extend(Tree_list)
         self.survived_scores.extend([Tree.survived_score for Tree in Tree_list])
