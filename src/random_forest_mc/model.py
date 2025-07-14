@@ -20,6 +20,7 @@ from typing import Union
 from typing import Dict
 from sys import getrecursionlimit
 import asyncio
+from time import time
 
 import numpy as np
 import pandas as pd
@@ -371,14 +372,19 @@ class RandomForestMC(BaseRandomForestMC):
             async def main():
                 _Tree_list = []
                 count_tree = self.n_trees
+                log.info(f"Total of {self.n_trees} trees to be planted:")
                 while True:
                     if count_tree <= 0:
                         break
                     Total = min(max_workers, count_tree)
+                    log.info(f"Planting {Total} trees...")
                     count_tree -= max_workers
                     tasks = [async_survivedTree() for _ in range(Total)]
                     trees = []
+                    t = time()
                     trees = await asyncio.gather(*tasks)
+                    dt = (time() - t) / 60
+                    log.info(f"Time to plant {Total} trees: {dt:.4f} min.")
                     _Tree_list.extend(trees)
                 return Tree_list
 
