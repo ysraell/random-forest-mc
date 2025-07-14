@@ -37,7 +37,7 @@ from .tree import (
 
 
 # For extract the feature names from the tree-dict.
-re_feat_name = re.compile("\'[\\w\\s]+'\\:")
+re_feat_name = re.compile("'[\\w\\s]+'\\:")
 
 DictValues = Dict[featName, Union[str, Real]]
 
