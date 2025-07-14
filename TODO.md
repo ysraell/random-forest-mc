@@ -18,13 +18,13 @@
 - ~~Add parameter for active validation score (like loss) for each set of a given number of trees generated.~~
 
 ### TODO v1.3:
-- Reorg the code in modules: tree, forest and tools. Move some methods from forest class to tools as a subclass.
+- ~~Reorg the code in modules: tree, forest and tools. Move some methods from forest class to tools as a subclass.~~
 - Change the `tqdm.contrib.concurrent` to `asyncio`.
 - Investigate how use the new ML-focused features from `Python 3.13` can be use here.
     - Experiment with JIT.
     - Experiment with GIL off.
-- Add `Python 3.13` in the unit tests.  
-- Time report generation in the unit tests. 
+- ~~Add `Python 3.13` in the unit tests.~~  
+- ~~Time report generation in the unit tests.~~ 
 - Add a training process that you can use a validation dataset to compute the performance after the cretion of a set of trees (like epochs).
 - Create new forests from a cross merging between other forests, for a given amount of trees for the output forest:~
     - by optimization, based on a GA and MC approaches, using a given test dataset;

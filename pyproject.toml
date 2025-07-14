@@ -8,13 +8,12 @@ license = "MIT"
 readme = "README.md"
 homepage = "https://github.com/ysraell/random-forest-mc"
 repository = "https://github.com/ysraell/random-forest-mc"
-keywords = ["random forest", "random"]
+keywords = ["random forest", "random", "monte carlo"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Topic :: Scientific/Engineering",
     "Topic :: Scientific/Engineering :: Human Machine Interfaces",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -27,7 +26,7 @@ include = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.8.1,<3.14"
+python = ">=3.9.1,<3.14"
 pandas = ">=1.3"
 numpy = ">=1.20"
 tqdm = ">=4.60"
