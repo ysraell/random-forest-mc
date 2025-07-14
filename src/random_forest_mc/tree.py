@@ -166,8 +166,7 @@ class DecisionTreeMC(UserDict):
                 ]
             val = row[node]
             if val == tree_node_split["split_val"] or (
-                tree_node_split["feat_type"] == "numeric"
-                and val > tree_node_split["split_val"]
+                tree_node_split["feat_type"] == "numeric" and val > tree_node_split["split_val"]
             ):
                 return functionalUseTree(tree_node_split[">="])
             return functionalUseTree(tree_node_split["<"])

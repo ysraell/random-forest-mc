@@ -55,9 +55,7 @@ def dump_file_json(path: DictsPathType, var: Any):
 
 
 class LoadDicts:
-    def __init__(
-        self, dict_path: DictsPathType = DEFAULT_DICT_PATH, ignore_errors: bool = False
-    ):
+    def __init__(self, dict_path: DictsPathType = DEFAULT_DICT_PATH, ignore_errors: bool = False):
         Dicts_glob = Path(dict_path).glob("*.json")
         self.List = []
         self.Dict = {}

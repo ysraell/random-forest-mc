@@ -95,13 +95,9 @@ class BaseRandomForestMC(UserList):
     def __eq__(self, other):
         if not isinstance(other, BaseRandomForestMC):
             raise TypeError(self.typer_error_msg)
-        return all(
-            [getattr(self, att) == getattr(other, att) for att in self.attr_to_save]
-        )
+        return all([getattr(self, att) == getattr(other, att) for att in self.attr_to_save])
 
-    def predict_proba(
-        self, row_or_matrix: rowOrMatrix, prob_output: bool = True
-    ) -> Union[LeafDict, List[LeafDict]]:
+    def predict_proba(self, row_or_matrix: rowOrMatrix, prob_output: bool = True) -> Union[LeafDict, List[LeafDict]]:
         return self.predict(row_or_matrix, prob_output)
 
     def predict(
@@ -113,26 +109,16 @@ class BaseRandomForestMC(UserList):
             if prob_output:
                 return self.testForestProbs(row_or_matrix)
             return self.testForest(row_or_matrix)
-        raise TypeError(
-            "The input argument must be a Pandas Series or a Pandas DataFrame."
-        )
+        raise TypeError("The input argument must be a Pandas Series or a Pandas DataFrame.")
 
     def mergeForest(self, otherForest, N: int = -1, by: str = "add"):
         if not isinstance(otherForest, BaseRandomForestMC):
             raise TypeError(self.typer_error_msg)
 
-        same_classes_right = all(
-            [right in otherForest.class_vals for right in self.class_vals]
-        )
-        same_classes_left = all(
-            [left in self.class_vals for left in otherForest.class_vals]
-        )
-        same_features_right = all(
-            [right in otherForest.feature_cols for right in self.feature_cols]
-        )
-        same_features_left = all(
-            [left in self.feature_cols for left in otherForest.feature_cols]
-        )
+        same_classes_right = all([right in otherForest.class_vals for right in self.class_vals])
+        same_classes_left = all([left in self.class_vals for left in otherForest.class_vals])
+        same_features_right = all([right in otherForest.feature_cols for right in self.feature_cols])
+        same_features_left = all([left in self.feature_cols for left in otherForest.feature_cols])
         same_model = all(
             [
                 same_classes_right,
@@ -143,9 +129,7 @@ class BaseRandomForestMC(UserList):
         )
 
         if not same_model:
-            raise ValueError(
-                "Both forests must have the same set of features and classes."
-            )
+            raise ValueError("Both forests must have the same set of features and classes.")
 
         if by == "add":
             self.data.extend(otherForest.data)
@@ -200,15 +184,9 @@ class BaseRandomForestMC(UserList):
         self.data = new_trees
 
     def drop_duplicated_trees(self) -> int:
-        conds = (
-            pd.DataFrame([Tree.md5hexdigest for Tree in self.data])
-            .duplicated()
-            .to_list()
-        )
+        conds = pd.DataFrame([Tree.md5hexdigest for Tree in self.data]).duplicated().to_list()
         self.data = [Tree for Tree, cond in zip(self.data, conds) if not cond]
-        self.survived_scores = [
-            score for score, cond in zip(self.survived_scores, conds) if not cond
-        ]
+        self.survived_scores = [score for score, cond in zip(self.survived_scores, conds) if not cond]
         return len(conds) - sum(conds)
 
     @property
@@ -227,46 +205,32 @@ class BaseRandomForestMC(UserList):
         if self.soft_voting:
             if self.weighted_tree:
                 class_probs = defaultdict(float)
-                pred_probs = [
-                    (Tree(row), score)
-                    for Tree, score in zip(self.data, self.survived_scores)
-                ]
+                pred_probs = [(Tree(row), score) for Tree, score in zip(self.data, self.survived_scores)]
                 for predp, score in pred_probs:
                     for class_val, prob in predp.items():
                         class_probs[class_val] += prob * score
-                return {
-                    class_val: class_probs[class_val] / fsum(self.survived_scores)
-                    for class_val in self.class_vals
-                }
+                return {class_val: class_probs[class_val] / fsum(self.survived_scores) for class_val in self.class_vals}
             else:
                 class_probs = defaultdict(float)
                 pred_probs = [Tree(row) for Tree in self.data]
                 for predp in pred_probs:
                     for class_val, prob in predp.items():
                         class_probs[class_val] += prob
-                return {
-                    class_val: class_probs[class_val] / len(pred_probs)
-                    for class_val in self.class_vals
-                }
+                return {class_val: class_probs[class_val] / len(pred_probs) for class_val in self.class_vals}
         else:
             if self.weighted_tree:
                 y_pred_score = [
-                    (self.maxProbClas(Tree(row)), score)
-                    for Tree, score in zip(self.data, self.survived_scores)
+                    (self.maxProbClas(Tree(row)), score) for Tree, score in zip(self.data, self.survived_scores)
                 ]
                 class_scores = defaultdict(float)
                 for class_val, score in y_pred_score:
                     class_scores[class_val] += score
                 return {
-                    class_val: class_scores[class_val] / fsum(self.survived_scores)
-                    for class_val in self.class_vals
+                    class_val: class_scores[class_val] / fsum(self.survived_scores) for class_val in self.class_vals
                 }
             else:
                 y_pred = [self.maxProbClas(Tree(row)) for Tree in self.data]
-                return {
-                    class_val: y_pred.count(class_val) / len(y_pred)
-                    for class_val in self.class_vals
-                }
+                return {class_val: y_pred.count(class_val) / len(y_pred) for class_val in self.class_vals}
 
     def testForest(self, ds: pd.DataFrame) -> List[TypeClassVal]:
         return [self.maxProbClas(self.useForest(row)) for _, row in ds.iterrows()]
@@ -281,11 +245,7 @@ class BaseRandomForestMC(UserList):
         chunksize: Optional[int] = None,
     ) -> List[TypeClassVal]:
         ds_iterator = [row for _, row in ds.iterrows()]
-        chunksize = (
-            int(np.ceil(len(ds_iterator) / (2 * (max_workers or 1))))
-            if chunksize is None
-            else chunksize
-        )
+        chunksize = int(np.ceil(len(ds_iterator) / (2 * (max_workers or 1)))) if chunksize is None else chunksize
         return process_map(
             self._testForest_func,
             ds_iterator,
@@ -304,11 +264,7 @@ class BaseRandomForestMC(UserList):
         chunksize: Optional[int] = None,
     ) -> List[TypeClassVal]:
         ds_iterator = [row for _, row in ds.iterrows()]
-        chunksize = (
-            int(np.ceil(len(ds_iterator) / (2 * (max_workers or 1))))
-            if chunksize is None
-            else chunksize
-        )
+        chunksize = int(np.ceil(len(ds_iterator) / (2 * (max_workers or 1)))) if chunksize is None else chunksize
         return process_map(
             self.useForest,
             ds_iterator,
