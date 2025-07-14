@@ -1,5 +1,5 @@
 import json
-from typing import Any, NewType
+from typing import Any, NewType, Iterator, Tuple
 import numpy as np
 from keyword import iskeyword
 import datetime
@@ -8,16 +8,17 @@ import functools
 import operator
 
 
-def flat(a):
+def flat(a: list[list[Any]]) -> list[Any]:
     return functools.reduce(operator.iconcat, a, [])
 
-def flatten_nested_list(lst):
+
+def flatten_nested_list(lst: list[Any]) -> list[Any]:
     """
     Flatten a multi-level nested list into a single level list.
-    
+
     Args:
         lst: A list that may contain other lists and non-list elements.
-        
+
     Returns:
         A new list with all elements from the original list, flattened into one level.
     """
@@ -30,12 +31,15 @@ def flatten_nested_list(lst):
     return result
 
 
-def json_encoder(object):
-    if isinstance(object, np.generic):
-        return object.item()
-    if isinstance(object, (datetime.date, datetime.datetime)):
-        return object.isoformat()
+def json_encoder(obj: Any) -> Any:
+    if isinstance(obj, np.generic):
+        return obj.item()
+    if isinstance(obj, (datetime.date, datetime.datetime)):
+        return obj.isoformat()
 
+
+DEFAULT_DICT_PATH = "./data"
+JSON_EXTENSION = ".json"
 
 DictsPathType = NewType("DictsPath", str)
 
@@ -51,7 +55,7 @@ def dump_file_json(path: DictsPathType, var: Any):
 
 
 class LoadDicts:
-    def __init__(self, dict_path: DictsPathType = "./data", ignore_errors: bool = False):
+    def __init__(self, dict_path: DictsPathType = DEFAULT_DICT_PATH, ignore_errors: bool = False):
         Dicts_glob = Path(dict_path).glob("*.json")
         self.List = []
         self.Dict = {}
@@ -77,18 +81,18 @@ class LoadDicts:
     def __len__(self) -> int:
         return len(self.List)
 
-    def __iter__(self) -> int:
+    def __iter__(self) -> Iterator[Any]:
         for item in self.List:
             yield self.Dict[item]
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: str) -> Any:
         return self.Dict[key]
 
-    def items(self):
+    def items(self) -> Iterator[Tuple[str, Any]]:
         for item in self.List:
             yield item, self.Dict[item]
 
-    def add(self, other) -> None:
+    def add(self, other: "LoadDicts") -> None:
         for item_name in other.List:
             self.Dict[item_name] = other.Dict[item_name]
         self.List.extend(other.List)

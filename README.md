@@ -256,6 +256,23 @@ dicts.List
 > ["data", "metdada"]
 ```
 
+### Run unit tests:
+
+Extract the datasets and metada files:
+```bash
+./tests/extract_datasets.sh ~/tmp
+```
+
+Run unit test for all versions in `./tests/versions.txt`. Here we are using `pyenv`:
+```bash
+./tests/run_tests_all_versions.sh
+```
+
+Run unit test for the current version of Python (your current shell):
+```bash
+./tests/run_tests.sh
+```
+
 
 ## Fundamentals:
 

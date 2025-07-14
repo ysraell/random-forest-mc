@@ -10,9 +10,18 @@ import pytest
 import pytest_check as check
 from json import JSONDecodeError
 from pathlib import Path
+import json
+from typing import NewType
+
+DictsPathType = NewType("DictsPath", str)
 
 
-path_to_dataset = "/tmp/datasets"
+def load_file_json(path: DictsPathType):
+    with open(Path(path), "r") as f:
+        return json.load(f)
+
+
+path_to_dataset = load_file_json("env_datasets.json")["datasets_dir"]
 
 
 def flat(a):
@@ -26,7 +35,7 @@ path_dict = Path(f"{path_to_dataset}/model_dict.json")
 def test_version():
     from random_forest_mc import __version__
 
-    assert __version__ == "1.2.0"
+    assert __version__ == "1.3.0-dev"
 
 
 # @pytest.mark.skip()
@@ -141,7 +150,7 @@ def test_RandomForestMC_fit():
         max_discard_trees=20,
         th_decease_verbose=True,
         temporal_features=True,
-        got_best_tree_verbose=True
+        got_best_tree_verbose=True,
     )
     cls.process_dataset(dataset)
     check.is_false(cls.temporal_features)
@@ -204,6 +213,31 @@ def test_RandomForestMC_fitParallel():
     )
     cls.fitParallel(dataset=dataset, max_workers=4)
 
+# @pytest.mark.skip()
+def test_RandomForestMC_fitParallel_Threaded():
+    from random_forest_mc.model import RandomForestMC
+    from random_forest_mc.utils import LoadDicts
+
+    dicts = LoadDicts("tests/")
+    dataset_dict = dicts.datasets_metadata
+    ds_name = "titanic"
+    params = dataset_dict[ds_name]
+    dataset = (
+        pd.read_csv(path_to_dataset + params["csv_path"])[
+            params["ds_cols"] + [params["target_col"]]
+        ]
+        .dropna()
+        .reset_index(drop=True)
+    )
+    dataset["Age"] = dataset["Age"].astype(np.uint8)
+    dataset["SibSp"] = dataset["SibSp"].astype(np.uint8)
+    dataset["Pclass"] = dataset["Pclass"].astype(str)
+    dataset["Fare"] = dataset["Fare"].astype(np.uint32)
+    dataset.insert(len(dataset.columns), "coluna_vazia", "None")
+    cls = RandomForestMC(
+        target_col=params["target_col"], max_discard_trees=20, th_decease_verbose=True, threaded_fit=True
+    )
+    cls.fitParallel(dataset=dataset, max_workers=4)
 
 # @pytest.mark.skip()
 def test_RandomForestMC_testParallel():
@@ -233,6 +267,7 @@ def test_RandomForestMC_testParallel():
     _ = cls.testForestParallel(dataset, max_workers=4)
     _ = cls.testForestProbsParallel(dataset, max_workers=4)
 
+
 # @pytest.mark.skip()
 def test_RandomForestMC_fit_max_depth():
     from random_forest_mc.model import RandomForestMC
@@ -256,7 +291,7 @@ def test_RandomForestMC_fit_max_depth():
     dataset.insert(len(dataset.columns), "coluna_vazia", "None")
     max_depth = 2
     cls = RandomForestMC(
-        target_col=params["target_col"], max_discard_trees=20, th_decease_verbose=True
+        target_col=params["target_col"], max_discard_trees=20, th_decease_verbose=True, threaded_fit=False
     )
     cls.fitParallel(dataset=dataset, max_workers=4)
     max_depth_got = max(flat(cls.trees2depths))
@@ -294,7 +329,7 @@ def test_RandomForestMC_fit_min_samples_split():
     dataset["Fare"] = dataset["Fare"].astype(np.uint32)
     dataset.insert(len(dataset.columns), "coluna_vazia", "None")
     cls = RandomForestMC(
-        target_col=params["target_col"], max_discard_trees=20, th_decease_verbose=True
+        target_col=params["target_col"], max_discard_trees=20, th_decease_verbose=True, threaded_fit=False
     )
     cls.fitParallel(dataset=dataset, max_workers=4)
     max_depth_min_samples_split_1 = max(flat(cls.trees2depths))
@@ -329,7 +364,7 @@ def test_RandomForestMC_fitParallel_featImportance():
     dataset["SibSp"] = dataset["SibSp"].astype(np.uint8)
     dataset["Pclass"] = dataset["Pclass"].astype(str)
     dataset["Fare"] = dataset["Fare"].astype(np.uint32)
-    cls = RandomForestMC(target_col=params["target_col"], max_discard_trees=8)
+    cls = RandomForestMC(target_col=params["target_col"], max_discard_trees=8, threaded_fit=False)
     cls.fitParallel(dataset=dataset, max_workers=4)
     featCount_stats, featCount_list = cls.featCount()
     featImportance = cls.featImportance()
@@ -388,7 +423,7 @@ def test_RandomForestMC_fitParallel_sampleClassFeatImportance():
     dataset["SibSp"] = dataset["SibSp"].astype(np.uint8)
     dataset["Pclass"] = dataset["Pclass"].astype(str)
     dataset["Fare"] = dataset["Fare"].astype(np.uint32)
-    cls = RandomForestMC(target_col=target_col, max_discard_trees=8)
+    cls = RandomForestMC(target_col=target_col, max_discard_trees=8, threaded_fit=False)
     cls.fitParallel(dataset=dataset, max_workers=4)
     for row, Class in [
         (dataset.query(f'{target_col} == "1"').reset_index(drop=True).loc[0], "1"),
@@ -857,7 +892,7 @@ def test_RandomForestMC_fullCycle_creditcard_Parallel_process():
     )
     n_trees = 32
     cls = RandomForestMC(
-        n_trees=n_trees, target_col=params["target_col"], max_discard_trees=16
+        n_trees=n_trees, target_col=params["target_col"], max_discard_trees=16, threaded_fit=False
     )
     cls.process_dataset(dataset)
     cls.fitParallel(max_workers=8)
@@ -868,13 +903,41 @@ def test_RandomForestMC_fullCycle_creditcard_Parallel_process():
     _ = cls.testForestProbs(ds)
     check.equal(cls.Forest_size, n_trees)
 
+# @pytest.mark.skip()
+def test_RandomForestMC_fullCycle_creditcard_Parallel_process_threaded():
+    from random_forest_mc.model import RandomForestMC
+    from random_forest_mc.utils import LoadDicts
+
+    dicts = LoadDicts("tests/")
+    dataset_dict = dicts.datasets_metadata
+    ds_name = "creditcard_trans_float"
+    params = dataset_dict[ds_name]
+    dataset = (
+        pd.read_csv(path_to_dataset + params["csv_path"])[
+            params["ds_cols"] + [params["target_col"]]
+        ]
+        .dropna()
+        .reset_index(drop=True)
+    )
+    n_trees = 32
+    cls = RandomForestMC(
+        n_trees=n_trees, target_col=params["target_col"], max_discard_trees=16, threaded_fit=False
+    )
+    cls.process_dataset(dataset)
+    cls.fitParallel(max_workers=8)
+    ds = dataset.sample(n=min(1000, dataset.shape[0]), random_state=51)
+    y_test = ds[params["target_col"]].to_list()
+    y_pred = cls.testForest(ds)
+    _ = sum([v == p for v, p in zip(y_test, y_pred)]) / len(y_pred)
+    _ = cls.testForestProbs(ds)
+    check.equal(cls.Forest_size, n_trees)
 
 # @pytest.mark.skip()
 def test_RandomForestMC_predictMissingValues():
     from random_forest_mc.model import (
         RandomForestMC,
         MissingValuesNotFound,
-        dictValuesAllFeaturesMissing,
+        DictValuesAllFeaturesMissing,
     )
     from random_forest_mc.utils import LoadDicts
 
@@ -931,7 +994,7 @@ def test_RandomForestMC_predictMissingValues():
         _ = cls.predictMissingValues(dataset.sample(n=20), dict_values)
 
     _dict_values = {"Not Feature": [1, 2, 3], "Not Feature 2": [4, 5, 6]}
-    with pytest.raises(dictValuesAllFeaturesMissing):
+    with pytest.raises(DictValuesAllFeaturesMissing):
         _ = cls.predictMissingValues(dataset.sample(n=20), _dict_values)
 
 
