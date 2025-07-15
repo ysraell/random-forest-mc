@@ -1,4 +1,4 @@
-# TODO v1.3:
+# v1.3.0:
 
 - Reorg the code in modules: tree, forest and tools. Move some methods from forest class to tools as a subclass.
 - Change the `tqdm.contrib.concurrent` to `asyncio`: doesn't works well enough.
