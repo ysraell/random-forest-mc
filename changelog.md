@@ -1,4 +1,13 @@
-### v1.2.0:
+# TODO v1.3:
+
+- Reorg the code in modules: tree, forest and tools. Move some methods from forest class to tools as a subclass.
+- Change the `tqdm.contrib.concurrent` to `asyncio`: doesn't works well enough.
+- Investigate how use the new ML-focused features from `Python 3.13` can be use here: bascally, with pandas working in the core os the planting tree, all optimization will not affect significantly. 
+    - Experiment with JIT: no significnt differences.
+    - Experiment with GIL off: no significnt differences.
+- Add `Python 3.13` in the unit tests.
+
+# v1.2.0:
 
 - Fix bug with function `drop_duplicated_trees` that is keeping the duplicated only.
 - Add in the `dict2model` the possibility to add and not only replace the current Forest. E.g.: dict2model(Dict, add = False) -> Default: False.
