@@ -4,7 +4,7 @@ I recently refactored the `random-forest-mc` library to replace Pandas with NumP
 
 Here is a benchmark comparing the new version against v1.3.0:
 
-| Dataset | Trees | Legacy (s) | Optimized (s) | Speedup |
+| Dataset | Trees | 1.3.0 (s) | 1.4.0 (s) | Speedup |
 | :--- | :--- | :--- | :--- | :--- |
 | creditcard | 8 | 2.1448 | 1.1488 | **1.87x** |
 | creditcard | 16 | 3.9049 | 2.1223 | **1.84x** |
