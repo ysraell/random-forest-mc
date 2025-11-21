@@ -38,7 +38,7 @@ featValue = Union[str, Real]
 dictValues = Dict[featName, featValue]
 
 # Row (dsRow) or Matrix (Pandas DataFrame)
-rowOrMatrix = Union[PandasSeriesRow, pd.DataFrame]
+rowOrMatrix = Union[PandasSeriesRow, pd.DataFrame, Dict[str, Any]]
 
 
 class DecisionTreeMC(UserDict):
@@ -153,13 +153,22 @@ class DecisionTreeMC(UserDict):
         return depths
 
     @staticmethod
-    def _useTree(tree, row: PandasSeriesRow) -> LeafDict:
+    def _useTree(tree, row: Union[PandasSeriesRow, Dict[str, Any]]) -> LeafDict:
         def functionalUseTree(subTree) -> LeafDict:
             node = list(subTree.keys())[0]
             if node == "leaf":
                 return subTree["leaf"]
             tree_node_split = subTree[node]["split"]
-            if node not in row.index:
+            
+            # Check if node exists in row
+            # For pandas Series, we can use .index or 'in'
+            # For dict, we use 'in'
+            if isinstance(row, pd.Series):
+                has_node = node in row.index
+            else:
+                has_node = node in row
+
+            if not has_node:
                 return [
                     functionalUseTree(tree_node_split[">="]),
                     functionalUseTree(tree_node_split["<"]),
