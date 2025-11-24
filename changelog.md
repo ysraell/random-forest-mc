@@ -1,3 +1,7 @@
+# v1.4.0:
+
+- ~~Refactor to use NumPy or built in Python features as core data operations.
+
 # v1.3.0:
 
 - Reorg the code in modules: tree, forest and tools. Move some methods from forest class to tools as a subclass.

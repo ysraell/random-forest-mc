@@ -19,7 +19,7 @@
 - ~~Add `Python 3.13` in the unit tests.~~  
 - ~~Time report generation in the unit tests.~~ 
 
-### TODO v1.4:
+### TODO v1.5:
 - Add a training process that you can use a validation dataset to compute the performance after the cretion of a set of trees (like epochs).
 - Create new forests from a cross merging between other forests, for a given amount of trees for the output forest:~
     - by optimization, based on a GA and MC approaches, using a given test dataset;
@@ -31,7 +31,7 @@
 ### TODO V2.0:
 - ~~Fix multithread logic.~~
 - Add regression prediction.
-- Refactor to use NumPy or built in Python features as core data operations.
+- ~~Refactor to use NumPy or built in Python features as core data operations.~~
 - Tree management framework: to remove or add new trees, version management for set of trees.
 
 ### TODO Extras:
