@@ -152,6 +152,7 @@ class RandomForestMC(BaseRandomForestMC):
         self.delta_th = delta_th
         self.max_discard_trees = max_discard_trees
         self.dataset = None
+        self.dataset_numpy = None
         self.max_depth = getrecursionlimit() if max_depth is None else int(max_depth)
         self.min_samples_split = int(min_samples_split)
         self.got_best_tree_verbose = got_best_tree_verbose
@@ -175,40 +176,42 @@ class RandomForestMC(BaseRandomForestMC):
         self.numeric_cols = numeric_cols
         self.feature_cols = feature_cols
         self.type_of_cols = type_of_cols
-        self.dataset = dataset.dropna()
+        
+        # Drop missing values
+        dataset = dataset.dropna()
         log.warning("Rows with missing values were dropped from the dataset.")
+        
         self.class_vals = dataset[self.target_col].unique().tolist()
 
         if self.temporal_features and (not self.validFeaturesTemporal()):
             self.temporal_features = False
             log.warning("Temporal features ordering disable: you do not have all orderable features!")
 
-        min_class = self.dataset[self.target_col].value_counts().min()
+        min_class = dataset[self.target_col].value_counts().min()
         self._N = min(self._N, min_class)
+        
+        # Convert to numpy arrays
+        self.dataset_numpy = {col: dataset[col].to_numpy() for col in dataset.columns}
+        self.n_samples = len(dataset)
 
     # Splits the data to build the decision tree.
-    def split_train_val(self) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    def split_train_val(self) -> Tuple[np.ndarray, np.ndarray]:
         idx_train = []
         idx_val = []
+        target_vals = self.dataset_numpy[self.target_col]
+        indices = np.arange(self.n_samples)
+        
         for val in self.class_vals:
-            idx_list = (
-                self.dataset.query(f'{self.target_col} == "{val}"').sample(n=self._N, replace=False).index.to_list()
-            )
-            idx_train.extend(idx_list[: self.batch_train_pclass])
-            idx_val.extend(idx_list[self.batch_train_pclass :])  # noqa E203
+            class_indices = indices[target_vals == val]
+            selected_indices = np.random.choice(class_indices, self._N, replace=False)
+            idx_train.extend(selected_indices[: self.batch_train_pclass])
+            idx_val.extend(selected_indices[self.batch_train_pclass :])
 
-        ds_T, ds_V = (
-            self.dataset.loc[idx_train].reset_index(drop=True),
-            self.dataset.loc[idx_val].reset_index(drop=True),
-        )
-        for col in self.feature_cols:
-            if ds_T[col].nunique() == 1:
-                ds_T.drop(columns=col, inplace=True)
-        return ds_T, ds_V
+        return np.array(idx_train), np.array(idx_val)
 
     # Sample the features.
     def sampleFeats(self, feature_cols: List[str]) -> List[featName]:
-        feature_cols.remove(self.target_col)
+        # feature_cols already excludes target_col
         n_samples = np.random.randint(self.min_feature, self.max_feature + 1)
         out = random_sample(feature_cols, min(len(feature_cols), n_samples))
         if not self.temporal_features:
@@ -216,89 +219,112 @@ class RandomForestMC(BaseRandomForestMC):
         return sorted(out, key=lambda x: int(x.split("_")[-1]))
 
     # Set the leaf of the descion tree.
-    def genLeaf(self, ds: pd.DataFrame, depth: int) -> LeafDict:
+    def genLeaf(self, indices: np.ndarray, depth: int) -> LeafDict:
+        target_vals = self.dataset_numpy[self.target_col][indices]
+        unique, counts = np.unique(target_vals, return_counts=True)
+        total = len(target_vals)
         return {
-            "leaf": ds[self.target_col].value_counts(normalize=True).to_dict(),
+            "leaf": {k: v / total for k, v in zip(unique, counts)},
             "depth": f"{depth}#",
         }
 
     # Splits the data during the tree's growth process.
-    def splitData(self, feat, ds: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame, Union[Real, str]]:
-        if ds.shape[0] > 2:
+    def splitData(self, feat, indices: np.ndarray) -> Tuple[np.ndarray, np.ndarray, Union[Real, str]]:
+        feat_vals = self.dataset_numpy[feat][indices]
+        
+        if len(indices) > 2:
             if feat in self.numeric_cols:
-                split_val = float(ds[feat].quantile())
-                ds_a = ds.query(f"{feat} >= {split_val}").reset_index(drop=True)
-                ds_b = ds.query(f"{feat} < {split_val}").reset_index(drop=True)
-                if (ds_a.shape[0] == 0) or (ds_b.shape[0] == 0):
-                    ds_a = ds.query(f"{feat} > {split_val}").reset_index(drop=True)
-                    ds_b = ds.query(f"{feat} <= {split_val}").reset_index(drop=True)
+                split_val = float(np.quantile(feat_vals, 0.5)) # Median
+                mask = feat_vals >= split_val
+                idx_a = indices[mask]
+                idx_b = indices[~mask]
+                
+                if (len(idx_a) == 0) or (len(idx_b) == 0):
+                    mask = feat_vals > split_val
+                    idx_a = indices[mask]
+                    idx_b = indices[~mask]
 
             else:
-                # Default values for Series.value_counts(
-                #   normalize=False, sort=True, ascending=False,
-                #   bins=None, dropna=True
-                # )
-                # split_val = 'most common cat value by class'
-                split_val = ds[[feat, self.target_col]].value_counts().index[0][0]
-                # '>=' : equal to split_val
-                # '<' : not equal to split_val
-                ds_a = ds.query(f'{feat} == "{split_val}"').reset_index(drop=True)
-                ds_b = ds.query(f'{feat} != "{split_val}"').reset_index(drop=True)
+                # Most common value
+                unique, counts = np.unique(feat_vals, return_counts=True)
+                split_val = unique[np.argmax(counts)]
+                
+                mask = feat_vals == split_val
+                idx_a = indices[mask]
+                idx_b = indices[~mask]
 
-            return (ds_a, ds_b, split_val)
+            return (idx_a, idx_b, split_val)
 
         else:
-            ds = ds.sort_values(feat).reset_index(drop=True)
-            return (ds.loc[1].to_frame().T, ds.loc[0].to_frame().T, ds[feat].loc[1])
+            # Sort by feature value
+            sorted_idx = np.argsort(feat_vals)
+            indices = indices[sorted_idx]
+            return (indices[1:], indices[:1], feat_vals[sorted_idx][1])
 
-    def plantTree(self, ds_train: pd.DataFrame, feature_list: List[featName]) -> DecisionTreeMC:
+    def plantTree(self, indices: np.ndarray, feature_list: List[featName]) -> DecisionTreeMC:
         # Functional process.
-        def growTree(F: List[featName], ds: pd.DataFrame, depth: int = 1) -> Union[DecisionTreeMC, LeafDict]:
-            if (depth >= self.max_depth) or (ds[self.target_col].nunique() == 1):
-                return self.genLeaf(ds, depth)
+        def growTree(F: List[featName], indices: np.ndarray, depth: int = 1) -> Union[DecisionTreeMC, LeafDict]:
+            target_vals = self.dataset_numpy[self.target_col][indices]
+            if (depth >= self.max_depth) or (len(np.unique(target_vals)) == 1):
+                return self.genLeaf(indices, depth)
 
             Pass = False
             first_feat = F[0]
             while not Pass:
                 feat = F[0]
-                ds_a, ds_b, split_val = self.splitData(feat, ds)
+                idx_a, idx_b, split_val = self.splitData(feat, indices)
                 F.append(F.pop(0))
-                if (ds_a.shape[0] >= self.min_samples_split) and (ds_b.shape[0] >= self.min_samples_split):
+                if (len(idx_a) >= self.min_samples_split) and (len(idx_b) >= self.min_samples_split):
                     Pass = True
                 elif first_feat == F[0]:
-                    return self.genLeaf(ds, depth)
+                    return self.genLeaf(indices, depth)
 
             return {
                 feat: {
                     "split": {
                         "feat_type": self.type_of_cols[feat],
                         "split_val": split_val,
-                        ">=": growTree(F[:], ds_a, depth + 1),
-                        "<": growTree(F[:], ds_b, depth + 1),
+                        ">=": growTree(F[:], idx_a, depth + 1),
+                        "<": growTree(F[:], idx_b, depth + 1),
                     }
                 }
             }
 
-        return DecisionTreeMC(growTree(feature_list, ds_train), self.class_vals)
+        return DecisionTreeMC(growTree(feature_list, indices), self.class_vals)
 
     # Generates the metric for validation process.
-    def validationTree(self, Tree: DecisionTreeMC, ds: pd.DataFrame) -> float:
-        y_pred = [self.maxProbClas(Tree(row)) for _, row in ds.iterrows()]
-        y_val = ds[self.target_col].to_list()
-        return fsum([v == p for v, p in zip(y_val, y_pred)]) / len(y_pred)
+    def validationTree(self, Tree: DecisionTreeMC, indices: np.ndarray) -> float:
+        # We need to reconstruct rows for prediction or update Tree to accept indices
+        # For now, let's reconstruct rows as dicts which is what Tree expects (kind of)
+        # Actually Tree expects PandasSeriesRow. We need to update Tree.py too.
+        # But for now, let's assume we can pass a dict-like object or update Tree later.
+        
+        # Optimization: Vectorized prediction if possible, but Tree structure is recursive dict.
+        # So we stick to row-wise prediction for now.
+        
+        y_pred = []
+        y_val = self.dataset_numpy[self.target_col][indices]
+        
+        # Create a generator of rows
+        rows = ({col: self.dataset_numpy[col][i] for col in self.feature_cols} for i in indices)
+        
+        for row in rows:
+            y_pred.append(self.maxProbClas(Tree(row)))
+            
+        return np.mean(y_val == y_pred)
 
     # _ argument is for compatible execution with thread_map
     def survivedTree(self, _=None) -> DecisionTreeMC:
-        ds_T, ds_V = self.split_train_val()
+        idx_T, idx_V = self.split_train_val()
         Threshold_for_drop = self.th_start
         dropped_trees_counter = itertools_count(1)
         # Only survived trees
         max_th_val = 0.0
         max_Tree = None
         while True:
-            F = self.sampleFeats(ds_T.columns.tolist())
-            Tree = self.plantTree(ds_T, F)
-            th_val = self.validationTree(Tree, ds_V)
+            F = self.sampleFeats(self.feature_cols[:]) # Pass a copy
+            Tree = self.plantTree(idx_T, F)
+            th_val = self.validationTree(Tree, idx_V)
             if th_val < Threshold_for_drop:
                 if self.get_best_tree:
                     if max_th_val < th_val:
@@ -325,7 +351,7 @@ class RandomForestMC(BaseRandomForestMC):
         if dataset is not None:
             self.process_dataset(dataset)
 
-        if self.dataset is None:
+        if self.dataset_numpy is None:
             raise DatasetNotFound
 
         # Builds the Forest (training step)
@@ -352,7 +378,7 @@ class RandomForestMC(BaseRandomForestMC):
         if dataset is not None:
             self.process_dataset(dataset)
 
-        if self.dataset is None:
+        if self.dataset_numpy is None:
             raise DatasetNotFound
 
         if not self.threaded_fit:

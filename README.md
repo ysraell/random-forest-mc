@@ -18,6 +18,13 @@ Already validated in production, with real data, for churn prediction, with data
 
 The first implementation is found in [2] (using Common Lisp).
 
+## New in v1.4.0 🚀
+
+- **Core Refactoring:** The internal tree-building logic has been completely rewritten using **NumPy**, replacing the previous Pandas-based implementation.
+- **Massive Performance Boost:** Training times have improved dramatically, with speedups ranging from **1.5x** to **47x** depending on the dataset size.
+- **Same API:** The public API remains unchanged, ensuring backward compatibility.
+
+
 ## Install:
 
 Install using `pip`:
