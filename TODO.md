@@ -19,7 +19,14 @@
 - ~~Add `Python 3.13` in the unit tests.~~  
 - ~~Time report generation in the unit tests.~~ 
 
-### TODO v1.5:
+### TODO v1.5.0:
+- ~~Introduce high-performance Modern C++ (C++17 + nanobind) backend alongside pure Python.~~
+- ~~Add `engine="auto" | "cpp" | "python"` parameter to `RandomForestMC`.~~
+- ~~Export `random_forest_mc.cpp_model.RandomForestMC` and `RandomForestMCCPP`.~~
+- ~~Ensure 100% bidirectional serialization parity (`model2dict` / `dict2model`) between C++ and Python models.~~
+- ~~Implement true GIL-free multi-threaded training and inference using C++ worker threads.~~
+- ~~Achieve massive performance speedup (~70x faster training, ~300x faster predictions).~~
+- ~~Configure Poetry build hook (`build.py`) with nanobind and graceful fallback for non-C++ environments.~~
 - Add a training process that you can use a validation dataset to compute the performance after the cretion of a set of trees (like epochs).
 - Create new forests from a cross merging between other forests, for a given amount of trees for the output forest:~
     - by optimization, based on a GA and MC approaches, using a given test dataset;

@@ -498,7 +498,7 @@ class RandomForestMC(BaseRandomForestMC):
         for col, vals in dict_values.items():
             if pd.isna(row[col]):
                 for val in vals:
-                    _row = row.copy()
+                    _row = row.astype(object).copy()
                     _row[col] = val
                     list_out.append(_row)
         if len(list_out) == 0:

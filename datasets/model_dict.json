@@ -1,0 +1,2649 @@
+{
+    "min_feature": 2,
+    "max_feature": 6,
+    "n_trees": 16,
+    "class_vals": [
+        "0",
+        "1"
+    ],
+    "survived_scores": [
+        0.7,
+        0.8,
+        0.85,
+        0.6,
+        0.7,
+        0.7,
+        0.9,
+        0.75,
+        0.9,
+        0.8,
+        0.85,
+        0.85,
+        0.75,
+        0.7,
+        0.85,
+        0.9
+    ],
+    "version": "1.4.0",
+    "numeric_cols": [
+        "Age",
+        "SibSp",
+        "Fare"
+    ],
+    "feature_cols": [
+        "Pclass",
+        "Sex",
+        "Age",
+        "SibSp",
+        "Fare",
+        "Embarked"
+    ],
+    "type_of_cols": {
+        "Age": "numeric",
+        "SibSp": "numeric",
+        "Fare": "numeric",
+        "Sex": "categorical",
+        "Pclass": "categorical",
+        "Embarked": "categorical"
+    },
+    "target_col": "Survived",
+    "Forest": [
+        {
+            "data": {
+                "Embarked": {
+                    "split": {
+                        "feat_type": "categorical",
+                        "split_val": "S",
+                        ">=": {
+                            "Age": {
+                                "split": {
+                                    "feat_type": "numeric",
+                                    "split_val": 27.5,
+                                    ">=": {
+                                        "Pclass": {
+                                            "split": {
+                                                "feat_type": "categorical",
+                                                "split_val": "2",
+                                                ">=": {
+                                                    "Sex": {
+                                                        "split": {
+                                                            "feat_type": "categorical",
+                                                            "split_val": "male",
+                                                            ">=": {
+                                                                "leaf": {
+                                                                    "0": 1.0
+                                                                },
+                                                                "depth": "5#"
+                                                            },
+                                                            "<": {
+                                                                "leaf": {
+                                                                    "1": 1.0
+                                                                },
+                                                                "depth": "5#"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "<": {
+                                                    "Sex": {
+                                                        "split": {
+                                                            "feat_type": "categorical",
+                                                            "split_val": "female",
+                                                            ">=": {
+                                                                "SibSp": {
+                                                                    "split": {
+                                                                        "feat_type": "numeric",
+                                                                        "split_val": 0.0,
+                                                                        ">=": {
+                                                                            "leaf": {
+                                                                                "0": 1.0
+                                                                            },
+                                                                            "depth": "6#"
+                                                                        },
+                                                                        "<": {
+                                                                            "leaf": {
+                                                                                "1": 1.0
+                                                                            },
+                                                                            "depth": "6#"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            },
+                                                            "<": {
+                                                                "leaf": {
+                                                                    "0": 1.0
+                                                                },
+                                                                "depth": "5#"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "<": {
+                                        "Pclass": {
+                                            "split": {
+                                                "feat_type": "categorical",
+                                                "split_val": "3",
+                                                ">=": {
+                                                    "Sex": {
+                                                        "split": {
+                                                            "feat_type": "categorical",
+                                                            "split_val": "male",
+                                                            ">=": {
+                                                                "SibSp": {
+                                                                    "split": {
+                                                                        "feat_type": "numeric",
+                                                                        "split_val": 0.0,
+                                                                        ">=": {
+                                                                            "leaf": {
+                                                                                "0": 1.0
+                                                                            },
+                                                                            "depth": "6#"
+                                                                        },
+                                                                        "<": {
+                                                                            "Age": {
+                                                                                "split": {
+                                                                                    "feat_type": "numeric",
+                                                                                    "split_val": 21.5,
+                                                                                    ">=": {
+                                                                                        "Pclass": {
+                                                                                            "split": {
+                                                                                                "feat_type": "categorical",
+                                                                                                "split_val": "3",
+                                                                                                ">=": {
+                                                                                                    "leaf": {
+                                                                                                        "1": 1.0
+                                                                                                    },
+                                                                                                    "depth": "8#"
+                                                                                                },
+                                                                                                "<": {
+                                                                                                    "leaf": {
+                                                                                                        "0": 1.0
+                                                                                                    },
+                                                                                                    "depth": "8#"
+                                                                                                }
+                                                                                            }
+                                                                                        }
+                                                                                    },
+                                                                                    "<": {
+                                                                                        "leaf": {
+                                                                                            "0": 1.0
+                                                                                        },
+                                                                                        "depth": "7#"
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            },
+                                                            "<": {
+                                                                "leaf": {
+                                                                    "1": 1.0
+                                                                },
+                                                                "depth": "5#"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "<": {
+                                                    "leaf": {
+                                                        "1": 1.0
+                                                    },
+                                                    "depth": "4#"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "<": {
+                            "Age": {
+                                "split": {
+                                    "feat_type": "numeric",
+                                    "split_val": 26.0,
+                                    ">=": {
+                                        "Pclass": {
+                                            "split": {
+                                                "feat_type": "categorical",
+                                                "split_val": "3",
+                                                ">=": {
+                                                    "leaf": {
+                                                        "0": 1.0
+                                                    },
+                                                    "depth": "4#"
+                                                },
+                                                "<": {
+                                                    "leaf": {
+                                                        "1": 1.0
+                                                    },
+                                                    "depth": "4#"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "<": {
+                                        "leaf": {
+                                            "1": 1.0
+                                        },
+                                        "depth": "3#"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "class_vals": [
+                "0",
+                "1"
+            ],
+            "survived_score": 0.7,
+            "features": [
+                "Pclass",
+                "Sex",
+                "Age",
+                "SibSp",
+                "Fare",
+                "Embarked"
+            ],
+            "used_features": [
+                "Age",
+                "SibSp",
+                "Embarked",
+                "Sex",
+                "Pclass"
+            ],
+            "module_version": "1.4.0"
+        },
+        {
+            "data": {
+                "Sex": {
+                    "split": {
+                        "feat_type": "categorical",
+                        "split_val": "female",
+                        ">=": {
+                            "Fare": {
+                                "split": {
+                                    "feat_type": "numeric",
+                                    "split_val": 17.5,
+                                    ">=": {
+                                        "Pclass": {
+                                            "split": {
+                                                "feat_type": "categorical",
+                                                "split_val": "2",
+                                                ">=": {
+                                                    "leaf": {
+                                                        "1": 1.0
+                                                    },
+                                                    "depth": "4#"
+                                                },
+                                                "<": {
+                                                    "Fare": {
+                                                        "split": {
+                                                            "feat_type": "numeric",
+                                                            "split_val": 46.0,
+                                                            ">=": {
+                                                                "Pclass": {
+                                                                    "split": {
+                                                                        "feat_type": "categorical",
+                                                                        "split_val": "3",
+                                                                        ">=": {
+                                                                            "leaf": {
+                                                                                "0": 1.0
+                                                                            },
+                                                                            "depth": "6#"
+                                                                        },
+                                                                        "<": {
+                                                                            "leaf": {
+                                                                                "1": 1.0
+                                                                            },
+                                                                            "depth": "6#"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            },
+                                                            "<": {
+                                                                "leaf": {
+                                                                    "0": 1.0
+                                                                },
+                                                                "depth": "5#"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "<": {
+                                        "Fare": {
+                                            "split": {
+                                                "feat_type": "numeric",
+                                                "split_val": 14.0,
+                                                ">=": {
+                                                    "Fare": {
+                                                        "split": {
+                                                            "feat_type": "numeric",
+                                                            "split_val": 15.0,
+                                                            ">=": {
+                                                                "leaf": {
+                                                                    "1": 1.0
+                                                                },
+                                                                "depth": "5#"
+                                                            },
+                                                            "<": {
+                                                                "leaf": {
+                                                                    "0": 1.0
+                                                                },
+                                                                "depth": "5#"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "<": {
+                                                    "leaf": {
+                                                        "1": 1.0
+                                                    },
+                                                    "depth": "4#"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "<": {
+                            "Fare": {
+                                "split": {
+                                    "feat_type": "numeric",
+                                    "split_val": 8.0,
+                                    ">=": {
+                                        "Pclass": {
+                                            "split": {
+                                                "feat_type": "categorical",
+                                                "split_val": "3",
+                                                ">=": {
+                                                    "leaf": {
+                                                        "0": 1.0
+                                                    },
+                                                    "depth": "4#"
+                                                },
+                                                "<": {
+                                                    "Fare": {
+                                                        "split": {
+                                                            "feat_type": "numeric",
+                                                            "split_val": 30.0,
+                                                            ">=": {
+                                                                "leaf": {
+                                                                    "1": 1.0
+                                                                },
+                                                                "depth": "5#"
+                                                            },
+                                                            "<": {
+                                                                "leaf": {
+                                                                    "0": 1.0
+                                                                },
+                                                                "depth": "5#"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "<": {
+                                        "Fare": {
+                                            "split": {
+                                                "feat_type": "numeric",
+                                                "split_val": 7.0,
+                                                ">=": {
+                                                    "leaf": {
+                                                        "0": 0.6666666666666666,
+                                                        "1": 0.3333333333333333
+                                                    },
+                                                    "depth": "4#"
+                                                },
+                                                "<": {
+                                                    "leaf": {
+                                                        "0": 1.0
+                                                    },
+                                                    "depth": "4#"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "class_vals": [
+                "0",
+                "1"
+            ],
+            "survived_score": 0.8,
+            "features": [
+                "Pclass",
+                "Sex",
+                "Age",
+                "SibSp",
+                "Fare",
+                "Embarked"
+            ],
+            "used_features": [
+                "Fare",
+                "Pclass",
+                "Sex"
+            ],
+            "module_version": "1.4.0"
+        },
+        {
+            "data": {
+                "Sex": {
+                    "split": {
+                        "feat_type": "categorical",
+                        "split_val": "male",
+                        ">=": {
+                            "Embarked": {
+                                "split": {
+                                    "feat_type": "categorical",
+                                    "split_val": "S",
+                                    ">=": {
+                                        "leaf": {
+                                            "0": 0.7777777777777778,
+                                            "1": 0.2222222222222222
+                                        },
+                                        "depth": "3#"
+                                    },
+                                    "<": {
+                                        "Embarked": {
+                                            "split": {
+                                                "feat_type": "categorical",
+                                                "split_val": "C",
+                                                ">=": {
+                                                    "Sex": {
+                                                        "split": {
+                                                            "feat_type": "categorical",
+                                                            "split_val": "male",
+                                                            ">=": {
+                                                                "leaf": {
+                                                                    "1": 1.0
+                                                                },
+                                                                "depth": "5#"
+                                                            },
+                                                            "<": {
+                                                                "leaf": {
+                                                                    "0": 1.0
+                                                                },
+                                                                "depth": "5#"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "<": {
+                                                    "leaf": {
+                                                        "0": 1.0
+                                                    },
+                                                    "depth": "4#"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "<": {
+                            "leaf": {
+                                "0": 0.125,
+                                "1": 0.875
+                            },
+                            "depth": "2#"
+                        }
+                    }
+                }
+            },
+            "class_vals": [
+                "0",
+                "1"
+            ],
+            "survived_score": 0.85,
+            "features": [
+                "Pclass",
+                "Sex",
+                "Age",
+                "SibSp",
+                "Fare",
+                "Embarked"
+            ],
+            "used_features": [
+                "Embarked",
+                "Sex"
+            ],
+            "module_version": "1.4.0"
+        },
+        {
+            "data": {
+                "Pclass": {
+                    "split": {
+                        "feat_type": "categorical",
+                        "split_val": "1",
+                        ">=": {
+                            "Sex": {
+                                "split": {
+                                    "feat_type": "categorical",
+                                    "split_val": "male",
+                                    ">=": {
+                                        "leaf": {
+                                            "0": 0.2,
+                                            "1": 0.8
+                                        },
+                                        "depth": "3#"
+                                    },
+                                    "<": {
+                                        "leaf": {
+                                            "1": 1.0
+                                        },
+                                        "depth": "3#"
+                                    }
+                                }
+                            }
+                        },
+                        "<": {
+                            "Sex": {
+                                "split": {
+                                    "feat_type": "categorical",
+                                    "split_val": "male",
+                                    ">=": {
+                                        "Pclass": {
+                                            "split": {
+                                                "feat_type": "categorical",
+                                                "split_val": "3",
+                                                ">=": {
+                                                    "leaf": {
+                                                        "0": 0.75,
+                                                        "1": 0.25
+                                                    },
+                                                    "depth": "4#"
+                                                },
+                                                "<": {
+                                                    "leaf": {
+                                                        "0": 1.0
+                                                    },
+                                                    "depth": "4#"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "<": {
+                                        "Pclass": {
+                                            "split": {
+                                                "feat_type": "categorical",
+                                                "split_val": "2",
+                                                ">=": {
+                                                    "leaf": {
+                                                        "0": 0.25,
+                                                        "1": 0.75
+                                                    },
+                                                    "depth": "4#"
+                                                },
+                                                "<": {
+                                                    "leaf": {
+                                                        "0": 1.0
+                                                    },
+                                                    "depth": "4#"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "class_vals": [
+                "0",
+                "1"
+            ],
+            "survived_score": 0.6,
+            "features": [
+                "Pclass",
+                "Sex",
+                "Age",
+                "SibSp",
+                "Fare",
+                "Embarked"
+            ],
+            "used_features": [
+                "Pclass",
+                "Sex"
+            ],
+            "module_version": "1.4.0"
+        },
+        {
+            "data": {
+                "Age": {
+                    "split": {
+                        "feat_type": "numeric",
+                        "split_val": 30.0,
+                        ">=": {
+                            "Embarked": {
+                                "split": {
+                                    "feat_type": "categorical",
+                                    "split_val": "S",
+                                    ">=": {
+                                        "Age": {
+                                            "split": {
+                                                "feat_type": "numeric",
+                                                "split_val": 43.0,
+                                                ">=": {
+                                                    "Age": {
+                                                        "split": {
+                                                            "feat_type": "numeric",
+                                                            "split_val": 45.0,
+                                                            ">=": {
+                                                                "leaf": {
+                                                                    "1": 1.0
+                                                                },
+                                                                "depth": "5#"
+                                                            },
+                                                            "<": {
+                                                                "leaf": {
+                                                                    "0": 1.0
+                                                                },
+                                                                "depth": "5#"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "<": {
+                                                    "leaf": {
+                                                        "0": 1.0
+                                                    },
+                                                    "depth": "4#"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "<": {
+                                        "Age": {
+                                            "split": {
+                                                "feat_type": "numeric",
+                                                "split_val": 49.0,
+                                                ">=": {
+                                                    "Embarked": {
+                                                        "split": {
+                                                            "feat_type": "categorical",
+                                                            "split_val": "C",
+                                                            ">=": {
+                                                                "leaf": {
+                                                                    "1": 1.0
+                                                                },
+                                                                "depth": "5#"
+                                                            },
+                                                            "<": {
+                                                                "leaf": {
+                                                                    "0": 1.0
+                                                                },
+                                                                "depth": "5#"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "<": {
+                                                    "leaf": {
+                                                        "1": 1.0
+                                                    },
+                                                    "depth": "4#"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "<": {
+                            "Embarked": {
+                                "split": {
+                                    "feat_type": "categorical",
+                                    "split_val": "S",
+                                    ">=": {
+                                        "Age": {
+                                            "split": {
+                                                "feat_type": "numeric",
+                                                "split_val": 26.0,
+                                                ">=": {
+                                                    "Age": {
+                                                        "split": {
+                                                            "feat_type": "numeric",
+                                                            "split_val": 28.0,
+                                                            ">=": {
+                                                                "leaf": {
+                                                                    "1": 1.0
+                                                                },
+                                                                "depth": "5#"
+                                                            },
+                                                            "<": {
+                                                                "Embarked": {
+                                                                    "split": {
+                                                                        "feat_type": "categorical",
+                                                                        "split_val": "S",
+                                                                        ">=": {
+                                                                            "leaf": {
+                                                                                "1": 1.0
+                                                                            },
+                                                                            "depth": "6#"
+                                                                        },
+                                                                        "<": {
+                                                                            "leaf": {
+                                                                                "0": 1.0
+                                                                            },
+                                                                            "depth": "6#"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "<": {
+                                                    "leaf": {
+                                                        "0": 1.0
+                                                    },
+                                                    "depth": "4#"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "<": {
+                                        "Age": {
+                                            "split": {
+                                                "feat_type": "numeric",
+                                                "split_val": 17.0,
+                                                ">=": {
+                                                    "Embarked": {
+                                                        "split": {
+                                                            "feat_type": "categorical",
+                                                            "split_val": "C",
+                                                            ">=": {
+                                                                "leaf": {
+                                                                    "1": 1.0
+                                                                },
+                                                                "depth": "5#"
+                                                            },
+                                                            "<": {
+                                                                "leaf": {
+                                                                    "0": 1.0
+                                                                },
+                                                                "depth": "5#"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "<": {
+                                                    "leaf": {
+                                                        "1": 1.0
+                                                    },
+                                                    "depth": "4#"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "class_vals": [
+                "0",
+                "1"
+            ],
+            "survived_score": 0.7,
+            "features": [
+                "Pclass",
+                "Sex",
+                "Age",
+                "SibSp",
+                "Fare",
+                "Embarked"
+            ],
+            "used_features": [
+                "Embarked",
+                "Age"
+            ],
+            "module_version": "1.4.0"
+        },
+        {
+            "data": {
+                "Embarked": {
+                    "split": {
+                        "feat_type": "categorical",
+                        "split_val": "S",
+                        ">=": {
+                            "Sex": {
+                                "split": {
+                                    "feat_type": "categorical",
+                                    "split_val": "male",
+                                    ">=": {
+                                        "Pclass": {
+                                            "split": {
+                                                "feat_type": "categorical",
+                                                "split_val": "3",
+                                                ">=": {
+                                                    "Age": {
+                                                        "split": {
+                                                            "feat_type": "numeric",
+                                                            "split_val": 25.0,
+                                                            ">=": {
+                                                                "Fare": {
+                                                                    "split": {
+                                                                        "feat_type": "numeric",
+                                                                        "split_val": 8.0,
+                                                                        ">=": {
+                                                                            "Age": {
+                                                                                "split": {
+                                                                                    "feat_type": "numeric",
+                                                                                    "split_val": 32.0,
+                                                                                    ">=": {
+                                                                                        "leaf": {
+                                                                                            "0": 1.0
+                                                                                        },
+                                                                                        "depth": "7#"
+                                                                                    },
+                                                                                    "<": {
+                                                                                        "leaf": {
+                                                                                            "1": 1.0
+                                                                                        },
+                                                                                        "depth": "7#"
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        },
+                                                                        "<": {
+                                                                            "leaf": {
+                                                                                "0": 1.0
+                                                                            },
+                                                                            "depth": "6#"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            },
+                                                            "<": {
+                                                                "Fare": {
+                                                                    "split": {
+                                                                        "feat_type": "numeric",
+                                                                        "split_val": 11.0,
+                                                                        ">=": {
+                                                                            "leaf": {
+                                                                                "1": 1.0
+                                                                            },
+                                                                            "depth": "6#"
+                                                                        },
+                                                                        "<": {
+                                                                            "Embarked": {
+                                                                                "split": {
+                                                                                    "feat_type": "categorical",
+                                                                                    "split_val": "S",
+                                                                                    ">=": {
+                                                                                        "leaf": {
+                                                                                            "1": 1.0
+                                                                                        },
+                                                                                        "depth": "7#"
+                                                                                    },
+                                                                                    "<": {
+                                                                                        "leaf": {
+                                                                                            "0": 1.0
+                                                                                        },
+                                                                                        "depth": "7#"
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "<": {
+                                                    "Age": {
+                                                        "split": {
+                                                            "feat_type": "numeric",
+                                                            "split_val": 40.5,
+                                                            ">=": {
+                                                                "leaf": {
+                                                                    "0": 1.0
+                                                                },
+                                                                "depth": "5#"
+                                                            },
+                                                            "<": {
+                                                                "Fare": {
+                                                                    "split": {
+                                                                        "feat_type": "numeric",
+                                                                        "split_val": 26.0,
+                                                                        ">=": {
+                                                                            "leaf": {
+                                                                                "1": 1.0
+                                                                            },
+                                                                            "depth": "6#"
+                                                                        },
+                                                                        "<": {
+                                                                            "leaf": {
+                                                                                "0": 1.0
+                                                                            },
+                                                                            "depth": "6#"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "<": {
+                                        "leaf": {
+                                            "1": 1.0
+                                        },
+                                        "depth": "3#"
+                                    }
+                                }
+                            }
+                        },
+                        "<": {
+                            "Sex": {
+                                "split": {
+                                    "feat_type": "categorical",
+                                    "split_val": "female",
+                                    ">=": {
+                                        "leaf": {
+                                            "1": 1.0
+                                        },
+                                        "depth": "3#"
+                                    },
+                                    "<": {
+                                        "Pclass": {
+                                            "split": {
+                                                "feat_type": "categorical",
+                                                "split_val": "3",
+                                                ">=": {
+                                                    "leaf": {
+                                                        "0": 1.0
+                                                    },
+                                                    "depth": "4#"
+                                                },
+                                                "<": {
+                                                    "leaf": {
+                                                        "1": 1.0
+                                                    },
+                                                    "depth": "4#"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "class_vals": [
+                "0",
+                "1"
+            ],
+            "survived_score": 0.7,
+            "features": [
+                "Pclass",
+                "Sex",
+                "Age",
+                "SibSp",
+                "Fare",
+                "Embarked"
+            ],
+            "used_features": [
+                "Fare",
+                "Age",
+                "Embarked",
+                "Sex",
+                "Pclass"
+            ],
+            "module_version": "1.4.0"
+        },
+        {
+            "data": {
+                "Sex": {
+                    "split": {
+                        "feat_type": "categorical",
+                        "split_val": "male",
+                        ">=": {
+                            "SibSp": {
+                                "split": {
+                                    "feat_type": "numeric",
+                                    "split_val": 0.0,
+                                    ">=": {
+                                        "leaf": {
+                                            "0": 1.0
+                                        },
+                                        "depth": "3#"
+                                    },
+                                    "<": {
+                                        "Fare": {
+                                            "split": {
+                                                "feat_type": "numeric",
+                                                "split_val": 8.0,
+                                                ">=": {
+                                                    "Fare": {
+                                                        "split": {
+                                                            "feat_type": "numeric",
+                                                            "split_val": 13.0,
+                                                            ">=": {
+                                                                "Fare": {
+                                                                    "split": {
+                                                                        "feat_type": "numeric",
+                                                                        "split_val": 26.0,
+                                                                        ">=": {
+                                                                            "Sex": {
+                                                                                "split": {
+                                                                                    "feat_type": "categorical",
+                                                                                    "split_val": "male",
+                                                                                    ">=": {
+                                                                                        "leaf": {
+                                                                                            "1": 1.0
+                                                                                        },
+                                                                                        "depth": "7#"
+                                                                                    },
+                                                                                    "<": {
+                                                                                        "leaf": {
+                                                                                            "0": 1.0
+                                                                                        },
+                                                                                        "depth": "7#"
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        },
+                                                                        "<": {
+                                                                            "leaf": {
+                                                                                "0": 1.0
+                                                                            },
+                                                                            "depth": "6#"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            },
+                                                            "<": {
+                                                                "Sex": {
+                                                                    "split": {
+                                                                        "feat_type": "categorical",
+                                                                        "split_val": "male",
+                                                                        ">=": {
+                                                                            "leaf": {
+                                                                                "1": 1.0
+                                                                            },
+                                                                            "depth": "6#"
+                                                                        },
+                                                                        "<": {
+                                                                            "leaf": {
+                                                                                "0": 1.0
+                                                                            },
+                                                                            "depth": "6#"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "<": {
+                                                    "leaf": {
+                                                        "0": 1.0
+                                                    },
+                                                    "depth": "4#"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "<": {
+                            "SibSp": {
+                                "split": {
+                                    "feat_type": "numeric",
+                                    "split_val": 1.0,
+                                    ">=": {
+                                        "leaf": {
+                                            "1": 1.0
+                                        },
+                                        "depth": "3#"
+                                    },
+                                    "<": {
+                                        "Fare": {
+                                            "split": {
+                                                "feat_type": "numeric",
+                                                "split_val": 12.5,
+                                                ">=": {
+                                                    "leaf": {
+                                                        "1": 1.0
+                                                    },
+                                                    "depth": "4#"
+                                                },
+                                                "<": {
+                                                    "Sex": {
+                                                        "split": {
+                                                            "feat_type": "categorical",
+                                                            "split_val": "female",
+                                                            ">=": {
+                                                                "leaf": {
+                                                                    "1": 1.0
+                                                                },
+                                                                "depth": "5#"
+                                                            },
+                                                            "<": {
+                                                                "leaf": {
+                                                                    "0": 1.0
+                                                                },
+                                                                "depth": "5#"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "class_vals": [
+                "0",
+                "1"
+            ],
+            "survived_score": 0.9,
+            "features": [
+                "Pclass",
+                "Sex",
+                "Age",
+                "SibSp",
+                "Fare",
+                "Embarked"
+            ],
+            "used_features": [
+                "Fare",
+                "Sex",
+                "SibSp"
+            ],
+            "module_version": "1.4.0"
+        },
+        {
+            "data": {
+                "Embarked": {
+                    "split": {
+                        "feat_type": "categorical",
+                        "split_val": "S",
+                        ">=": {
+                            "Pclass": {
+                                "split": {
+                                    "feat_type": "categorical",
+                                    "split_val": "3",
+                                    ">=": {
+                                        "leaf": {
+                                            "0": 1.0
+                                        },
+                                        "depth": "3#"
+                                    },
+                                    "<": {
+                                        "Sex": {
+                                            "split": {
+                                                "feat_type": "categorical",
+                                                "split_val": "female",
+                                                ">=": {
+                                                    "leaf": {
+                                                        "1": 1.0
+                                                    },
+                                                    "depth": "4#"
+                                                },
+                                                "<": {
+                                                    "leaf": {
+                                                        "0": 1.0
+                                                    },
+                                                    "depth": "4#"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "<": {
+                            "Pclass": {
+                                "split": {
+                                    "feat_type": "categorical",
+                                    "split_val": "3",
+                                    ">=": {
+                                        "leaf": {
+                                            "0": 0.3333333333333333,
+                                            "1": 0.6666666666666666
+                                        },
+                                        "depth": "3#"
+                                    },
+                                    "<": {
+                                        "leaf": {
+                                            "1": 1.0
+                                        },
+                                        "depth": "3#"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "class_vals": [
+                "0",
+                "1"
+            ],
+            "survived_score": 0.75,
+            "features": [
+                "Pclass",
+                "Sex",
+                "Age",
+                "SibSp",
+                "Fare",
+                "Embarked"
+            ],
+            "used_features": [
+                "Pclass",
+                "Embarked",
+                "Sex"
+            ],
+            "module_version": "1.4.0"
+        },
+        {
+            "data": {
+                "Pclass": {
+                    "split": {
+                        "feat_type": "categorical",
+                        "split_val": "1",
+                        ">=": {
+                            "Fare": {
+                                "split": {
+                                    "feat_type": "numeric",
+                                    "split_val": 65.5,
+                                    ">=": {
+                                        "Age": {
+                                            "split": {
+                                                "feat_type": "numeric",
+                                                "split_val": 36.0,
+                                                ">=": {
+                                                    "Sex": {
+                                                        "split": {
+                                                            "feat_type": "categorical",
+                                                            "split_val": "female",
+                                                            ">=": {
+                                                                "leaf": {
+                                                                    "1": 1.0
+                                                                },
+                                                                "depth": "5#"
+                                                            },
+                                                            "<": {
+                                                                "leaf": {
+                                                                    "0": 1.0
+                                                                },
+                                                                "depth": "5#"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "<": {
+                                                    "leaf": {
+                                                        "1": 1.0
+                                                    },
+                                                    "depth": "4#"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "<": {
+                                        "Age": {
+                                            "split": {
+                                                "feat_type": "numeric",
+                                                "split_val": 37.0,
+                                                ">=": {
+                                                    "Fare": {
+                                                        "split": {
+                                                            "feat_type": "numeric",
+                                                            "split_val": 34.0,
+                                                            ">=": {
+                                                                "Age": {
+                                                                    "split": {
+                                                                        "feat_type": "numeric",
+                                                                        "split_val": 71,
+                                                                        ">=": {
+                                                                            "leaf": {
+                                                                                "0": 1.0
+                                                                            },
+                                                                            "depth": "6#"
+                                                                        },
+                                                                        "<": {
+                                                                            "leaf": {
+                                                                                "1": 1.0
+                                                                            },
+                                                                            "depth": "6#"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            },
+                                                            "<": {
+                                                                "leaf": {
+                                                                    "1": 1.0
+                                                                },
+                                                                "depth": "5#"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "<": {
+                                                    "leaf": {
+                                                        "1": 1.0
+                                                    },
+                                                    "depth": "4#"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "<": {
+                            "Fare": {
+                                "split": {
+                                    "feat_type": "numeric",
+                                    "split_val": 7.5,
+                                    ">=": {
+                                        "Age": {
+                                            "split": {
+                                                "feat_type": "numeric",
+                                                "split_val": 28.0,
+                                                ">=": {
+                                                    "leaf": {
+                                                        "0": 1.0
+                                                    },
+                                                    "depth": "4#"
+                                                },
+                                                "<": {
+                                                    "Sex": {
+                                                        "split": {
+                                                            "feat_type": "categorical",
+                                                            "split_val": "male",
+                                                            ">=": {
+                                                                "leaf": {
+                                                                    "0": 1.0
+                                                                },
+                                                                "depth": "5#"
+                                                            },
+                                                            "<": {
+                                                                "leaf": {
+                                                                    "1": 1.0
+                                                                },
+                                                                "depth": "5#"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "<": {
+                                        "Age": {
+                                            "split": {
+                                                "feat_type": "numeric",
+                                                "split_val": 20.0,
+                                                ">=": {
+                                                    "leaf": {
+                                                        "0": 1.0
+                                                    },
+                                                    "depth": "4#"
+                                                },
+                                                "<": {
+                                                    "Sex": {
+                                                        "split": {
+                                                            "feat_type": "categorical",
+                                                            "split_val": "male",
+                                                            ">=": {
+                                                                "leaf": {
+                                                                    "0": 1.0
+                                                                },
+                                                                "depth": "5#"
+                                                            },
+                                                            "<": {
+                                                                "leaf": {
+                                                                    "1": 1.0
+                                                                },
+                                                                "depth": "5#"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "class_vals": [
+                "0",
+                "1"
+            ],
+            "survived_score": 0.9,
+            "features": [
+                "Pclass",
+                "Sex",
+                "Age",
+                "SibSp",
+                "Fare",
+                "Embarked"
+            ],
+            "used_features": [
+                "Fare",
+                "Pclass",
+                "Sex",
+                "Age"
+            ],
+            "module_version": "1.4.0"
+        },
+        {
+            "data": {
+                "Pclass": {
+                    "split": {
+                        "feat_type": "categorical",
+                        "split_val": "3",
+                        ">=": {
+                            "Sex": {
+                                "split": {
+                                    "feat_type": "categorical",
+                                    "split_val": "male",
+                                    ">=": {
+                                        "leaf": {
+                                            "0": 0.5714285714285714,
+                                            "1": 0.42857142857142855
+                                        },
+                                        "depth": "3#"
+                                    },
+                                    "<": {
+                                        "leaf": {
+                                            "0": 0.5,
+                                            "1": 0.5
+                                        },
+                                        "depth": "3#"
+                                    }
+                                }
+                            }
+                        },
+                        "<": {
+                            "Sex": {
+                                "split": {
+                                    "feat_type": "categorical",
+                                    "split_val": "male",
+                                    ">=": {
+                                        "Pclass": {
+                                            "split": {
+                                                "feat_type": "categorical",
+                                                "split_val": "2",
+                                                ">=": {
+                                                    "leaf": {
+                                                        "0": 0.75,
+                                                        "1": 0.25
+                                                    },
+                                                    "depth": "4#"
+                                                },
+                                                "<": {
+                                                    "leaf": {
+                                                        "0": 0.3333333333333333,
+                                                        "1": 0.6666666666666666
+                                                    },
+                                                    "depth": "4#"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "<": {
+                                        "leaf": {
+                                            "1": 1.0
+                                        },
+                                        "depth": "3#"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "class_vals": [
+                "0",
+                "1"
+            ],
+            "survived_score": 0.8,
+            "features": [
+                "Pclass",
+                "Sex",
+                "Age",
+                "SibSp",
+                "Fare",
+                "Embarked"
+            ],
+            "used_features": [
+                "Pclass",
+                "Sex"
+            ],
+            "module_version": "1.4.0"
+        },
+        {
+            "data": {
+                "SibSp": {
+                    "split": {
+                        "feat_type": "numeric",
+                        "split_val": 0.0,
+                        ">=": {
+                            "Age": {
+                                "split": {
+                                    "feat_type": "numeric",
+                                    "split_val": 31.0,
+                                    ">=": {
+                                        "Sex": {
+                                            "split": {
+                                                "feat_type": "categorical",
+                                                "split_val": "female",
+                                                ">=": {
+                                                    "leaf": {
+                                                        "1": 1.0
+                                                    },
+                                                    "depth": "4#"
+                                                },
+                                                "<": {
+                                                    "leaf": {
+                                                        "0": 1.0
+                                                    },
+                                                    "depth": "4#"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "<": {
+                                        "Sex": {
+                                            "split": {
+                                                "feat_type": "categorical",
+                                                "split_val": "male",
+                                                ">=": {
+                                                    "Fare": {
+                                                        "split": {
+                                                            "feat_type": "numeric",
+                                                            "split_val": 53,
+                                                            ">=": {
+                                                                "leaf": {
+                                                                    "1": 1.0
+                                                                },
+                                                                "depth": "5#"
+                                                            },
+                                                            "<": {
+                                                                "leaf": {
+                                                                    "0": 1.0
+                                                                },
+                                                                "depth": "5#"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "<": {
+                                                    "leaf": {
+                                                        "1": 1.0
+                                                    },
+                                                    "depth": "4#"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "<": {
+                            "Age": {
+                                "split": {
+                                    "feat_type": "numeric",
+                                    "split_val": 22.0,
+                                    ">=": {
+                                        "Sex": {
+                                            "split": {
+                                                "feat_type": "categorical",
+                                                "split_val": "male",
+                                                ">=": {
+                                                    "leaf": {
+                                                        "0": 1.0
+                                                    },
+                                                    "depth": "4#"
+                                                },
+                                                "<": {
+                                                    "leaf": {
+                                                        "1": 1.0
+                                                    },
+                                                    "depth": "4#"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "<": {
+                                        "Sex": {
+                                            "split": {
+                                                "feat_type": "categorical",
+                                                "split_val": "female",
+                                                ">=": {
+                                                    "Fare": {
+                                                        "split": {
+                                                            "feat_type": "numeric",
+                                                            "split_val": 26.0,
+                                                            ">=": {
+                                                                "leaf": {
+                                                                    "1": 1.0
+                                                                },
+                                                                "depth": "5#"
+                                                            },
+                                                            "<": {
+                                                                "SibSp": {
+                                                                    "split": {
+                                                                        "feat_type": "numeric",
+                                                                        "split_val": 0,
+                                                                        ">=": {
+                                                                            "leaf": {
+                                                                                "1": 1.0
+                                                                            },
+                                                                            "depth": "6#"
+                                                                        },
+                                                                        "<": {
+                                                                            "leaf": {
+                                                                                "0": 1.0
+                                                                            },
+                                                                            "depth": "6#"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "<": {
+                                                    "leaf": {
+                                                        "0": 1.0
+                                                    },
+                                                    "depth": "4#"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "class_vals": [
+                "0",
+                "1"
+            ],
+            "survived_score": 0.85,
+            "features": [
+                "Pclass",
+                "Sex",
+                "Age",
+                "SibSp",
+                "Fare",
+                "Embarked"
+            ],
+            "used_features": [
+                "Fare",
+                "Age",
+                "Sex",
+                "SibSp"
+            ],
+            "module_version": "1.4.0"
+        },
+        {
+            "data": {
+                "Pclass": {
+                    "split": {
+                        "feat_type": "categorical",
+                        "split_val": "3",
+                        ">=": {
+                            "Sex": {
+                                "split": {
+                                    "feat_type": "categorical",
+                                    "split_val": "male",
+                                    ">=": {
+                                        "Fare": {
+                                            "split": {
+                                                "feat_type": "numeric",
+                                                "split_val": 9.0,
+                                                ">=": {
+                                                    "Fare": {
+                                                        "split": {
+                                                            "feat_type": "numeric",
+                                                            "split_val": 15.0,
+                                                            ">=": {
+                                                                "Fare": {
+                                                                    "split": {
+                                                                        "feat_type": "numeric",
+                                                                        "split_val": 25.5,
+                                                                        ">=": {
+                                                                            "leaf": {
+                                                                                "0": 1.0
+                                                                            },
+                                                                            "depth": "6#"
+                                                                        },
+                                                                        "<": {
+                                                                            "Pclass": {
+                                                                                "split": {
+                                                                                    "feat_type": "categorical",
+                                                                                    "split_val": "3",
+                                                                                    ">=": {
+                                                                                        "leaf": {
+                                                                                            "1": 1.0
+                                                                                        },
+                                                                                        "depth": "7#"
+                                                                                    },
+                                                                                    "<": {
+                                                                                        "leaf": {
+                                                                                            "0": 1.0
+                                                                                        },
+                                                                                        "depth": "7#"
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            },
+                                                            "<": {
+                                                                "Fare": {
+                                                                    "split": {
+                                                                        "feat_type": "numeric",
+                                                                        "split_val": 9.0,
+                                                                        ">=": {
+                                                                            "leaf": {
+                                                                                "1": 1.0
+                                                                            },
+                                                                            "depth": "6#"
+                                                                        },
+                                                                        "<": {
+                                                                            "Pclass": {
+                                                                                "split": {
+                                                                                    "feat_type": "categorical",
+                                                                                    "split_val": "3",
+                                                                                    ">=": {
+                                                                                        "leaf": {
+                                                                                            "1": 1.0
+                                                                                        },
+                                                                                        "depth": "7#"
+                                                                                    },
+                                                                                    "<": {
+                                                                                        "leaf": {
+                                                                                            "0": 1.0
+                                                                                        },
+                                                                                        "depth": "7#"
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "<": {
+                                                    "Fare": {
+                                                        "split": {
+                                                            "feat_type": "numeric",
+                                                            "split_val": 8.0,
+                                                            ">=": {
+                                                                "leaf": {
+                                                                    "0": 0.3333333333333333,
+                                                                    "1": 0.6666666666666666
+                                                                },
+                                                                "depth": "5#"
+                                                            },
+                                                            "<": {
+                                                                "leaf": {
+                                                                    "0": 1.0
+                                                                },
+                                                                "depth": "5#"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "<": {
+                                        "Fare": {
+                                            "split": {
+                                                "feat_type": "numeric",
+                                                "split_val": 16,
+                                                ">=": {
+                                                    "leaf": {
+                                                        "0": 1.0
+                                                    },
+                                                    "depth": "4#"
+                                                },
+                                                "<": {
+                                                    "leaf": {
+                                                        "1": 1.0
+                                                    },
+                                                    "depth": "4#"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "<": {
+                            "Sex": {
+                                "split": {
+                                    "feat_type": "categorical",
+                                    "split_val": "male",
+                                    ">=": {
+                                        "Fare": {
+                                            "split": {
+                                                "feat_type": "numeric",
+                                                "split_val": 79.0,
+                                                ">=": {
+                                                    "Fare": {
+                                                        "split": {
+                                                            "feat_type": "numeric",
+                                                            "split_val": 90.0,
+                                                            ">=": {
+                                                                "Pclass": {
+                                                                    "split": {
+                                                                        "feat_type": "categorical",
+                                                                        "split_val": "1",
+                                                                        ">=": {
+                                                                            "leaf": {
+                                                                                "1": 1.0
+                                                                            },
+                                                                            "depth": "6#"
+                                                                        },
+                                                                        "<": {
+                                                                            "leaf": {
+                                                                                "0": 1.0
+                                                                            },
+                                                                            "depth": "6#"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            },
+                                                            "<": {
+                                                                "leaf": {
+                                                                    "0": 1.0
+                                                                },
+                                                                "depth": "5#"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "<": {
+                                                    "Pclass": {
+                                                        "split": {
+                                                            "feat_type": "categorical",
+                                                            "split_val": "2",
+                                                            ">=": {
+                                                                "leaf": {
+                                                                    "1": 1.0
+                                                                },
+                                                                "depth": "5#"
+                                                            },
+                                                            "<": {
+                                                                "leaf": {
+                                                                    "0": 1.0
+                                                                },
+                                                                "depth": "5#"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "<": {
+                                        "leaf": {
+                                            "1": 1.0
+                                        },
+                                        "depth": "3#"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "class_vals": [
+                "0",
+                "1"
+            ],
+            "survived_score": 0.85,
+            "features": [
+                "Pclass",
+                "Sex",
+                "Age",
+                "SibSp",
+                "Fare",
+                "Embarked"
+            ],
+            "used_features": [
+                "Fare",
+                "Pclass",
+                "Sex"
+            ],
+            "module_version": "1.4.0"
+        },
+        {
+            "data": {
+                "Sex": {
+                    "split": {
+                        "feat_type": "categorical",
+                        "split_val": "male",
+                        ">=": {
+                            "SibSp": {
+                                "split": {
+                                    "feat_type": "numeric",
+                                    "split_val": 0.0,
+                                    ">=": {
+                                        "Age": {
+                                            "split": {
+                                                "feat_type": "numeric",
+                                                "split_val": 29.5,
+                                                ">=": {
+                                                    "Pclass": {
+                                                        "split": {
+                                                            "feat_type": "categorical",
+                                                            "split_val": "1",
+                                                            ">=": {
+                                                                "Fare": {
+                                                                    "split": {
+                                                                        "feat_type": "numeric",
+                                                                        "split_val": 71,
+                                                                        ">=": {
+                                                                            "leaf": {
+                                                                                "0": 1.0
+                                                                            },
+                                                                            "depth": "6#"
+                                                                        },
+                                                                        "<": {
+                                                                            "leaf": {
+                                                                                "1": 1.0
+                                                                            },
+                                                                            "depth": "6#"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            },
+                                                            "<": {
+                                                                "leaf": {
+                                                                    "0": 1.0
+                                                                },
+                                                                "depth": "5#"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "<": {
+                                                    "Fare": {
+                                                        "split": {
+                                                            "feat_type": "numeric",
+                                                            "split_val": 16.0,
+                                                            ">=": {
+                                                                "leaf": {
+                                                                    "0": 1.0
+                                                                },
+                                                                "depth": "5#"
+                                                            },
+                                                            "<": {
+                                                                "leaf": {
+                                                                    "1": 1.0
+                                                                },
+                                                                "depth": "5#"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "<": {
+                                        "Age": {
+                                            "split": {
+                                                "feat_type": "numeric",
+                                                "split_val": 34.0,
+                                                ">=": {
+                                                    "Pclass": {
+                                                        "split": {
+                                                            "feat_type": "categorical",
+                                                            "split_val": "1",
+                                                            ">=": {
+                                                                "Fare": {
+                                                                    "split": {
+                                                                        "feat_type": "numeric",
+                                                                        "split_val": 35,
+                                                                        ">=": {
+                                                                            "leaf": {
+                                                                                "1": 1.0
+                                                                            },
+                                                                            "depth": "6#"
+                                                                        },
+                                                                        "<": {
+                                                                            "leaf": {
+                                                                                "0": 1.0
+                                                                            },
+                                                                            "depth": "6#"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            },
+                                                            "<": {
+                                                                "leaf": {
+                                                                    "0": 1.0
+                                                                },
+                                                                "depth": "5#"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "<": {
+                                                    "Pclass": {
+                                                        "split": {
+                                                            "feat_type": "categorical",
+                                                            "split_val": "2",
+                                                            ">=": {
+                                                                "Fare": {
+                                                                    "split": {
+                                                                        "feat_type": "numeric",
+                                                                        "split_val": 13,
+                                                                        ">=": {
+                                                                            "leaf": {
+                                                                                "1": 1.0
+                                                                            },
+                                                                            "depth": "6#"
+                                                                        },
+                                                                        "<": {
+                                                                            "leaf": {
+                                                                                "0": 1.0
+                                                                            },
+                                                                            "depth": "6#"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            },
+                                                            "<": {
+                                                                "Fare": {
+                                                                    "split": {
+                                                                        "feat_type": "numeric",
+                                                                        "split_val": 8,
+                                                                        ">=": {
+                                                                            "leaf": {
+                                                                                "0": 1.0
+                                                                            },
+                                                                            "depth": "6#"
+                                                                        },
+                                                                        "<": {
+                                                                            "leaf": {
+                                                                                "1": 1.0
+                                                                            },
+                                                                            "depth": "6#"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "<": {
+                            "SibSp": {
+                                "split": {
+                                    "feat_type": "numeric",
+                                    "split_val": 0.5,
+                                    ">=": {
+                                        "leaf": {
+                                            "1": 1.0
+                                        },
+                                        "depth": "3#"
+                                    },
+                                    "<": {
+                                        "Age": {
+                                            "split": {
+                                                "feat_type": "numeric",
+                                                "split_val": 29.0,
+                                                ">=": {
+                                                    "Pclass": {
+                                                        "split": {
+                                                            "feat_type": "categorical",
+                                                            "split_val": "3",
+                                                            ">=": {
+                                                                "leaf": {
+                                                                    "0": 1.0
+                                                                },
+                                                                "depth": "5#"
+                                                            },
+                                                            "<": {
+                                                                "leaf": {
+                                                                    "1": 1.0
+                                                                },
+                                                                "depth": "5#"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "<": {
+                                                    "leaf": {
+                                                        "1": 1.0
+                                                    },
+                                                    "depth": "4#"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "class_vals": [
+                "0",
+                "1"
+            ],
+            "survived_score": 0.75,
+            "features": [
+                "Pclass",
+                "Sex",
+                "Age",
+                "SibSp",
+                "Fare",
+                "Embarked"
+            ],
+            "used_features": [
+                "Fare",
+                "Age",
+                "SibSp",
+                "Sex",
+                "Pclass"
+            ],
+            "module_version": "1.4.0"
+        },
+        {
+            "data": {
+                "Sex": {
+                    "split": {
+                        "feat_type": "categorical",
+                        "split_val": "female",
+                        ">=": {
+                            "SibSp": {
+                                "split": {
+                                    "feat_type": "numeric",
+                                    "split_val": 0.5,
+                                    ">=": {
+                                        "Age": {
+                                            "split": {
+                                                "feat_type": "numeric",
+                                                "split_val": 24.0,
+                                                ">=": {
+                                                    "leaf": {
+                                                        "1": 1.0
+                                                    },
+                                                    "depth": "4#"
+                                                },
+                                                "<": {
+                                                    "leaf": {
+                                                        "0": 1.0
+                                                    },
+                                                    "depth": "4#"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "<": {
+                                        "Age": {
+                                            "split": {
+                                                "feat_type": "numeric",
+                                                "split_val": 28.0,
+                                                ">=": {
+                                                    "leaf": {
+                                                        "1": 1.0
+                                                    },
+                                                    "depth": "4#"
+                                                },
+                                                "<": {
+                                                    "Pclass": {
+                                                        "split": {
+                                                            "feat_type": "categorical",
+                                                            "split_val": "3",
+                                                            ">=": {
+                                                                "leaf": {
+                                                                    "0": 1.0
+                                                                },
+                                                                "depth": "5#"
+                                                            },
+                                                            "<": {
+                                                                "leaf": {
+                                                                    "1": 1.0
+                                                                },
+                                                                "depth": "5#"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "<": {
+                            "SibSp": {
+                                "split": {
+                                    "feat_type": "numeric",
+                                    "split_val": 0.0,
+                                    ">=": {
+                                        "Age": {
+                                            "split": {
+                                                "feat_type": "numeric",
+                                                "split_val": 42,
+                                                ">=": {
+                                                    "leaf": {
+                                                        "1": 1.0
+                                                    },
+                                                    "depth": "4#"
+                                                },
+                                                "<": {
+                                                    "leaf": {
+                                                        "0": 1.0
+                                                    },
+                                                    "depth": "4#"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "<": {
+                                        "Age": {
+                                            "split": {
+                                                "feat_type": "numeric",
+                                                "split_val": 31.5,
+                                                ">=": {
+                                                    "Pclass": {
+                                                        "split": {
+                                                            "feat_type": "categorical",
+                                                            "split_val": "2",
+                                                            ">=": {
+                                                                "Fare": {
+                                                                    "split": {
+                                                                        "feat_type": "numeric",
+                                                                        "split_val": 13.0,
+                                                                        ">=": {
+                                                                            "Sex": {
+                                                                                "split": {
+                                                                                    "feat_type": "categorical",
+                                                                                    "split_val": "male",
+                                                                                    ">=": {
+                                                                                        "leaf": {
+                                                                                            "1": 1.0
+                                                                                        },
+                                                                                        "depth": "7#"
+                                                                                    },
+                                                                                    "<": {
+                                                                                        "leaf": {
+                                                                                            "0": 1.0
+                                                                                        },
+                                                                                        "depth": "7#"
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        },
+                                                                        "<": {
+                                                                            "leaf": {
+                                                                                "0": 1.0
+                                                                            },
+                                                                            "depth": "6#"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            },
+                                                            "<": {
+                                                                "leaf": {
+                                                                    "0": 1.0
+                                                                },
+                                                                "depth": "5#"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "<": {
+                                                    "leaf": {
+                                                        "0": 1.0
+                                                    },
+                                                    "depth": "4#"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "class_vals": [
+                "0",
+                "1"
+            ],
+            "survived_score": 0.7,
+            "features": [
+                "Pclass",
+                "Sex",
+                "Age",
+                "SibSp",
+                "Fare",
+                "Embarked"
+            ],
+            "used_features": [
+                "Fare",
+                "Age",
+                "SibSp",
+                "Sex",
+                "Pclass"
+            ],
+            "module_version": "1.4.0"
+        },
+        {
+            "data": {
+                "Pclass": {
+                    "split": {
+                        "feat_type": "categorical",
+                        "split_val": "3",
+                        ">=": {
+                            "Sex": {
+                                "split": {
+                                    "feat_type": "categorical",
+                                    "split_val": "male",
+                                    ">=": {
+                                        "SibSp": {
+                                            "split": {
+                                                "feat_type": "numeric",
+                                                "split_val": 0.0,
+                                                ">=": {
+                                                    "leaf": {
+                                                        "0": 1.0
+                                                    },
+                                                    "depth": "4#"
+                                                },
+                                                "<": {
+                                                    "Age": {
+                                                        "split": {
+                                                            "feat_type": "numeric",
+                                                            "split_val": 30.0,
+                                                            ">=": {
+                                                                "Fare": {
+                                                                    "split": {
+                                                                        "feat_type": "numeric",
+                                                                        "split_val": 8.0,
+                                                                        ">=": {
+                                                                            "Embarked": {
+                                                                                "split": {
+                                                                                    "feat_type": "categorical",
+                                                                                    "split_val": "S",
+                                                                                    ">=": {
+                                                                                        "leaf": {
+                                                                                            "1": 1.0
+                                                                                        },
+                                                                                        "depth": "7#"
+                                                                                    },
+                                                                                    "<": {
+                                                                                        "leaf": {
+                                                                                            "0": 1.0
+                                                                                        },
+                                                                                        "depth": "7#"
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        },
+                                                                        "<": {
+                                                                            "leaf": {
+                                                                                "0": 1.0
+                                                                            },
+                                                                            "depth": "6#"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            },
+                                                            "<": {
+                                                                "leaf": {
+                                                                    "0": 1.0
+                                                                },
+                                                                "depth": "5#"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "<": {
+                                        "Age": {
+                                            "split": {
+                                                "feat_type": "numeric",
+                                                "split_val": 21.0,
+                                                ">=": {
+                                                    "leaf": {
+                                                        "0": 1.0
+                                                    },
+                                                    "depth": "4#"
+                                                },
+                                                "<": {
+                                                    "leaf": {
+                                                        "1": 1.0
+                                                    },
+                                                    "depth": "4#"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "<": {
+                            "Sex": {
+                                "split": {
+                                    "feat_type": "categorical",
+                                    "split_val": "female",
+                                    ">=": {
+                                        "leaf": {
+                                            "1": 1.0
+                                        },
+                                        "depth": "3#"
+                                    },
+                                    "<": {
+                                        "SibSp": {
+                                            "split": {
+                                                "feat_type": "numeric",
+                                                "split_val": 2,
+                                                ">=": {
+                                                    "leaf": {
+                                                        "1": 1.0
+                                                    },
+                                                    "depth": "4#"
+                                                },
+                                                "<": {
+                                                    "leaf": {
+                                                        "0": 1.0
+                                                    },
+                                                    "depth": "4#"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "class_vals": [
+                "0",
+                "1"
+            ],
+            "survived_score": 0.85,
+            "features": [
+                "Pclass",
+                "Sex",
+                "Age",
+                "SibSp",
+                "Fare",
+                "Embarked"
+            ],
+            "used_features": [
+                "Fare",
+                "Age",
+                "SibSp",
+                "Embarked",
+                "Sex",
+                "Pclass"
+            ],
+            "module_version": "1.4.0"
+        },
+        {
+            "data": {
+                "Sex": {
+                    "split": {
+                        "feat_type": "categorical",
+                        "split_val": "male",
+                        ">=": {
+                            "Embarked": {
+                                "split": {
+                                    "feat_type": "categorical",
+                                    "split_val": "S",
+                                    ">=": {
+                                        "leaf": {
+                                            "0": 1.0
+                                        },
+                                        "depth": "3#"
+                                    },
+                                    "<": {
+                                        "leaf": {
+                                            "1": 1.0
+                                        },
+                                        "depth": "3#"
+                                    }
+                                }
+                            }
+                        },
+                        "<": {
+                            "Embarked": {
+                                "split": {
+                                    "feat_type": "categorical",
+                                    "split_val": "S",
+                                    ">=": {
+                                        "Pclass": {
+                                            "split": {
+                                                "feat_type": "categorical",
+                                                "split_val": "3",
+                                                ">=": {
+                                                    "Fare": {
+                                                        "split": {
+                                                            "feat_type": "numeric",
+                                                            "split_val": 10.0,
+                                                            ">=": {
+                                                                "Age": {
+                                                                    "split": {
+                                                                        "feat_type": "numeric",
+                                                                        "split_val": 4,
+                                                                        ">=": {
+                                                                            "leaf": {
+                                                                                "1": 1.0
+                                                                            },
+                                                                            "depth": "6#"
+                                                                        },
+                                                                        "<": {
+                                                                            "leaf": {
+                                                                                "0": 1.0
+                                                                            },
+                                                                            "depth": "6#"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            },
+                                                            "<": {
+                                                                "leaf": {
+                                                                    "1": 1.0
+                                                                },
+                                                                "depth": "5#"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "<": {
+                                                    "leaf": {
+                                                        "1": 1.0
+                                                    },
+                                                    "depth": "4#"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "<": {
+                                        "leaf": {
+                                            "1": 1.0
+                                        },
+                                        "depth": "3#"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "class_vals": [
+                "0",
+                "1"
+            ],
+            "survived_score": 0.9,
+            "features": [
+                "Pclass",
+                "Sex",
+                "Age",
+                "SibSp",
+                "Fare",
+                "Embarked"
+            ],
+            "used_features": [
+                "Fare",
+                "Age",
+                "Embarked",
+                "Sex",
+                "Pclass"
+            ],
+            "module_version": "1.4.0"
+        }
+    ]
+}

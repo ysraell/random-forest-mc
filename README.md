@@ -18,12 +18,24 @@ Already validated in production, with real data, for churn prediction, with data
 
 The first implementation is found in [2] (using Common Lisp).
 
-## New in v1.4.0 🚀
+## Dual Engine: Pure Python & Modern C++ ⚡
 
-- **Core Refactoring:** The internal tree-building logic has been completely rewritten using **NumPy**, replacing the previous Pandas-based implementation.
-- **Massive Performance Boost:** Training times have improved dramatically, with speedups ranging from **1.5x** to **47x** depending on the dataset size.
-- **Same API:** The public API remains unchanged, ensuring backward compatibility.
+Starting in **v1.5.0**, `random-forest-mc` provides two full implementations with 100% API and serialization parity:
+1. **Modern C++ Engine (`engine="cpp"`)**: Written in C++17 with `nanobind`, providing **~70x faster training** and **~300x faster predictions** with true GIL-free multi-threading.
+2. **Pure Python Engine (`engine="python"`)**: 100% native Python/NumPy, requiring zero compiler toolchains.
 
+```python
+from random_forest_mc import RandomForestMC
+
+# Auto-detects: uses C++ if compiled, falls back gracefully to pure Python
+clf = RandomForestMC(n_trees=16, engine="auto")
+
+# Or explicitly select the engine:
+clf_cpp = RandomForestMC(n_trees=16, engine="cpp")
+clf_py  = RandomForestMC(n_trees=16, engine="python")
+```
+
+Models are **100% interchangeable**: a model trained in C++ can be serialized via `model2dict()` and loaded into the pure Python model via `dict2model()`, and vice-versa!
 
 ## Install:
 
@@ -33,7 +45,7 @@ Install using `pip`:
 $ pip3 install random-forest-mc
 ```
 
-Install from this repo (check version, `dev` version possible):
+Install from this repo (compiles C++ extension with nanobind):
 
 ```bash
 $ git clone https://github.com/ysraell/random-forest-mc.git

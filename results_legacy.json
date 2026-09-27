@@ -1,0 +1,152 @@
+[
+    {
+        "dataset": "titanic",
+        "n_trees": 8,
+        "max_workers": 8,
+        "time": 1.5529448986053467
+    },
+    {
+        "dataset": "titanic",
+        "n_trees": 16,
+        "max_workers": 16,
+        "time": 5.075676679611206
+    },
+    {
+        "dataset": "titanic",
+        "n_trees": 32,
+        "max_workers": 16,
+        "time": 22.128851175308228
+    },
+    {
+        "dataset": "titanic",
+        "n_trees": 64,
+        "max_workers": 16,
+        "time": -1
+    },
+    {
+        "dataset": "titanic",
+        "n_trees": 128,
+        "max_workers": 16,
+        "time": -1
+    },
+    {
+        "dataset": "iris",
+        "n_trees": 8,
+        "max_workers": 8,
+        "time": -1
+    },
+    {
+        "dataset": "iris",
+        "n_trees": 16,
+        "max_workers": 16,
+        "time": -1
+    },
+    {
+        "dataset": "iris",
+        "n_trees": 32,
+        "max_workers": 16,
+        "time": -1
+    },
+    {
+        "dataset": "iris",
+        "n_trees": 64,
+        "max_workers": 16,
+        "time": -1
+    },
+    {
+        "dataset": "iris",
+        "n_trees": 128,
+        "max_workers": 16,
+        "time": -1
+    },
+    {
+        "dataset": "creditcard",
+        "n_trees": 8,
+        "max_workers": 8,
+        "time": 2.144827127456665
+    },
+    {
+        "dataset": "creditcard",
+        "n_trees": 16,
+        "max_workers": 16,
+        "time": 3.904874563217163
+    },
+    {
+        "dataset": "creditcard",
+        "n_trees": 32,
+        "max_workers": 16,
+        "time": 10.508335828781128
+    },
+    {
+        "dataset": "creditcard",
+        "n_trees": 64,
+        "max_workers": 16,
+        "time": 36.78963327407837
+    },
+    {
+        "dataset": "creditcard",
+        "n_trees": 128,
+        "max_workers": 16,
+        "time": 118.80158138275146
+    },
+    {
+        "dataset": "creditcard_trans_int",
+        "n_trees": 8,
+        "max_workers": 8,
+        "time": 1.9896879196166992
+    },
+    {
+        "dataset": "creditcard_trans_int",
+        "n_trees": 16,
+        "max_workers": 16,
+        "time": 3.5978150367736816
+    },
+    {
+        "dataset": "creditcard_trans_int",
+        "n_trees": 32,
+        "max_workers": 16,
+        "time": 11.947979927062988
+    },
+    {
+        "dataset": "creditcard_trans_int",
+        "n_trees": 64,
+        "max_workers": 16,
+        "time": 31.035186529159546
+    },
+    {
+        "dataset": "creditcard_trans_int",
+        "n_trees": 128,
+        "max_workers": 16,
+        "time": 144.76000332832336
+    },
+    {
+        "dataset": "creditcard_trans_float",
+        "n_trees": 8,
+        "max_workers": 8,
+        "time": 1.8764290809631348
+    },
+    {
+        "dataset": "creditcard_trans_float",
+        "n_trees": 16,
+        "max_workers": 16,
+        "time": 4.007925510406494
+    },
+    {
+        "dataset": "creditcard_trans_float",
+        "n_trees": 32,
+        "max_workers": 16,
+        "time": 10.694807767868042
+    },
+    {
+        "dataset": "creditcard_trans_float",
+        "n_trees": 64,
+        "max_workers": 16,
+        "time": 33.00798940658569
+    },
+    {
+        "dataset": "creditcard_trans_float",
+        "n_trees": 128,
+        "max_workers": 16,
+        "time": 130.8447723388672
+    }
+]

@@ -1,3 +1,20 @@
+# v1.5.0:
+
+- **Modern C++ Backend (C++17 + nanobind):**
+  - High-performance C++ core engine with $O(N)$ linear median splits via `std::nth_element`.
+  - True GIL-free multi-threading (`std::thread`) for parallel tree planting and batch inference.
+  - Substantial speedup: **~70x faster training** (`fit`) and **~304x faster inference** (`predict`).
+- **Dual-Backend Support:**
+  - Added `engine="auto" | "cpp" | "python"` parameter to `RandomForestMC` (defaults to `"auto"`).
+  - Added dedicated C++ submodule: `random_forest_mc.cpp_model.RandomForestMC`.
+  - Added direct exports: `RandomForestMCPy`, `RandomForestMCCPP`, and `RandomForestMCC`.
+- **100% Serialization Parity:**
+  - Full bidirectional compatibility between pure Python and C++ models: models saved via `model2dict()` can be loaded across engines via `dict2model()` with identical predictions.
+- **Build & Packaging:**
+  - Integrated `nanobind` compilation into Poetry with `build.py`.
+  - Automatic graceful fallback to pure Python on systems without a C++ compiler.
+  - Python 3.9 through 3.14 support.
+
 # v1.4.0:
 
 - ~~Refactor to use NumPy or built in Python features as core data operations.
