@@ -106,18 +106,9 @@ In Breiman's Random Forest, the subset cardinality $m_{\text{try}}$ is fixed glo
 
 Given training index set $\mathcal{I}_T$ and ordered feature sequence $F$, a candidate decision tree $T = \text{PlantTree}(\mathcal{I}_T, F)$ is grown recursively from depth $t = 1$ without computing Gini impurity, entropy, or any target-dependent split scan.
 
-```mermaid
-flowchart TD
-    Start(["Node at depth t, indices I, queue F"]) --> Stop{"t >= d_max OR<br/>all y_i identical in I?"}
-    Stop -- "Yes" --> Leaf["Create Leaf: empirical p_l(c)"]
-    Stop -- "No" --> Pop["Take f = F[0], rotate queue<br/>F <- (F[1], ..., F[k-1], F[0])"]
-    Pop --> Split["Compute deterministic partition<br/>(I_ge, I_lt, theta) = SplitData(f, I)"]
-    Split --> Valid{"|I_ge| >= s_min AND<br/>|I_lt| >= s_min?"}
-    Valid -- "Yes" --> Branch["Emit Split Node (f, theta)<br/>Recurse depth t+1 on (I_ge, F) & (I_lt, F)"]
-    Valid -- "No" --> Cycle{"Full rotation back<br/>to initial F[0]?"}
-    Cycle -- "No" --> Pop
-    Cycle -- "Yes" --> Leaf
-```
+![Impurity-Free Cyclic-Queue Tree Induction Flowchart](rf_tsmc_tree_induction.png)
+
+*Figure 1: Impurity-free recursive tree induction (`PlantTree` / `GrowTree`) using deterministic median/mode splitting (`SplitData`) and cyclic feature-queue rotation.*
 
 ### 5.1 Deterministic Split Operator $\Phi(f, \mathcal{I})$
 
