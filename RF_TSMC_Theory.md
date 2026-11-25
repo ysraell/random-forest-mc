@@ -79,9 +79,7 @@ $$
 **1. Exact Class-Prior Uniformity.** Regardless of the global class frequencies $`\{M_c / M\}_{c \in \mathcal{C}}`$ in $`\mathcal{D}`$, both $`\mathcal{I}_T`$ and $`\mathcal{I}_V`$ satisfy:
 
 $$
-
 \mathbb{P}_ {(x, y) \sim \mathcal{I}_ {T}}(y = c) = \mathbb{P}_ {(x, y) \sim \mathcal{I}_ {V}}(y = c) = \frac{1}{K}, \qquad \forall c \in \mathcal{C}.
-
 $$
 
 Tree splitting and leaf frequencies are therefore structurally invariant to dataset imbalance.

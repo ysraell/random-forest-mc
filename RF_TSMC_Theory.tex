@@ -1,0 +1,874 @@
+\documentclass[11pt,a4paper]{article}
+
+% -----------------------------------------------------------------------------
+% Encoding, Fonts, and Page Layout (Overleaf-compatible: pdfLaTeX / XeLaTeX / LuaLaTeX)
+% -----------------------------------------------------------------------------
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\fi
+\usepackage{lmodern}
+\usepackage[margin=0.92in]{geometry}
+\usepackage{microtype}
+\usepackage{setspace}
+\setstretch{1.08}
+
+% -----------------------------------------------------------------------------
+% Colors (loaded early to avoid option clashes with tikz / tcolorbox / hyperref)
+% -----------------------------------------------------------------------------
+\usepackage[dvipsnames]{xcolor}
+\definecolor{PrimaryBlue}{HTML}{1D4ED8}
+\definecolor{AccentSlate}{HTML}{334155}
+\definecolor{MutedGray}{HTML}{64748B}
+\definecolor{CalloutBg}{HTML}{F8FAFC}
+\definecolor{CalloutBorder}{HTML}{2563EB}
+
+% -----------------------------------------------------------------------------
+% Mathematics and Theorem Environments
+% -----------------------------------------------------------------------------
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{mathtools}
+
+% -----------------------------------------------------------------------------
+% Tables, Graphics, Callouts, and Algorithms
+% -----------------------------------------------------------------------------
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{makecell}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+% Prevent medium-sized tables from triggering half-empty float pages
+\renewcommand{\topfraction}{0.85}
+\renewcommand{\bottomfraction}{0.85}
+\renewcommand{\textfraction}{0.10}
+\renewcommand{\floatpagefraction}{0.75}
+
+% TikZ for vector flowchart fallback if rf_tsmc_tree_induction.png is not uploaded
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc}
+
+% Algorithm float definition using standard core packages (zero exotic dependencies)
+\floatstyle{ruled}
+\newfloat{algorithm}{htbp}{loa}
+\floatname{algorithm}{Algorithm}
+
+\captionsetup{
+  font=small,
+  labelfont=bf,
+  labelsep=colon
+}
+
+% -----------------------------------------------------------------------------
+% Headers, Footers, Citations, and Hyperlinks
+% -----------------------------------------------------------------------------
+\usepackage{fancyhdr}
+\setlength{\headheight}{14pt}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{MutedGray}\textit{RF-TSMC: Theoretical Formulation and Algorithmic Methodology}}
+\fancyhead[R]{\small\color{MutedGray}\texttt{random-forest-mc} (v1.5.0)}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\usepackage[authoryear,round]{natbib}
+\usepackage{url}
+\usepackage[
+  colorlinks=true,
+  linkcolor=PrimaryBlue,
+  citecolor=PrimaryBlue,
+  urlcolor=PrimaryBlue,
+  pdftitle={Random Forest with Dynamic Tree Selection Based on Monte Carlo Simulation (RF-TSMC)},
+  pdfauthor={Israel Oliveira}
+]{hyperref}
+
+% -----------------------------------------------------------------------------
+% Convenience Macros
+% -----------------------------------------------------------------------------
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\algkw}[1]{\textbf{#1}}
+\newcommand{\algfn}[1]{\textsc{#1}}
+\newcommand{\algcm}[1]{\quad\textcolor{MutedGray}{\footnotesize // #1}}
+\newcommand{\Ind}{\mathbb{I}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\Unif}{\mathcal{U}}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator{\median}{median}
+\DeclareMathOperator{\Recall}{Recall}
+\DeclareMathOperator{\Vals}{Vals}
+\DeclareMathOperator{\MDfive}{MD5}
+\DeclareMathOperator{\JSON}{JSON}
+
+\newtcolorbox{principlebox}{
+  enhanced,
+  breakable,
+  colback=CalloutBg,
+  colframe=CalloutBorder,
+  boxrule=0pt,
+  leftrule=3pt,
+  arc=0pt,
+  left=10pt,
+  right=10pt,
+  top=8pt,
+  bottom=8pt,
+  before skip=8pt,
+  after skip=8pt
+}
+
+% -----------------------------------------------------------------------------
+% Title Metadata
+% -----------------------------------------------------------------------------
+\title{%
+  \textbf{Random Forest with Dynamic Tree Selection Based on Monte Carlo Simulation (RF-TSMC):}\\[0.35em]
+  \large Theoretical Formulation and Algorithmic Methodology\\[0.4em]
+  \normalsize\normalfont Method Specification for \href{https://github.com/ysraell/random-forest-mc}{\code{random-forest-mc}} (v1.5.0)\\
+  \small\emph{Formalization of the Architecture, Learning Dynamics, Inference Rules, and Structural Explainability}
+}
+
+\author{%
+  Israel Oliveira\\
+  \small\href{mailto:prof.israel@gmail.com}{\code{prof.israel@gmail.com}} \;\textbar\;
+  \href{https://github.com/ysraell/random-forest-mc}{\code{github.com/ysraell/random-forest-mc}}
+}
+
+\date{}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{plain}
+
+% =============================================================================
+% Abstract
+% =============================================================================
+\begin{abstract}
+\noindent Standard Random Forest algorithms rely on bootstrap aggregating (bagging) paired with greedy, node-wise impurity minimization over the full training distribution. While effective in balanced, well-populated settings, this paradigm exhibits systematic sensitivity to class imbalance, incurs substantial split-search complexity across candidate thresholds, and optimizes decision trees strictly through local, myopic criteria. We formalize \textbf{Random Forest with Tree Selection Monte Carlo Based (RF-TSMC)}, a multiclass ensemble learning methodology that decouples local tree construction from global structural optimization. During induction, each candidate tree is grown from a small, strictly \textbf{class-balanced micro-batch} using an \textbf{impurity-free cyclic feature-queue heuristic} that applies deterministic median splits (for numeric attributes) and modal one-vs.-rest splits (for categorical attributes). Structural optimization is shifted from greedy per-node search to an outer \textbf{Monte Carlo acceptance--rejection loop} over the joint space of random feature-subspace cardinalities and feature permutations, scored against an independent, class-balanced validation batch under either a bounded-patience best-of-$R_{\max}$ regime or an adaptive decaying-threshold regime. At inference time, missing or omitted feature values are handled natively without prior imputation via \textbf{dual-branch tree replication}, aggregating all reachable leaves uniformly before ensemble combination through hard or soft voting, optionally weighted by each tree's survival score. Finally, because survival in the ensemble directly reflects discriminative utility across randomized subspaces, the resulting forest induces built-in marginal, pairwise, and instance-conditional feature importance measures, as well as counterfactual missing-value probability profiling and compositional forest merging.
+\end{abstract}
+
+% =============================================================================
+% 1. Introduction and Motivation
+% =============================================================================
+\section{Introduction and Motivation}
+
+Decision tree ensembles have long served as foundational non-parametric models for tabular classification. In classical \textbf{Random Forests (RF)} \citep{breiman2001}, generalization arises from combining low-bias, high-variance trees trained on bootstrap replicates of the dataset $\mathcal{D}$, with feature subsampling ($m_{\text{try}}$) performed independently at each internal split node. In \textbf{Extremely Randomized Trees (Extra-Trees)} \citep{geurts2006}, variance reduction is pushed further by drawing split thresholds at random rather than optimizing them exhaustively, while still evaluating an impurity score across candidate features at every node.
+
+Despite their empirical success, classical CART-based forests share three structural constraints:
+\begin{enumerate}[leftmargin=*, itemsep=3pt]
+  \item \textbf{Susceptibility to Class Imbalance:} Uniform bootstrap sampling replicates the empirical class distribution of $\mathcal{D}$. Under severe skew (e.g., rare-event or fraud detection), majority-class instances dominate both node-level impurity criteria (Gini index or Shannon entropy) and leaf posterior frequencies, degrading minority-class recall unless external resampling or cost weighting is introduced.
+  \item \textbf{Greedy Local Split Search:} Evaluating impurity reductions across candidate attributes and thresholds couples tree-construction cost to node sample size and feature dimensionality, while enforcing a myopic, top-down greedy heuristic that cannot evaluate the holistic discriminative power of an entire feature ordering before committing to early splits.
+  \item \textbf{Lack of Tree-Level Validation Filtering:} In standard bagging, every induced tree enters the ensemble regardless of out-of-sample performance on unseen samples; poorly generalizing trees created by unfavorable feature draws dilute ensemble votes with uniform weight.
+\end{enumerate}
+
+\textbf{RF-TSMC} addresses these constraints through an inverted architectural principle:
+\begin{principlebox}
+\emph{Replace greedy, impurity-driven node optimization on skewed full-data bootstraps with ultra-fast, impurity-free deterministic splitting on class-balanced micro-batches, and delegate structural feature-subset and feature-ordering optimization to a Monte Carlo validation-selection process.}
+\end{principlebox}
+
+Specifically, each tree in RF-TSMC is deliberately specialized (grown deeply on a small, class-balanced training subset $\mathcal{I}_T$ along a randomly ordered feature sequence $F$), then accepted or rejected via Monte Carlo trials against a disjoint, class-balanced validation subset $\mathcal{I}_V$. Only trees whose feature subspace and split sequence generalize to $\mathcal{I}_V$ survive into the forest.
+
+% =============================================================================
+% 2. Preliminaries and Notation
+% =============================================================================
+\section{Preliminaries and Notation}
+
+Let $\mathcal{D} = \{(\mathbf{x}_i, y_i)\}_{i=1}^{M}$ denote a supervised tabular dataset of $M$ complete observations (incomplete rows containing missing entries are excluded prior to training batch construction). Each observation $\mathbf{x}_i \in \mathcal{X}$ is described by $d$ predictor attributes $\mathcal{F} = \{f_1, \dots, f_d\}$ partitioned into:
+\begin{itemize}[leftmargin=*, itemsep=2pt]
+  \item numeric features $\mathcal{F}_{\text{num}} \subseteq \mathcal{F}$, and
+  \item categorical features $\mathcal{F}_{\text{cat}} = \mathcal{F} \setminus \mathcal{F}_{\text{num}}$.
+\end{itemize}
+The target variable takes values in a discrete label set $\mathcal{C} = \{c_1, \dots, c_K\}$ with $K = |\mathcal{C}| \ge 2$. For each class $c \in \mathcal{C}$, let $\mathcal{I}^{(c)} = \{i \in \{1, \dots, M\} : y_i = c\}$ denote its index set and $M_c = |\mathcal{I}^{(c)}|$ its cardinality, with minority count $M_{\min} = \min_{c \in \mathcal{C}} M_c$.
+
+Table~\ref{tab:hyperparams} summarizes the model hyperparameters and notation used throughout this formulation.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Summary of RF-TSMC hyperparameters, software parameter identifiers, defaults, and theoretical roles.}
+  \label{tab:hyperparams}
+  \small
+  \renewcommand{\arraystretch}{1.22}
+  \begin{tabularx}{\textwidth}{@{} >{$}l<{$} >{\raggedright\arraybackslash}l c >{\raggedright\arraybackslash}X @{}}
+    \toprule
+    \textnormal{\textbf{Symbol}} & \textbf{Parameter Name} & \textbf{Default} & \textbf{Theoretical Role} \\
+    \midrule
+    B & \code{n\_trees} & $16$ & Target number of surviving trees in the ensemble $\mathcal{E}$ \\
+    n_{\text{train}} & \code{batch\_train\_pclass} & $10$ & Target number of training samples drawn per class per tree \\
+    n_{\text{val}} & \code{batch\_val\_pclass} & $10$ & Target number of validation samples drawn per class per tree \\
+    f_{\min}, f_{\max} & \code{min\_feature}, \code{max\_feature} & $2, d$ & Lower and upper bounds on sampled feature-subset size $k$ \\
+    \tau_0 & \code{th\_start} & $1.0$ & Initial validation accuracy acceptance threshold \\
+    \Delta\tau & \code{delta\_th} & $0.1$ & Step decrement applied when relaxing $\tau$ (\code{get\_best\_tree=False}) \\
+    R_{\max} & \code{max\_discard\_trees} & $10$ & Rejection patience budget before best-fallback or threshold decay \\
+    \beta_{\text{best}} & \code{get\_best\_tree} & $\text{True}$ & Selection regime: bounded best-of-$R_{\max}$ vs.\ adaptive decay \\
+    d_{\max} & \code{max\_depth} & $\infty^{\dagger}$ & Maximum tree depth (root defined at depth $t = 1$) \\
+    s_{\min} & \code{min\_samples\_split} & $1$ & Minimum sample cardinality required in \emph{both} child partitions \\
+    \Ind_{\text{temp}} & \code{temporal\_features} & $\text{False}$ & Enforces ascending ordinal/temporal ordering on sampled $F$ \\
+    \sigma_{\text{soft}}, \sigma_{\text{wt}} & \code{soft\_voting}, \code{weighted\_tree} & $\text{False}, \text{False}$ & Inference aggregation switches (soft vs.\ hard; score-weighted vs.\ uniform) \\
+    \bottomrule
+  \end{tabularx}
+  \vspace{4pt}
+  \begin{minipage}{\textwidth}
+    \footnotesize\emph{$\dagger$ Unbounded up to implementation recursion/depth limits ($1000$ in the C++ backend; system recursion limit in pure Python).}
+  \end{minipage}
+\end{table}
+
+% =============================================================================
+% 3. Class-Balanced Micro-Batch Partitioning
+% =============================================================================
+\section{Class-Balanced Micro-Batch Partitioning}
+
+For each tree-selection episode $b \in \{1, \dots, B\}$, RF-TSMC constructs a fresh pair of disjoint, class-balanced training and validation index sets $(\mathcal{I}_T, \mathcal{I}_V)$ without replacement.
+
+Define the effective per-class sample budget:
+\begin{equation}
+  N_{\text{eff}} = \min\!\big(n_{\text{train}} + n_{\text{val}},\; M_{\min}\big),
+  \qquad
+  n'_{\text{train}} = \min(n_{\text{train}}, N_{\text{eff}}),
+  \qquad
+  n'_{\text{val}} = N_{\text{eff}} - n'_{\text{train}}.
+\end{equation}
+For every class $c \in \mathcal{C}$, a subset $S_c \subseteq \mathcal{I}^{(c)}$ of size $|S_c| = N_{\text{eff}}$ is drawn uniformly without replacement and randomly partitioned into disjoint parts $S_{c,T}$ ($|S_{c,T}| = n'_{\text{train}}$) and $S_{c,V}$ ($|S_{c,V}| = n'_{\text{val}}$). The tree's training and validation batches are then:
+\begin{equation}
+  \mathcal{I}_{T} = \bigcup_{c \in \mathcal{C}} S_{c,T},
+  \qquad
+  \mathcal{I}_{V} = \bigcup_{c \in \mathcal{C}} S_{c,V},
+  \qquad
+  \mathcal{I}_{T} \cap \mathcal{I}_{V} = \emptyset.
+\end{equation}
+
+\subsection*{Theoretical Properties of Balanced Micro-Batching}
+
+\begin{enumerate}[leftmargin=*, itemsep=4pt]
+  \item \textbf{Exact Class-Prior Uniformity.} Regardless of the global class frequencies $\{M_c / M\}_{c \in \mathcal{C}}$ in $\mathcal{D}$, both $\mathcal{I}_T$ and $\mathcal{I}_V$ satisfy:
+  \begin{equation}
+    \Prob_{(x, y) \sim \mathcal{I}_{T}}(y = c) = \Prob_{(x, y) \sim \mathcal{I}_{V}}(y = c) = \frac{1}{K}, \qquad \forall c \in \mathcal{C}.
+  \end{equation}
+  Tree splitting and leaf frequencies are therefore structurally invariant to dataset imbalance.
+
+  \item \textbf{Equivalence of Validation Accuracy to Macro-Recall.} Because $|\mathcal{I}_V \cap \mathcal{I}^{(c)}| = n'_{\text{val}}$ is identical across all $c \in \mathcal{C}$, the empirical validation accuracy of a tree $T$ over $\mathcal{I}_V$,
+  \begin{equation}
+    s(T; \mathcal{I}_{V})
+    = \frac{1}{K\, n'_{\text{val}}} \sum_{c \in \mathcal{C}} \sum_{i \in S_{c,V}} \Ind\!\big(\hat{y}_{T}(\mathbf{x}_{i}) = c\big)
+    = \frac{1}{K} \sum_{c \in \mathcal{C}} \widehat{\Recall}_{c}(T; \mathcal{I}_{V}),
+  \end{equation}
+  is identically equal to the \textbf{balanced accuracy} (macro-averaged per-class recall) on the validation batch. A tree that collapses onto a majority class achieves at most $1/K$ on $s(T; \mathcal{I}_V)$ and is rejected by the Monte Carlo filter.
+
+  \item \textbf{Dataset-Size Independence of Tree Induction.} Because $|\mathcal{I}_T| = K \cdot n'_{\text{train}}$ depends solely on the number of classes $K$ and batch parameter $n_{\text{train}}$, single-tree induction cost is independent of the full corpus size $M$ once class index buckets $\{\mathcal{I}^{(c)}\}$ are formed.
+\end{enumerate}
+
+% =============================================================================
+% 4. Stochastic Feature Subspace and Permutation Sampling
+% =============================================================================
+\section{Stochastic Feature Subspace and Permutation Sampling}
+
+Before growing a candidate tree, RF-TSMC samples both the \emph{cardinality} and the \emph{ordered sequence} of predictor features:
+\begin{enumerate}[leftmargin=*, itemsep=4pt]
+  \item \textbf{Cardinality Draw.} Draw $k$ uniformly from the discrete integer interval:
+  \begin{equation}
+    k \sim \Unif\{f_{\min}, f_{\min}+1, \dots, f_{\max}\},
+  \end{equation}
+  clamped to $1 \le f_{\min} \le f_{\max} \le d$.
+
+  \item \textbf{Ordered Sequence Draw.} Draw an ordered tuple of $k$ distinct features uniformly without replacement from the space of $k$-permutations of $\mathcal{F}$:
+  \begin{equation}
+    F = (f^{(0)}, f^{(1)}, \dots, f^{(k-1)}) \sim \Unif\!\left(\mathcal{P}_{k}(\mathcal{F})\right),
+    \qquad
+    |\mathcal{P}_{k}(\mathcal{F})| = \frac{d!}{(d-k)!}.
+  \end{equation}
+\end{enumerate}
+
+\subsection*{Causal / Temporal Ordering Mode (\texorpdfstring{$\Ind_{\text{temp}} = \text{True}$}{I\_temp = True})}
+
+When predictor attributes represent indexed observations (e.g., lagged features \code{feat\_1}, \code{feat\_2}, $\dots$, \code{feat\_T} with integer suffixes $\tau(f) \in \mathbb{Z}_{\ge 0}$), enabling temporal feature ordering sorts the sampled tuple $F$ in ascending order of $\tau(f)$:
+\begin{equation}
+  \tau(f^{(0)}) \le \tau(f^{(1)}) \le \dots \le \tau(f^{(k-1)}).
+\end{equation}
+Because tree induction processes $F$ sequentially from root to leaves, sorting $F$ enforces a structural precedence in which earlier temporal states condition the upper levels of the decision tree and later states refine deeper branches.
+
+\subsection*{Contrast with Classical Subspace Randomization}
+
+In Breiman's Random Forest, the subset cardinality $m_{\text{try}}$ is fixed globally and candidate features are resampled at \emph{each internal node}, where a greedy impurity optimizer determines which feature sits at the root. In RF-TSMC, both the subset size $k$ and the \textbf{hierarchical split order} $F$ are stochastic, tree-level latent variables. Consequently, different candidate trees explore distinct low-dimensional subspaces ($k \ll d$) as well as broader feature combinations ($k \approx d$), and the root split feature $f^{(0)}$ is directly governed by the sampled permutation rather than a greedy global criterion.
+
+% =============================================================================
+% 5. Impurity-Free Tree Induction via Cyclic Feature Queues
+% =============================================================================
+\section{Impurity-Free Tree Induction via Cyclic Feature Queues}
+
+Given training index set $\mathcal{I}_T$ and ordered feature sequence $F$, a candidate decision tree $T = \text{PlantTree}(\mathcal{I}_T, F)$ is grown recursively from depth $t = 1$ without computing Gini impurity, entropy, or any target-dependent split scan.
+
+\begin{figure}[htbp]
+  \centering
+  \IfFileExists{rf_tsmc_tree_induction.png}{%
+    \includegraphics[width=0.95\linewidth]{rf_tsmc_tree_induction.png}%
+  }{%
+    % Native TikZ fallback when RF_TSMC_Theory.tex is compiled standalone on Overleaf
+    \resizebox{0.95\linewidth}{!}{%
+      \begin{tikzpicture}[
+        font=\sffamily\small,
+        node distance=1.05cm and 1.7cm,
+        box/.style={draw, rounded corners=5pt, line width=1pt, align=center, inner sep=7pt},
+        statebox/.style={box, draw=blue!70!cyan, fill=blue!4!white, minimum width=6.6cm},
+        condbox/.style={box, draw=orange!80!black, fill=yellow!10!white, minimum width=6.1cm},
+        smallcond/.style={box, draw=orange!80!black, fill=yellow!10!white, minimum width=4.8cm},
+        leafbox/.style={box, draw=teal!80!green, fill=teal!6!white, minimum width=5.2cm},
+        procbox/.style={box, draw=blue!70!violet, fill=blue!5!white, minimum width=5.6cm},
+        splitbox/.style={box, draw=blue!70!violet, fill=blue!5!white, align=left, text width=8.85cm},
+        emitbox/.style={box, draw=violet!80!blue, fill=violet!5!white, minimum width=8.8cm},
+        arr/.style={-{Stealth[length=6pt,width=4.5pt]}, line width=0.9pt, draw=AccentSlate},
+        yeslbl/.style={font=\sffamily\bfseries\small, text=teal!80!green},
+        nolbl/.style={font=\sffamily\bfseries\small, text=red!75!black}
+      ]
+        \node[statebox] (state) {
+          \textbf{Node State} \;$(\mathcal{I}, F, t)$\\[3pt]
+          {\footnotesize Samples $\mathcal{I} \subseteq \mathcal{I}_T$, queue $F = (f^{(0)}, \dots, f^{(k-1)})$, depth $t$}
+        };
+
+        \node[condbox, below=0.85cm of state] (stop) {
+          \textbf{Stopping Criterion?}\\[3pt]
+          {\footnotesize $\mathcal{I} = \emptyset \;\lor\; F = \emptyset \;\lor\; t \ge d_{\max} \;\lor\; |\{y_i : i \in \mathcal{I}\}| = 1$}
+        };
+
+        \node[procbox, below=1.0cm of stop] (rotate) {
+          \textbf{Pop Head \& Rotate Feature Queue}\\[3pt]
+          {\footnotesize $f \gets F[0], \quad F \gets (F[1], \dots, F[k-1], f)$}
+        };
+
+        \node[splitbox, below=0.9cm of rotate] (split) {
+          \makebox[\linewidth][c]{\textbf{Deterministic Split Operator} \;$\Phi(f, \mathcal{I}) \mapsto (\mathcal{I}_{\ge}, \mathcal{I}_{<}, \theta)$}\\[4pt]
+          {\footnotesize $\bullet$\; Numeric ($|\mathcal{I}| > 2$): median $\theta$ ($\ge$ vs.\ $<$, tie fallback $>$ vs.\ $\le$)}\\
+          {\footnotesize $\bullet$\; Categorical ($|\mathcal{I}| > 2$): mode $\theta$ ($=$ vs.\ $\neq$)}\\
+          {\footnotesize $\bullet$\; Two-sample ($|\mathcal{I}| = 2$): ordered singletons at $\theta = v_{(2)}$}
+        };
+
+        \node[condbox, below=0.9cm of split, minimum width=5.6cm] (adm) {
+          \textbf{Admissible Child Partition Sizes?}\\[3pt]
+          {\footnotesize $|\mathcal{I}_{\ge}| \ge s_{\min} \;\land\; |\mathcal{I}_{<}| \ge s_{\min}$}
+        };
+
+        % Position exhaust cleanly to the right of split so the vertical No-loop never crosses split
+        \node[smallcond, anchor=west] (exhaust) at ($(split.east |- adm) + (1.0cm, 0)$) {
+          \textbf{Full Queue Cycle Exhausted?}\\[3pt]
+          {\footnotesize $F[0] = f_{\text{start}}$}
+        };
+
+        \node[leafbox] (leaf) at (exhaust |- stop) {
+          \textbf{Create Leaf Node} \;$\ell$\\[3pt]
+          {\footnotesize $p_\ell(c) = \frac{1}{|\mathcal{I}|}\sum_{i\in\mathcal{I}} \Ind(y_i = c),\; \forall c \in \mathcal{C}$}\\[2pt]
+          {\footnotesize Record leaf depth $t$}
+        };
+
+        \node[emitbox, below=0.95cm of adm] (emit) {
+          \textbf{Emit Split Node} \;$(f, \theta)$ \textbf{\& Recurse}\\[3pt]
+          {\footnotesize \code{GrowTree}($\mathcal{I}_{\ge}$, \code{Copy}($F$), $t+1$) \quad \& \quad \code{GrowTree}($\mathcal{I}_{<}$, \code{Copy}($F$), $t+1$)}
+        };
+
+        \draw[arr] (state) -- (stop);
+        \draw[arr] (stop) -- node[yeslbl, above] {Yes} (leaf);
+        \draw[arr] (stop) -- node[nolbl, left=3pt] {No} node[right=4pt, font=\footnotesize] {Init $f_{\text{start}} \gets F[0]$} (rotate);
+        \draw[arr] (rotate) -- (split);
+        \draw[arr] (split) -- (adm);
+        \draw[arr] (adm) -- node[yeslbl, left=3pt] {Yes} (emit);
+        \draw[arr] (adm) -- node[nolbl, above] {No} (exhaust);
+        \draw[arr] (exhaust.north) |- node[nolbl, right=3pt, pos=0.25] {No} (rotate.east);
+        \draw[arr] (exhaust.east) -- ++(0.95,0) |- node[yeslbl, right=3pt, pos=0.25] {Yes} (leaf.east);
+      \end{tikzpicture}%
+    }%
+  }
+  \caption{Impurity-free recursive tree induction (\code{PlantTree} / \code{GrowTree}) using deterministic median/mode splitting (\code{SplitData}) and cyclic feature-queue rotation.}
+  \label{fig:tree_induction}
+\end{figure}
+
+\subsection{Deterministic Split Operator \texorpdfstring{$\Phi(f, \mathcal{I})$}{Phi(f, I)}}
+
+At an internal node containing sample indices $\mathcal{I}$ ($|\mathcal{I}| \ge 2$ with at least two distinct classes) and candidate feature $f$, let $v_i = x_{i, f}$ for $i \in \mathcal{I}$. The deterministic partitioning operator $\Phi(f, \mathcal{I}) \mapsto (\mathcal{I}_{\ge}, \mathcal{I}_{<}, \theta)$ proceeds by cases:
+
+\paragraph{Case 1: $|\mathcal{I}| > 2$ and $f \in \mathcal{F}_{\text{num}}$ (Numeric Median Bisection).}
+The split threshold $\theta$ is the sample median ($0.5$-quantile) of $\{v_i\}_{i \in \mathcal{I}}$:
+\begin{equation}
+  \theta = \median(\{v_i : i \in \mathcal{I}\}) =
+  \begin{cases}
+    v_{(\frac{n+1}{2})}, & n = |\mathcal{I}| \text{ odd}, \\[4pt]
+    \frac{1}{2}\!\left(v_{(\frac{n}{2})} + v_{(\frac{n}{2}+1)}\right), & n = |\mathcal{I}| \text{ even},
+  \end{cases}
+\end{equation}
+where $v_{(1)} \le v_{(2)} \le \dots \le v_{(n)}$ denote the order statistics of $\{v_i\}_{i \in \mathcal{I}}$.
+
+The primary partition assigns:
+\begin{equation}
+  \mathcal{I}_{\ge} = \{i \in \mathcal{I} : v_i \ge \theta\},
+  \qquad
+  \mathcal{I}_{<} = \{i \in \mathcal{I} : v_i < \theta\}.
+\end{equation}
+\emph{Tie-Induced Empty-Child Fallback:} If multiple samples tie at the minimum value such that $\theta = \min_{i \in \mathcal{I}} v_i$, then $\mathcal{I}_{<} = \emptyset$. Whenever $\mathcal{I}_{\ge} = \emptyset$ or $\mathcal{I}_{<} = \emptyset$, the operator switches to strict inequality:
+\begin{equation}
+  \mathcal{I}_{\ge} = \{i \in \mathcal{I} : v_i > \theta\},
+  \qquad
+  \mathcal{I}_{<} = \{i \in \mathcal{I} : v_i \le \theta\}.
+\end{equation}
+If all values in $\mathcal{I}$ are identical ($v_i = \theta \;\forall i \in \mathcal{I}$), $\mathcal{I}_{\ge}$ remains empty under strict inequality, signaling that $f$ has zero variance on $\mathcal{I}$ and cannot produce a valid split.
+
+\paragraph{Case 2: $|\mathcal{I}| > 2$ and $f \in \mathcal{F}_{\text{cat}}$ (Categorical Modal Partition).}
+The split value $\theta$ is the statistical mode (most frequent category) in $\mathcal{I}$:
+\begin{equation}
+  \theta = \argmax_{u} \sum_{i \in \mathcal{I}} \Ind(v_i = u).
+\end{equation}
+The node induces a binary one-vs.-rest categorical split:
+\begin{equation}
+  \mathcal{I}_{\ge} = \{i \in \mathcal{I} : v_i = \theta\},
+  \qquad
+  \mathcal{I}_{<} = \{i \in \mathcal{I} : v_i \neq \theta\}.
+\end{equation}
+If all samples in $\mathcal{I}$ share a single category $\theta$, then $\mathcal{I}_{<} = \emptyset$ and the split is rejected as non-informative.
+
+\paragraph{Case 3: $|\mathcal{I}| = 2$ (Minimal Two-Sample Separation).}
+When only two samples remain with distinct labels ($|\mathcal{I}| = 2$), their feature values are ordered as $v_{(1)} \le v_{(2)}$ corresponding to indices $(i_{(1)}, i_{(2)})$. The operator sets $\theta = v_{(2)}$ and partitions the pair into singletons:
+\begin{equation}
+  \mathcal{I}_{\ge} = \{i_{(2)}\},
+  \qquad
+  \mathcal{I}_{<} = \{i_{(1)}\}.
+\end{equation}
+
+\subsection{Cyclic Queue Traversal and Leaf Generation}
+
+To enforce feature diversity down every root-to-leaf path without exhausting features prematurely on deep trees, \code{GrowTree} maintains $F$ as a \textbf{cyclic FIFO queue}:
+\begin{enumerate}[leftmargin=*, itemsep=4pt]
+  \item \textbf{Base Termination Conditions:} A leaf node $\ell$ is returned immediately if:
+  \begin{itemize}[itemsep=2pt]
+    \item Depth reaches the cap: $t \ge d_{\max}$, or
+    \item Node purity is achieved: $|\{y_i : i \in \mathcal{I}\}| = 1$.
+  \end{itemize}
+
+  \item \textbf{Cyclic Feature Selection:} Let $f_{\text{start}} = F[0]$ be the initial head of the queue. In a loop:
+  \begin{itemize}[itemsep=2pt]
+    \item Pop the head feature $f \gets F[0]$ and compute $(\mathcal{I}_{\ge}, \mathcal{I}_{<}, \theta) = \Phi(f, \mathcal{I})$.
+    \item Rotate $f$ to the tail of the queue: $F \gets (F[1], \dots, F[k-1], f)$.
+    \item \textbf{Admissibility Check:} Accept $(f, \theta)$ if and only if both children satisfy the minimum partition cardinality:
+    \begin{equation}
+      |\mathcal{I}_{\ge}| \ge s_{\min}
+      \quad \text{and} \quad
+      |\mathcal{I}_{<}| \ge s_{\min}.
+    \end{equation}
+    \item If admissible, emit internal node $(f, \theta)$ and recurse independently on $(\mathcal{I}_{\ge}, F, t+1)$ and $(\mathcal{I}_{<}, F, t+1)$, each receiving a fresh copy of the rotated queue $F$.
+    \item If not admissible and the queue completes a full rotation ($F[0] = f_{\text{start}}$) without any feature producing an admissible split, terminate recursion and return a leaf node $\ell$.
+  \end{itemize}
+
+  \item \textbf{Leaf Empirical Distribution:} Each leaf $\ell$ at depth $t$ records the empirical class probabilities of the samples reaching it:
+  \begin{equation}
+    p_{\ell}(c) = \frac{1}{|\mathcal{I}|} \sum_{i \in \mathcal{I}} \Ind(y_i = c),
+    \qquad c \in \mathcal{C}.
+  \end{equation}
+\end{enumerate}
+
+\subsection{Formal Algorithm for Tree Induction}
+
+The complete recursive procedure is formalized in Algorithm~\ref{alg:planttree}.
+
+\begin{algorithm}[htbp]
+  \caption{Impurity-Free Cyclic-Queue Tree Induction (\code{PlantTree})}
+  \label{alg:planttree}
+  \small
+  \begin{tabbing}
+    \hspace{1.2em}\=\hspace{1.2em}\=\hspace{1.2em}\=\hspace{1.2em}\=\kill
+    \textbf{Input:} Training index set $\mathcal{I}_T$, ordered feature queue $F$, depth bound $d_{\max}$, min child size $s_{\min}$ \\
+    \textbf{Output:} Decision tree $T$ \\[4pt]
+    \algkw{function} \algfn{GrowTree}($\mathcal{I}, F, t$): \\
+    \> \algkw{if} $\mathcal{I} = \emptyset$ \algkw{or} $F = \emptyset$ \algkw{or} $t \ge d_{\max}$ \algkw{or} $|\{y_i : i \in \mathcal{I}\}| = 1$ \algkw{then} \\
+    \> \> \algkw{return} $\text{Leaf}\!\left(p_\ell(c) = \frac{1}{|\mathcal{I}|}\sum_{i \in \mathcal{I}} \Ind[y_i = c],\; \text{depth} = t\right)$ \\
+    \> \algkw{end if} \\[2pt]
+    \> $f_{\text{start}} \gets F[0]$ \\
+    \> \algkw{repeat} \\
+    \> \> $f \gets F[0]$ \\
+    \> \> $(\mathcal{I}_{\ge}, \mathcal{I}_{<}, \theta) \gets \text{\algfn{SplitData}}(f, \mathcal{I})$ \\
+    \> \> $F \gets \text{\algfn{RotateLeft}}(F)$ \algcm{Move $f$ from front to back} \\
+    \> \> \algkw{if} $|\mathcal{I}_{\ge}| \ge s_{\min}$ \algkw{and} $|\mathcal{I}_{<}| \ge s_{\min}$ \algkw{then} \\
+    \> \> \> $\text{child}_{\ge} \gets \text{\algfn{GrowTree}}(\mathcal{I}_{\ge}, \text{\algfn{Copy}}(F), t + 1)$ \\
+    \> \> \> $\text{child}_{<} \gets \text{\algfn{GrowTree}}(\mathcal{I}_{<}, \text{\algfn{Copy}}(F), t + 1)$ \\
+    \> \> \> \algkw{return} $\text{SplitNode}\!\big(\text{feature} = f,\; \text{threshold} = \theta,\; \text{branch}_{\ge} = \text{child}_{\ge},\; \text{branch}_{<} = \text{child}_{<}\big)$ \\
+    \> \> \algkw{end if} \\
+    \> \algkw{until} $F[0] = f_{\text{start}}$ \\[2pt]
+    \> \algkw{return} $\text{Leaf}\!\left(p_\ell(c) = \frac{1}{|\mathcal{I}|}\sum_{i \in \mathcal{I}} \Ind[y_i = c],\; \text{depth} = t\right)$ \\
+    \algkw{end function}
+  \end{tabbing}
+\end{algorithm}
+
+\subsection{Theoretical Insights on Tree Structure}
+
+\begin{itemize}[leftmargin=*, itemsep=4pt]
+  \item \textbf{Logarithmic Expected Depth on Continuous Features:} When numeric features are continuous (no ties), each median split bisects $|\mathcal{I}|$ into two subsets of sizes $\lfloor |\mathcal{I}|/2 \rfloor$ and $\lceil |\mathcal{I}|/2 \rceil$. Consequently, a tree grown to pure leaves on $|\mathcal{I}_T| = K \cdot n'_{\text{train}}$ samples has depth strictly bounded in the balanced-split regime by $\lceil \log_2(K \cdot n'_{\text{train}}) \rceil + 1$, preventing pathological degenerate chains that commonly occur under random-threshold or sparse categorical splitting.
+  \item \textbf{Controlled Over-Specialization:} Growing unpruned trees ($d_{\max} = \infty, s_{\min} = 1$) on a small balanced subset $\mathcal{I}_T$ using a subset $F$ causes each individual tree $T$ to strongly fit the geometric partitioning induced by $(F, \mathcal{I}_T)$. Unlike classical decision trees where overfitting on the full dataset increases variance across correlated splits, here each tree specializes in a \emph{different} low-dimensional projection $F$ and micro-batch $\mathcal{I}_T$, and must immediately prove non-trivial generalization on the disjoint validation set $\mathcal{I}_V$.
+\end{itemize}
+
+% =============================================================================
+% 6. Monte Carlo Tree Selection
+% =============================================================================
+\section{Monte Carlo Tree Selection}
+
+Because \code{PlantTree} executes no target-informed feature or split optimization internally, an unvalidated tree constructed from an uninformative or poorly ordered feature sequence $F$ may perform poorly out of sample. RF-TSMC resolves this through \textbf{Monte Carlo rejection-sampling selection} over $(k, F)$ conditioned on validation performance.
+
+\subsection{Validation Scoring Function}
+
+For each candidate tree $T$ planted on $\mathcal{I}_T$, let $\hat{y}_T(\mathbf{x}) = \argmax_{c \in \mathcal{C}} p_T(c \mid \mathbf{x})$ be its hard class prediction (where $p_T(c \mid \mathbf{x})$ is defined in Section~\ref{sec:single_tree_pred}). The candidate's validation score on $\mathcal{I}_V$ is:
+\begin{equation}
+  s(T; \mathcal{I}_{V}) = \frac{1}{|\mathcal{I}_{V}|} \sum_{i \in \mathcal{I}_{V}} \Ind\!\big(\hat{y}_{T}(\mathbf{x}_{i}) = y_i\big) \in [0, 1].
+\end{equation}
+(In the degenerate boundary case where $M_{\min} \le n_{\text{train}}$ leaves $\mathcal{I}_V = \emptyset$, the validation score defaults to $1.0$.)
+
+\subsection{Dynamic Acceptance--Rejection Regimes}
+
+Given a fixed batch pair $(\mathcal{I}_T, \mathcal{I}_V)$ for tree slot $b$, the selection loop initializes acceptance threshold $\tau \gets \tau_0$, rejection counter $r \gets 0$, best observed score $s^* \gets 0$, and best tree $T^* \gets \varnothing$. At each Monte Carlo iteration:
+\begin{enumerate}[leftmargin=*, itemsep=3pt]
+  \item Draw a fresh random feature sequence $F \sim \text{SampleFeats}(\mathcal{F})$.
+  \item Induce candidate tree $T \gets \text{PlantTree}(\mathcal{I}_T, F)$.
+  \item Evaluate $s_{\text{val}} = s(T; \mathcal{I}_V)$.
+  \item \textbf{Acceptance Check:} If $s_{\text{val}} \ge \tau$, accept $T$ immediately with survival score $s_{\text{surv}}(T) = s_{\text{val}}$ and terminate.
+  \item \textbf{Rejection Handling:} Otherwise ($s_{\text{val}} < \tau$), increment $r \gets r + 1$. Two regimes govern budget exhaustion ($r \ge R_{\max}$):
+\end{enumerate}
+
+\paragraph{Regime A --- Bounded-Patience Best-of-$R_{\max}$ Selection ($\beta_{\text{best}} = \text{True}$).}
+During the $R_{\max}$ trials, maintain the incumbent optimum:
+\begin{equation}
+  (T^{\ast}, s^{\ast}) \gets
+  \begin{cases}
+    (T, s_{\text{val}}), & \text{if } s_{\text{val}} > s^{\ast}, \\
+    (T^{\ast}, s^{\ast}), & \text{otherwise.}
+  \end{cases}
+\end{equation}
+If $r$ reaches $R_{\max}$ without meeting $\tau_0$, return $T^*$ with survival score $s^*$. Formally, if $T^{(1)}, \dots, T^{(R_{\max})}$ fail the threshold, this implements:
+\begin{equation}
+  T_{\text{surv}} = \argmax_{1 \le j \le R_{\max}} s\!\left(T^{(j)}; \mathcal{I}_{V}\right).
+\end{equation}
+Thus, selection stops early whenever an exceptional tree achieves $s_{\text{val}} \ge \tau_0$, and otherwise performs bounded random search of budget $R_{\max}$ over $\bigcup_{k=f_{\min}}^{f_{\max}} \mathcal{P}_k(\mathcal{F})$.
+
+\paragraph{Regime B --- Adaptive Threshold Relaxation ($\beta_{\text{best}} = \text{False}$).}
+Once the patience counter reaches $r \ge R_{\max}$, subsequent rejections relax the acceptance threshold linearly on every unsuccessful trial:
+\begin{equation}
+  \tau \gets \tau - \Delta\tau,
+\end{equation}
+while continuing to sample fresh candidate sequences $F$ until a candidate satisfies $s_{\text{val}} \ge \tau$. Because $s_{\text{val}} \ge 0$ and $\tau$ decreases monotonically by $\Delta\tau > 0$ after $R_{\max}$ rejections, termination in finite time is guaranteed.
+
+Algorithm~\ref{alg:survivedtree} summarizes the outer Monte Carlo forest assembly loop.
+
+\begin{algorithm}[htbp]
+  \caption{Monte Carlo Tree Selection (\code{SurvivedTree}) and Forest Assembly}
+  \label{alg:survivedtree}
+  \small
+  \begin{tabbing}
+    \hspace{1.2em}\=\hspace{1.2em}\=\hspace{1.2em}\=\hspace{1.2em}\=\kill
+    \textbf{Input:} Dataset $\mathcal{D}$, forest size $B$, threshold $\tau_0$, step $\Delta\tau$, patience $R_{\max}$, mode $\beta_{\text{best}}$ \\
+    \textbf{Output:} Ensemble $\mathcal{E} = \{(T_1, s_1), \dots, (T_B, s_B)\}$ \\[4pt]
+    $\mathcal{E} \gets \emptyset$ \\
+    \algkw{for} $b = 1$ \algkw{to} $B$ \algkw{do} \algcm{Embarrassingly parallel across $b$} \\
+    \> $(\mathcal{I}_T, \mathcal{I}_V) \gets \text{\algfn{SplitTrainVal}}(\mathcal{D})$ \algcm{Class-balanced disjoint micro-batches} \\
+    \> $\tau \gets \tau_0; \quad r \gets 0; \quad s^* \gets 0.0; \quad T^* \gets \varnothing$ \\[2pt]
+    \> \algkw{loop} \\
+    \> \> $F \gets \text{\algfn{SampleFeats}}(\mathcal{F})$ \algcm{Random size $k$ and permutation} \\
+    \> \> $T \gets \text{\algfn{PlantTree}}(\mathcal{I}_T, F)$ \\
+    \> \> $s_{\text{val}} \gets \text{\algfn{Validate}}(T, \mathcal{I}_V)$ \\[2pt]
+    \> \> \algkw{if} $s_{\text{val}} \ge \tau$ \algkw{then} \\
+    \> \> \> $s_{\text{surv}} \gets s_{\text{val}}; \quad T_{\text{surv}} \gets T$ \\
+    \> \> \> \algkw{break} \\
+    \> \> \algkw{end if} \\[2pt]
+    \> \> \algkw{if} $\beta_{\text{best}}$ \algkw{and} $s_{\text{val}} > s^*$ \algkw{then} \\
+    \> \> \> $s^* \gets s_{\text{val}}; \quad T^* \gets T$ \\
+    \> \> \algkw{end if} \\[2pt]
+    \> \> $r \gets r + 1$ \\
+    \> \> \algkw{if} $r \ge R_{\max}$ \algkw{then} \\
+    \> \> \> \algkw{if} $\beta_{\text{best}}$ \algkw{then} \\
+    \> \> \> \> $T_{\text{surv}} \gets (T^* \text{ if } T^* \neq \varnothing \text{ else } T); \quad s_{\text{surv}} \gets \max(s^*, s_{\text{val}})$ \\
+    \> \> \> \> \algkw{break} \\
+    \> \> \> \algkw{else} \\
+    \> \> \> \> $\tau \gets \tau - \Delta\tau$ \\
+    \> \> \> \algkw{end if} \\
+    \> \> \algkw{end if} \\
+    \> \algkw{end loop} \\[2pt]
+    \> Record used feature subset $\mathcal{U}(T_{\text{surv}}) \subseteq F$ \\
+    \> Append $(T_{\text{surv}}, s_{\text{surv}})$ to $\mathcal{E}$ \\
+    \algkw{end for} \\
+    \algkw{return} $\mathcal{E}$
+  \end{tabbing}
+\end{algorithm}
+
+\subsection{Probabilistic Interpretation of Survival Selection}
+
+Fix a train--validation draw $(\mathcal{I}_T, \mathcal{I}_V)$, and let $\mu_{\mathcal{F}}$ denote the sampling distribution over feature sequences $F$. Define the \textbf{survival probability} at threshold $\tau$ as:
+\begin{equation}
+  q(\tau \mid \mathcal{I}_{T}, \mathcal{I}_{V})
+  = \Prob_{F \sim \mu_{\mathcal{F}}}\!\big(s(T(\mathcal{I}_{T}, F); \mathcal{I}_{V}) \ge \tau\big).
+\end{equation}
+
+\begin{itemize}[leftmargin=*, itemsep=4pt]
+  \item Under \textbf{Regime A} ($\beta_{\text{best}} = \text{True}$), the probability that a tree passes $\tau_0$ within $R_{\max}$ trials is $1 - (1 - q(\tau_0))^{R_{\max}}$, and the expected number of tree evaluations is bounded strictly by $\sum_{j=0}^{R_{\max}-1} (1 - q(\tau_0))^j \le R_{\max}$. When no trial meets $\tau_0$, the output score follows the maximum order statistic $S_{(R_{\max})} = \max_{1 \le j \le R_{\max}} S_j$, whose cumulative distribution function is $F_{S_{(R_{\max})}}(s) = [F_S(s)]^{R_{\max}}$, shifting probability mass sharply toward high-performing feature subspaces.
+  \item Under \textbf{Regime B} ($\beta_{\text{best}} = \text{False}$), for any threshold $\tau_m = \tau_0 - m\,\Delta\tau$ reached after $R_{\max} + m$ failures ($m \ge 0$), the conditional survival probability increases monotonically with $m$ ($q(\tau_{m+1}) \ge q(\tau_m)$) until $q(\tau_m) = 1$ for $\tau_m \le 0$.
+  \item \textbf{Implicit Subspace Filtering:} Because $(\mathcal{I}_T, \mathcal{I}_V)$ is held fixed during the inner loop for slot $b$, Monte Carlo selection compares all candidate feature sequences $F^{(1)}, F^{(2)}, \dots$ on an \emph{identical} train--validation benchmark. Differences in $s_{\text{val}}$ therefore isolate the predictive quality of the feature subspace and split order $F$, rather than sampling noise between different batches. Across the outer loop $b = 1, \dots, B$, resampling $(\mathcal{I}_T^{(b)}, \mathcal{I}_V^{(b)})$ decorrelates the trees across both data samples and feature subspaces.
+\end{itemize}
+
+% =============================================================================
+% 7. Inference, Missing-Value Replication, and Ensemble Aggregation
+% =============================================================================
+\section{Inference, Missing-Value Replication, and Ensemble Aggregation}
+
+\subsection{Single-Tree Prediction and Missing-Feature Branch Replication}
+\label{sec:single_tree_pred}
+
+Let $\mathbf{x}$ be a query observation (whose schema may omit features or contain \code{NaN} entries). Starting at the root of tree $T$, traversal proceeds recursively at each internal node testing feature $f$ with split value $\theta$:
+
+\paragraph{Observed Feature Value ($x_f$ present and non-missing).}
+Traversal follows the deterministic routing function:
+\begin{equation}
+  \text{next}(\mathbf{x}; f, \theta) =
+  \begin{cases}
+    \text{branch}_{\ge}, & \text{if } (f \in \mathcal{F}_{\text{num}} \land x_f \ge \theta) \;\lor\; (f \in \mathcal{F}_{\text{cat}} \land x_f = \theta), \\
+    \text{branch}_{<}, & \text{otherwise.}
+  \end{cases}
+\end{equation}
+
+\paragraph{Missing or Omitted Feature Value ($x_f$ absent or \code{NaN}).}
+Instead of halting at an incomplete node, using surrogate splits, or requiring prior imputation, RF-TSMC applies \textbf{structural branch replication}: traversal forks simultaneously down \emph{both} $\text{branch}_{\ge}$ and $\text{branch}_{<}$.
+
+Recursively collecting all leaves reached by $\mathbf{x}$ yields a non-empty leaf multiset $\mathcal{L}_T(\mathbf{x}) = \{\ell_1, \dots, \ell_m\}$ (with $m = 1$ when all traversed features are observed, and $m \le 2^{h}$ when $h$ missing splits are encountered along the active paths). The tree's class posterior distribution is the normalized uniform average over all reachable leaves:
+\begin{equation}
+  \tilde{p}_{T}(c \mid \mathbf{x}) = \frac{1}{|\mathcal{L}_{T}(\mathbf{x})|} \sum_{\ell \in \mathcal{L}_{T}(\mathbf{x})} p_{\ell}(c),
+  \qquad
+  p_T(c \mid \mathbf{x}) = \frac{\tilde{p}_{T}(c \mid \mathbf{x})}{\sum_{c' \in \mathcal{C}} \tilde{p}_{T}(c' \mid \mathbf{x})},
+  \qquad c \in \mathcal{C}.
+\end{equation}
+
+\noindent\emph{Theoretical Interpretation:} Branch replication performs an unweighted marginalization over the missing split condition $\Ind(x_f \ge \theta) \in \{0, 1\}$, preserving exact compatibility with whatever subset of features \emph{is} observed in $\mathbf{x}$ along each sub-branch.
+
+\subsection{Four-Way Ensemble Aggregation}
+
+Given the ensemble $\mathcal{E} = \{(T_b, w_b)\}_{b=1}^{B}$, let each tree's hard prediction be $\hat{y}_b(\mathbf{x}) = \argmax_{c \in \mathcal{C}} p_{T_b}(c \mid \mathbf{x})$, and let tree weight $w_b$ be governed by $\sigma_{\text{wt}}$:
+\begin{equation}
+  w_b =
+  \begin{cases}
+    s_{\text{surv}}(T_b), & \text{if } \sigma_{\text{wt}} = \text{True (score-weighted)}, \\
+    1, & \text{if } \sigma_{\text{wt}} = \text{False (uniform)},
+  \end{cases}
+  \qquad
+  W = \sum_{b=1}^{B} w_b.
+\end{equation}
+Combining $\sigma_{\text{soft}} \in \{\text{False}, \text{True}\}$ and $\sigma_{\text{wt}} \in \{\text{False}, \text{True}\}$ defines four ensemble probability estimators for each class $c \in \mathcal{C}$, summarized in Table~\ref{tab:aggregation}.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Four-way ensemble probability estimators defined by the voting and weighting switches $(\sigma_{\text{soft}}, \sigma_{\text{wt}})$.}
+  \label{tab:aggregation}
+  \small
+  \renewcommand{\arraystretch}{1.45}
+  \begin{tabular}{@{} ll l @{}}
+    \toprule
+    \textbf{Voting Mode} & \textbf{Weighting Mode} & \textbf{Ensemble Class Probability $P_{\mathcal{E}}(y = c \mid \mathbf{x})$} \\
+    \midrule
+    \textbf{Hard} ($\sigma_{\text{soft}} = \text{False}$) & \textbf{Uniform} ($\sigma_{\text{wt}} = \text{False}$) & $\displaystyle \frac{1}{B} \sum_{b=1}^{B} \Ind\!\big(\hat{y}_b(\mathbf{x}) = c\big)$ \\
+    \textbf{Hard} ($\sigma_{\text{soft}} = \text{False}$) & \textbf{Weighted} ($\sigma_{\text{wt}} = \text{True}$) & $\displaystyle \frac{1}{W} \sum_{b=1}^{B} s_{\text{surv}}(T_b)\,\Ind\!\big(\hat{y}_b(\mathbf{x}) = c\big)$ \\
+    \textbf{Soft} ($\sigma_{\text{soft}} = \text{True}$) & \textbf{Uniform} ($\sigma_{\text{wt}} = \text{False}$) & $\displaystyle \frac{1}{B} \sum_{b=1}^{B} p_{T_b}(c \mid \mathbf{x})$ \\
+    \textbf{Soft} ($\sigma_{\text{soft}} = \text{True}$) & \textbf{Weighted} ($\sigma_{\text{wt}} = \text{True}$) & $\displaystyle \frac{1}{W} \sum_{b=1}^{B} s_{\text{surv}}(T_b)\,p_{T_b}(c \mid \mathbf{x})$ \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+The final predicted class label is the maximum a posteriori class:
+\begin{equation}
+  \hat{y}_{\mathcal{E}}(\mathbf{x}) = \argmax_{c \in \mathcal{C}} P_{\mathcal{E}}(y = c \mid \mathbf{x}).
+\end{equation}
+
+\noindent\emph{Note on Pure-Tree Leaf Purity:} When trees are grown to full purity ($d_{\max} = \infty$, $s_{\min} = 1$) and queries contain no missing values, each leaf posterior $p_{\ell}(c)$ collapses to a one-hot vector, making unweighted soft voting mathematically identical to unweighted hard voting. Soft voting differs whenever trees contain impure leaves (due to bounded $d_{\max}$, $s_{\min} > 1$, or exhausted feature cycles) or when missing features trigger multi-leaf replication.
+
+\subsection{Counterfactual Missing-Value Profiling (\texorpdfstring{\code{predictMissingValues}}{predictMissingValues})}
+
+Beyond passive robustness during prediction, RF-TSMC supports counterfactual evaluation over missing features. Given an incomplete observation $\mathbf{x}$ (where at least one feature $f$ is missing) and a candidate value dictionary $\mathcal{V} = \{f : \Vals(f)\}$ specifying discrete candidate values for features used in the forest ($\bigcup_{b=1}^B \mathcal{U}(T_b)$):
+\begin{enumerate}[leftmargin=*, itemsep=3pt]
+  \item For every missing feature $f$ in $\mathbf{x}$ appearing in $\mathcal{V}$ and every candidate value $v \in \Vals(f)$, construct the counterfactual vector $\mathbf{x}^{(f \leftarrow v)}$ obtained by setting $x_f \gets v$ while preserving all other entries (including any other simultaneously missing features, which remain handled by branch replication).
+  \item Evaluate the ensemble posterior profile $P_{\mathcal{E}}(y = c \mid \mathbf{x}^{(f \leftarrow v)})$ across all $c \in \mathcal{C}$.
+\end{enumerate}
+This yields two analytical modes:
+\begin{itemize}[leftmargin=*, itemsep=3pt]
+  \item \textbf{Supervised Imputation (Known Target $y^*$):} Select the candidate imputation $v^* = \allowbreak \argmax_{v \in \Vals(f)} P_{\mathcal{E}}(y = y^* \mid \mathbf{x}^{(f \leftarrow v)})$ that maximizes posterior support for the observed ground-truth label.
+  \item \textbf{Unsupervised Sensitivity Analysis (Unknown Target):} Inspect whether $P_{\mathcal{E}}(\cdot \mid \mathbf{x}^{(f \leftarrow v)})$ varies across $v \in \Vals(f)$. If the profile is invariant across all candidates, the missing attribute lies outside the active decision paths conditioned on the observed attributes of $\mathbf{x}$ and cannot influence classification confidence.
+\end{itemize}
+
+% =============================================================================
+% 8. Structural Interpretability and Compositional Forest Operations
+% =============================================================================
+\section{Structural Interpretability and Compositional Forest Operations}
+
+\subsection{Survival-Based Feature Importance and Co-occurrence}
+
+For each surviving tree $T_b \in \mathcal{E}$, let $\mathcal{U}(T_b) \subseteq F_b$ denote the set of \textbf{actually utilized features}---i.e., the distinct features appearing in at least one internal split node of $T_b$ (a feature present in the sampled queue $F_b$ that was never split upon before reaching leaf nodes is excluded from $\mathcal{U}(T_b)$).
+
+Because trees only enter $\mathcal{E}$ after surviving Monte Carlo selection on $\mathcal{I}_V$, the presence of $f \in \mathcal{U}(T_b)$ is itself an empirical indicator of discriminative utility. RF-TSMC defines four structural interpretability metrics over any forest $\mathcal{E}$ of size $B = |\mathcal{E}|$:
+
+\begin{enumerate}[leftmargin=*, itemsep=4pt]
+  \item \textbf{Marginal Survival Importance (\code{featImportance}).}
+  \begin{equation}
+    I_{\mathcal{E}}(f) = \frac{1}{B} \sum_{b=1}^{B} \Ind\!\big(f \in \mathcal{U}(T_b)\big) \in [0, 1].
+  \end{equation}
+  Unlike Gini-based Mean Decrease in Impurity (MDI), which is biased toward high-cardinality continuous features with many split points, $I_{\mathcal{E}}(f)$ treats numeric and categorical attributes symmetrically as binary survival counts across validation-filtered trees.
+
+  \item \textbf{Conditional Mean Survival Score (\code{featScoreMean}).}
+  \begin{equation}
+    \bar{S}_{\mathcal{E}}(f) = \frac{\sum_{b=1}^{B} s_{\text{surv}}(T_b)\,\Ind\!\big(f \in \mathcal{U}(T_b)\big)}{\sum_{b=1}^{B} \Ind\!\big(f \in \mathcal{U}(T_b)\big)},
+  \end{equation}
+  measuring the average generalization score of surviving trees that rely on feature $f$ (zero if $f$ never appears in $\mathcal{E}$).
+
+  \item \textbf{Pairwise Feature Co-occurrence Importance (\code{featPairImportance}).} For every unordered pair $\{f_i, f_j\} \subseteq \mathcal{F}$ with $i < j$:
+  \begin{equation}
+    I_{\mathcal{E}}(f_i, f_j) = \frac{1}{B} \sum_{b=1}^{B} \Ind\!\big(f_i \in \mathcal{U}(T_b) \land f_j \in \mathcal{U}(T_b)\big) \in [0, 1].
+  \end{equation}
+
+  \item \textbf{Structural Co-occurrence Matrix (\code{featCorrDataFrame}).} A symmetric $d \times d$ matrix $\mathbf{M}_{\mathcal{E}} \in [0, 1]^{d \times d}$ defined by:
+  \begin{equation}
+    \big[\mathbf{M}_{\mathcal{E}}\big]_{ij} =
+    \begin{cases}
+      I_{\mathcal{E}}(f_i), & i = j, \\
+      I_{\mathcal{E}}(f_i, f_j), & i \neq j.
+    \end{cases}
+  \end{equation}
+  Notice that $\mathbf{M}_{\mathcal{E}}$ is positive semidefinite because it can be written as the normalized Gram matrix $\frac{1}{B}\mathbf{U}^\top \mathbf{U}$ of the binary tree-feature incidence matrix $\mathbf{U} \in \{0, 1\}^{B \times d}$ with entries $U_{bi} = \Ind(f_i \in \mathcal{U}(T_b))$.
+\end{enumerate}
+
+\subsection{Local Sample- and Class-Conditional Explainability}
+
+To explain \emph{why} the forest supports a specific class $c \in \mathcal{C}$ for an individual sample $\mathbf{x}$, RF-TSMC defines the \textbf{class-consistent sub-forest}:
+\begin{equation}
+  \mathcal{E}(\mathbf{x}, c) = \left\{ T_b \in \mathcal{E} : \hat{y}_{b}(\mathbf{x}) = c \right\}.
+\end{equation}
+Evaluating $I_{\mathcal{E}(\mathbf{x}, c)}(f)$, $\bar{S}_{\mathcal{E}(\mathbf{x}, c)}(f)$, $I_{\mathcal{E}(\mathbf{x}, c)}(f_i, f_j)$, $\mathbf{M}_{\mathcal{E}(\mathbf{x}, c)}$, and feature-count statistics $\{|\mathcal{U}(T_b)| : T_b \in \mathcal{E}(\mathbf{x}, c)\}$ yields \textbf{local, sample-specific structural explanations} showing which features and synergistic feature pairs formed the decision paths of trees predicting class $c$ for $\mathbf{x}$.
+
+\subsection{Forest Merging and Canonical Deduplication}
+
+Because each tree $T_b$ is a self-contained classifier equipped with its validation score $s_{\text{surv}}(T_b)$, separately trained models $\mathcal{E}_1$ and $\mathcal{E}_2$ sharing identical feature space $\mathcal{F}$ and class space $\mathcal{C}$ can be composed natively via \code{mergeForest}:
+\begin{itemize}[leftmargin=*, itemsep=3pt]
+  \item \textbf{Additive Union (\code{by="add"}):} $\mathcal{E}_{\text{new}} = \mathcal{E}_1 \cup \mathcal{E}_2$, enabling incremental model updates (e.g., combining historical trees trained on past data regimes with newly fitted trees on recent batches to mitigate concept drift and recency bias).
+  \item \textbf{Elitist Score Selection (\code{by="score"}):} Sort $\mathcal{E}_1 \cup \mathcal{E}_2$ in descending order of $s_{\text{surv}}(T)$ and retain the top $N$ trees.
+  \item \textbf{Random Subsampling (\code{by="random"}):} Sample $N$ trees uniformly without replacement from $\mathcal{E}_1 \cup \mathcal{E}_2$.
+\end{itemize}
+To preserve structural diversity after repeated merging or small feature-space training, \code{drop\_\allowbreak duplicated\_\allowbreak trees} hashes each tree's canonical key-sorted dictionary representation using MD5 ($\MDfive(\JSON_{\text{sorted}}(T))$) and removes exact structural duplicates while preserving survival scores in lockstep.
+
+% =============================================================================
+% 9. Asymptotic Complexity and Comparative Theoretical Analysis
+% =============================================================================
+\section{Asymptotic Complexity and Comparative Theoretical Analysis}
+
+\subsection{Computational Complexity}
+
+Let $n_T = |\mathcal{I}_T| = K \cdot n'_{\text{train}}$ and $n_V = |\mathcal{I}_V| = K \cdot n'_{\text{val}}$ denote the training and validation batch sizes per tree, $L_T \le d_{\max}$ the realized tree depth, and $\bar{R} \ge 1$ the expected number of Monte Carlo candidate evaluations per surviving tree.
+
+\paragraph{Single-Tree Induction (\code{PlantTree}).}
+For numeric attributes, finding the median at a node of size $m \le n_T$ takes $O(m)$ expected time via quickselect (\code{std::nth\_element} in C++) or $O(m \log m)$ via full quantile/sort. For categorical attributes, modal frequency counting takes $O(m)$. If at most $c_{\text{rot}} \le k$ queue rotations occur per node and splits roughly bisect $m$, total work across all levels of a single tree is:
+\begin{equation}
+  O\!\big(c_{\text{rot}} \, n_T \log n_T\big) \quad \text{(linear-median selection)},
+  \qquad
+  O\!\big(c_{\text{rot}} \, n_T \log^2 n_T\big) \quad \text{(sort-based median)}.
+\end{equation}
+Crucially, \textbf{this cost does not depend on the full dataset size $M$}.
+
+\paragraph{Single-Tree Validation (\code{Validate}).}
+Evaluating $n_V$ balanced validation samples down depth $L_T$ requires $O(n_V \, L_T)$ operations when features are observed.
+
+\paragraph{Full Forest Training (\code{fit}).}
+Across $B$ independent trees, total sequential work is:
+\begin{equation}
+  O\!\Big(B \cdot \bar{R} \cdot \big(c_{\text{rot}} \, n_T \log n_T + n_V \, L_T\big)\Big).
+\end{equation}
+Because all $B$ tree-selection loops are mutually independent, training scales with near-linear speedup across $P$ parallel workers ($O(B/P)$ parallel steps).
+
+\paragraph{Inference (\code{predict}).}
+On complete rows, inference complexity is $O(B \, L_T)$ per sample. When a query encounters $h$ missing split features along its active paths, replication visits at most $2^h$ leaves in a tree (bounded by total leaves $\le n_T$), giving worst-case $O(B \cdot \min(2^h L_T, n_T))$ per sample.
+
+\subsection{Theoretical Comparison with Related Tree Ensembles}
+
+Table~\ref{tab:comparison} contrasts the structural design choices of RF-TSMC with classical Random Forests and Extra-Trees.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Structural comparison of Classical Random Forest, Extra-Trees, and RF-TSMC (implemented in \code{random-forest-mc}).}
+  \label{tab:comparison}
+  \footnotesize
+  \renewcommand{\arraystretch}{1.28}
+  \begin{tabularx}{\textwidth}{@{} >{\raggedright\arraybackslash}p{2.7cm} >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X @{}}
+    \toprule
+    \textbf{Property} & \textbf{Classical Random Forest} \citep{breiman2001} & \textbf{Extra-Trees} \citep{geurts2006} & \textbf{RF-TSMC} (\code{random-forest-mc}) \\
+    \midrule
+    \textbf{Sample Strategy} & Full-size bootstrap ($M$ with replacement) & Full dataset ($M$, usually without bootstrap) & Class-balanced disjoint micro-batches ($\mathcal{I}_T, \mathcal{I}_V$) \\
+    \textbf{Class-Imbalance Sensitivity} & Mirrors empirical skew in $\mathcal{D}$ & Mirrors empirical skew in $\mathcal{D}$ & Structurally invariant ($1/K$ prior in $\mathcal{I}_T, \mathcal{I}_V$) \\
+    \textbf{Split Criterion} & Greedy Gini / Entropy maximization & Impurity evaluation over random thresholds & Impurity-free deterministic median (num.) / mode (cat.) \\
+    \textbf{Feature Randomization} & Fixed $m_{\text{try}}$ resampled at every node & Fixed $K_{\text{attr}}$ resampled at every node & Random cardinality $k \in [f_{\min}, f_{\max}]$ \& cyclic queue $F$ per tree \\
+    \textbf{Structural Optimization} & Greedy local node selection & Greedy selection among random cut-points & Monte Carlo tree-level acceptance--rejection on $\mathcal{I}_V$ \\
+    \textbf{Tree Acceptance Filter} & None (all induced trees kept) & None (all induced trees kept) & Survival threshold $\tau$ (best-of-$R_{\max}$ or $\Delta\tau$ decay) \\
+    \textbf{Missing-Data Inference} & Requires imputation / surrogate splits & Requires imputation / surrogate splits & Native dual-branch replication ($\mathcal{L}_T(\mathbf{x})$ averaging) \\
+    \textbf{Feature Importance} & MDI / Permutation importance & MDI / Permutation importance & Survival selection frequency $I_{\mathcal{E}}(f)$ \& co-occurrence $\mathbf{M}_{\mathcal{E}}$ \\
+    \textbf{Model Composition} & Tree union (no per-tree validation score) & Tree union (no per-tree validation score) & Native merging (\code{add}, \code{score}, \code{random}) \& MD5 deduplication \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+% =============================================================================
+% 10. Theoretical Assumptions, Trade-Offs, and Design Considerations
+% =============================================================================
+\section{Theoretical Assumptions, Trade-Offs, and Design Considerations}
+
+A rigorous understanding of RF-TSMC also illuminates the theoretical conditions governing its behavior:
+\begin{enumerate}[leftmargin=*, itemsep=4pt]
+  \item \textbf{Resolution Quantization of Validation Scores:}
+  Since $|\mathcal{I}_V| = K \cdot n'_{\text{val}}$, validation accuracy $s(T; \mathcal{I}_V)$ is quantized to integer multiples of $(K \cdot n'_{\text{val}})^{-1}$. When $K \cdot n'_{\text{val}}$ is small, multiple candidate trees share identical validation scores, reducing tie-breaking resolution in \code{get\_best\_tree} ranking and weighted voting. Increasing $n_{\text{val}}$ refines the resolution of the Monte Carlo objective at the cost of $O(n_{\text{val}} L_T)$ validation time per trial (subject to $n_{\text{train}} + n_{\text{val}} \le M_{\min}$).
+
+  \item \textbf{Bias--Variance Trade-Off in Batch Sizes ($n_{\text{train}}$ vs.\ $n_{\text{val}}$):}
+  Larger $n_{\text{train}}$ enables deeper decision boundaries and finer local partitioning within each tree, reducing individual-tree bias; however, for small datasets where $M_{\min}$ is constrained, increasing $n_{\text{train}}$ shrinks $n_{\text{val}}$ (or forces overlapping training pools across trees), increasing the variance of the validation filter $s(T; \mathcal{I}_V)$.
+
+  \item \textbf{Axis-Aligned Univariate Median/Mode Inductive Bias:}
+  Because internal splits test single features at their median or mode without greedy multi-threshold scanning, linear oblique boundaries or sharply asymmetric bimodal thresholds on a single feature may require multiple cyclic passes through $F$ (i.e., deeper paths or multiple splits along the same feature at different depths) to approximate.
+
+  \item \textbf{Minimum Class Cardinality Requirement:}
+  Constructing disjoint non-empty $\mathcal{I}_T$ and $\mathcal{I}_V$ requires $M_{\min} \ge 2$ (and practically $M_{\min} \ge n_{\text{train}} + n_{\text{val}}$ to realize the full configured batch sizes).
+
+  \item \textbf{Combinatorial Complexity of Dual-Branch Replication:}
+  When an inference query omits or masks $h$ features along a tree's paths, leaf collection grows as $O(2^h)$ up to the tree's leaf count ($O(n_T)$). Because $n_T$ is deliberately bounded by balanced micro-batching, worst-case traversal remains bounded by tree size rather than full dataset size $M$.
+\end{enumerate}
+
+% =============================================================================
+% 11. Summary
+% =============================================================================
+\section{Summary}
+
+RF-TSMC formulates ensemble classification as a two-level stochastic architecture: an \textbf{inner deterministic constructor} that builds compact, class-balanced, impurity-free decision trees along cyclic feature queues, paired with an \textbf{outer Monte Carlo selection mechanism} that filters feature subspaces and split permutations by out-of-sample balanced validation accuracy. This separation yields natural robustness against severe class imbalance, dataset-size-independent tree induction, embarrassingly parallel training, imputation-free missing-value inference via path replication, survival-driven global and local explainability, and native model compositionality.
+
+% =============================================================================
+% References
+% =============================================================================
+\begin{thebibliography}{9}
+
+\bibitem[Breiman(2001)]{breiman2001}
+Breiman, L. (2001).
+\newblock \emph{Random Forests}.
+\newblock Machine Learning, Springer.
+
+\bibitem[Geurts et~al.(2006)]{geurts2006}
+Geurts, P., Ernst, D., \& Wehenkel, L. (2006).
+\newblock \emph{Extremely randomized trees}.
+\newblock Machine Learning, Springer.
+
+\bibitem[Ho(1998)]{ho1998}
+Ho, T.~K. (1998).
+\newblock \emph{The random subspace method for constructing decision forests}.
+\newblock IEEE Transactions on Pattern Analysis and Machine Intelligence.
+
+\bibitem[Oliveira(2026a)]{oliveira_rfmc}
+Oliveira, I.
+\newblock \emph{\textup{\code{random-forest-mc}}: Random Forest with Tree Selection Monte Carlo Based (v1.5.0)}.
+\newblock GitHub repository: \url{https://github.com/ysraell/random-forest-mc}.
+
+\bibitem[Oliveira(2026b)]{oliveira_rflab}
+Oliveira, I.
+\newblock \emph{Laboratory of Decision Tree and Random Forest (\textup{\code{random-forest-lab}})}.
+\newblock GitHub repository: \url{https://github.com/ysraell/random-forest-lab}.
+
+\end{thebibliography}
+
+\end{document}
