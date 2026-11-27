@@ -1,4 +1,4 @@
-__version__ = "1.5.0"
+__version__ = "1.6.0"
 
 _PyRandomForestMC = None
 _CPPRandomForestMC = None

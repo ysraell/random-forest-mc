@@ -16,7 +16,12 @@ NB_MODULE(_cpp_forest, m) {
         .def(nb::init<>())
         .def(nb::init<int32_t>())
         .def_rw("survived_score", &DecisionTreeCPP::survived_score)
+        .def_rw("selection_score", &DecisionTreeCPP::selection_score)
         .def_ro("used_features", &DecisionTreeCPP::used_features)
+        .def_ro("feature_sequence", &DecisionTreeCPP::feature_sequence)
+        .def_ro("attempts", &DecisionTreeCPP::attempts)
+        .def_ro("hit_attempt_cap", &DecisionTreeCPP::hit_attempt_cap)
+        .def_ro("max_depth_reached", &DecisionTreeCPP::max_depth_reached)
         .def("to_dict", &DecisionTreeCPP::to_dict, nb::arg("feature_names"), nb::arg("class_names"), nb::arg("module_version"))
         .def("from_dict", &DecisionTreeCPP::from_dict, nb::arg("tree_dict"), nb::arg("feature_names"), nb::arg("class_names"));
 
@@ -38,6 +43,50 @@ NB_MODULE(_cpp_forest, m) {
         .def_rw("soft_voting", &RandomForestCPP::soft_voting)
         .def_rw("weighted_tree", &RandomForestCPP::weighted_tree)
         .def_rw("random_seed", &RandomForestCPP::random_seed)
+        .def_rw("n_train_pclass", &RandomForestCPP::n_train_pclass)
+        .def_rw("n_sel_pclass", &RandomForestCPP::n_sel_pclass)
+        .def_rw("n_score_pclass", &RandomForestCPP::n_score_pclass)
+        .def_rw("ens_sel_pclass", &RandomForestCPP::ens_sel_pclass)
+        .def_rw("ens_score_pclass", &RandomForestCPP::ens_score_pclass)
+        .def_rw("tau_min", &RandomForestCPP::tau_min)
+        .def_rw("max_attempts", &RandomForestCPP::max_attempts)
+        .def_rw("feature_max_sampling", &RandomForestCPP::feature_max_sampling)
+        .def_rw("selection", &RandomForestCPP::selection)
+        .def_rw("tree_weighting", &RandomForestCPP::tree_weighting)
+        .def_rw("class_priors", &RandomForestCPP::class_priors)
+        .def("set_tree_params", [](RandomForestCPP& self, int32_t split_rule, int32_t split_supervision,
+                                   int32_t split_lookahead, int32_t categorical_split) {
+            self.tree_params.split_rule = split_rule;
+            self.tree_params.split_supervision = split_supervision;
+            self.tree_params.split_lookahead = split_lookahead;
+            self.tree_params.categorical_split = categorical_split;
+        }, nb::arg("split_rule"), nb::arg("split_supervision"), nb::arg("split_lookahead"), nb::arg("categorical_split"))
+        .def("set_infer_params", [](RandomForestCPP& self, int32_t missing_strategy, double leaf_alpha) {
+            self.infer_params.missing_strategy = missing_strategy;
+            self.infer_params.leaf_alpha = leaf_alpha;
+        }, nb::arg("missing_strategy"), nb::arg("leaf_alpha"))
+        .def_ro("ens_sel_idx", &RandomForestCPP::ens_sel_idx)
+        .def_ro("ens_score_idx", &RandomForestCPP::ens_score_idx)
+        .def("candidate_count", [](const RandomForestCPP& self) { return self.candidate_trees.size(); })
+        .def("candidate_probs", [](const RandomForestCPP& self) { return self.candidate_probs; })
+        .def("candidate_log_list", &RandomForestCPP::candidate_log_list)
+        .def("set_trees_from_candidates", &RandomForestCPP::set_trees_from_candidates, nb::arg("chosen"))
+        .def("clear_candidates", [](RandomForestCPP& self) {
+            self.candidate_trees.clear();
+            self.candidate_trees.shrink_to_fit();
+            self.candidate_probs.clear();
+            self.candidate_probs.shrink_to_fit();
+        })
+        .def("trees_proba_batch", [](const RandomForestCPP& self, nb::ndarray<const double, nb::c_contig> X) {
+            size_t n_rows = X.shape(0);
+            size_t n_cols = X.shape(1);
+            std::vector<double> out;
+            {
+                nb::gil_scoped_release release;
+                self.trees_proba_batch(X.data(), n_rows, n_cols, out);
+            }
+            return out;
+        }, nb::arg("X"))
         .def_ro("survived_scores", &RandomForestCPP::survived_scores)
         .def_ro("feature_names", &RandomForestCPP::feature_names)
         .def_ro("class_names", &RandomForestCPP::class_names)

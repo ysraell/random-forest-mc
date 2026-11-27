@@ -35,6 +35,16 @@
 - Create a notebook with [Memray](https://github.com/bloomberg/memray) applied to the model with different datasets.
 - Add a set of functions for generate perfomance metrics: like trees generation/validation time.
 
+### TODO v1.6.0:
+- ~~Fix split threshold / routing mismatch (midpoint thresholds).~~
+- ~~Weighted missing-value traversal; engine parity on NaN and unknown categories.~~
+- ~~Floor for the Regime B threshold; attempt cap.~~
+- ~~Validation pool and scoring split; effective-depth sampling; scaled training batch.~~
+- ~~Candidate log, ensemble selection, candidate-based feature importance.~~
+- ~~Label-aware splits, ordered categorical splits, leaf smoothing, prior correction, SAMME weights.~~
+- Run `experiments/ablation_v160.py` on the imbalanced-learn benchmark collection and record the results.
+- Revive or delete the stale `tests/_test_*.py` files (not collected by pytest; written for an older API).
+
 ### TODO V2.0:
 - ~~Fix multithread logic.~~
 - Add regression prediction.
