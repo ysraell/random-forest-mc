@@ -6,8 +6,6 @@ Modern C++ (C++17 + nanobind) accelerated backend.
 """
 
 import logging as log
-from collections import defaultdict
-from itertools import combinations
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
@@ -15,6 +13,7 @@ import pandas as pd
 
 from .__init__ import __version__
 from .forest import BaseRandomForestMC
+from .selection import ensemble_select, ensemble_score
 from .model import (
     DatasetNotFound,
     DictValuesAllFeaturesMissing,
@@ -29,6 +28,9 @@ from .tree import (
     featName,
     rowOrMatrix,
 )
+
+# Code for categories never seen in training: routed like any non-matching value ('<').
+UNKNOWN_CATEGORY_CODE = -1.0
 
 try:
     from ._cpp_forest import DecisionTreeCPP, RandomForestCPP
@@ -76,6 +78,7 @@ class RandomForestMC(BaseRandomForestMC):
         threaded_fit: bool = True,
         n_threads: int = 0,
         random_seed: int = 42,
+        **v160_params,
     ) -> None:
         if not CPP_AVAILABLE:
             raise ImportError(
@@ -91,6 +94,8 @@ class RandomForestMC(BaseRandomForestMC):
             temporal_features=temporal_features,
         )
 
+        if split_with_replace:
+            log.warning("'split_with_replace' is deprecated and has no effect.")
         self.split_with_replace = split_with_replace
         if th_decease_verbose:
             log.basicConfig(level=log.INFO)
@@ -107,6 +112,7 @@ class RandomForestMC(BaseRandomForestMC):
         self.threaded_fit = threaded_fit
         self.n_threads = n_threads
         self.random_seed = random_seed
+        self._init_v160_params(**v160_params)
 
         self.dataset = None
         self.dataset_numpy = None
@@ -135,6 +141,39 @@ class RandomForestMC(BaseRandomForestMC):
         self._cpp_engine.soft_voting = self.soft_voting
         self._cpp_engine.weighted_tree = self.weighted_tree
         self._cpp_engine.random_seed = self.random_seed
+        self._cpp_engine.set_tree_params(
+            0 if self.split_rule == "legacy" else 1,
+            self.split_supervision,
+            self.split_lookahead,
+            0 if self.categorical_split == "mode" else 1,
+        )
+        self._cpp_engine.set_infer_params(0 if self.missing_strategy == "weighted" else 1, self.leaf_alpha)
+        self._cpp_engine.tree_weighting = 1 if self.tree_weighting == "samme" else 0
+        self._cpp_engine.selection = 1 if self.selection == "ensemble" else 0
+        priors = self._resolved_priors() if self.class_vals else None
+        self._cpp_engine.class_priors = (
+            [float(priors.get(str(c), priors.get(c, 0.0))) for c in self.class_vals] if priors else []
+        )
+        tau_min = self._tau_min() if self.class_vals else -np.inf
+        self._cpp_engine.tau_min = float(tau_min) if np.isfinite(tau_min) else -1e300
+        max_attempts = self._max_attempts()
+        self._cpp_engine.max_attempts = 0 if max_attempts is None else int(max_attempts)
+        if getattr(self, "_min_class", None):
+            ens_pool = self._ensemble_pool_size(self._min_class)
+            ens_score = int(self.score_split * ens_pool)
+            if ens_score >= ens_pool:
+                ens_score = ens_pool - 1
+            self._cpp_engine.ens_sel_pclass = ens_pool - ens_score
+            self._cpp_engine.ens_score_pclass = ens_score
+            n_train, n_sel, n_score = self._batch_sizes(self._min_class - ens_pool)
+            self._cpp_engine.n_train_pclass = n_train
+            self._cpp_engine.n_sel_pclass = n_sel
+            self._cpp_engine.n_score_pclass = n_score
+            self.L_eff = self._effective_depth(n_train)
+            if self.feature_sampling == "effective_depth":
+                self._cpp_engine.feature_max_sampling = max(self.min_feature or 2, self.L_eff)
+            else:
+                self._cpp_engine.feature_max_sampling = -1
 
     def process_dataset(self, dataset: pd.DataFrame) -> None:
         dataset = dataset.copy()
@@ -159,6 +198,7 @@ class RandomForestMC(BaseRandomForestMC):
         log.warning("Rows with missing values were dropped from the dataset.")
 
         self.class_vals = sorted(dataset[self.target_col].unique().tolist())
+        self._set_class_freqs(dataset[self.target_col])
         self.class_to_idx = {c: i for i, c in enumerate(self.class_vals)}
         self.idx_to_class = {i: c for i, c in enumerate(self.class_vals)}
 
@@ -168,6 +208,7 @@ class RandomForestMC(BaseRandomForestMC):
 
         min_class = dataset[self.target_col].value_counts().min()
         self._N = min(self._N, min_class)
+        self._min_class = int(min_class)
         self.dataset_numpy = {col: dataset[col].to_numpy() for col in dataset.columns}
         self.n_samples = len(dataset)
 
@@ -208,20 +249,28 @@ class RandomForestMC(BaseRandomForestMC):
 
         self._sync_params_to_cpp()
         self._cpp_engine.fit(self._X, self._y, self.n_threads)
+        self.candidate_log = list(self._cpp_engine.candidate_log_list())
+
+        if self.selection == "ensemble":
+            K = len(self.class_vals)
+            ens_sel = np.asarray(self._cpp_engine.ens_sel_idx, dtype=np.int64)
+            ens_score_idx = np.asarray(self._cpp_engine.ens_score_idx, dtype=np.int64)
+            n_cand = self._cpp_engine.candidate_count()
+            probs = np.asarray(self._cpp_engine.candidate_probs(), dtype=np.float32).reshape(n_cand, len(ens_sel), K)
+            chosen = ensemble_select(
+                probs, self._y[ens_sel], n_select=self.n_trees, n_init=self.ensemble_init, metric=self.ensemble_metric
+            )
+            self._cpp_engine.set_trees_from_candidates(chosen)
+            self._cpp_engine.clear_candidates()
+            eval_idx = ens_score_idx if len(ens_score_idx) else ens_sel
+            X_eval = np.ascontiguousarray(self._X[eval_idx])
+            tree_probs = np.asarray(self._cpp_engine.trees_proba_batch(X_eval)).reshape(len(chosen), len(eval_idx), K)
+            self.ensemble_score = ensemble_score(tree_probs, self._y[eval_idx])
 
         self.survived_scores = list(self._cpp_engine.survived_scores)
         # Populate self.data with DecisionTreeMC wrappers for BaseRandomForestMC compatibility
-        dict_model = self._cpp_engine.to_dict(__version__)
-        self.data = [
-            DecisionTreeMC(
-                Tree["data"],
-                Tree["class_vals"],
-                Tree["survived_score"],
-                Tree["features"],
-                Tree["used_features"],
-            )
-            for Tree in dict_model["Forest"]
-        ]
+        self.data = [DecisionTreeMC.from_dict(Tree) for Tree in self._engine_dict()["Forest"]]
+        self._warn_attempt_cap()
 
     def fitParallel(
         self,
@@ -247,7 +296,7 @@ class RandomForestMC(BaseRandomForestMC):
                 arr[j] = float(val)
             else:
                 c2code = self.cat_to_code.get(col, {})
-                arr[j] = c2code.get(val, np.nan)
+                arr[j] = c2code.get(val, UNKNOWN_CATEGORY_CODE)
         return arr
 
     def _df_to_c_matrix(self, df: pd.DataFrame) -> np.ndarray:
@@ -259,7 +308,10 @@ class RandomForestMC(BaseRandomForestMC):
                 mat[:, j] = pd.to_numeric(df[col], errors="coerce").to_numpy(dtype=np.float64)
             else:
                 c2code = self.cat_to_code.get(col, {})
-                mat[:, j] = df[col].map(c2code).to_numpy(dtype=np.float64)
+                codes = df[col].map(c2code).to_numpy(dtype=np.float64, copy=True)
+                unknown = np.isnan(codes) & ~df[col].isna().to_numpy()
+                codes[unknown] = UNKNOWN_CATEGORY_CODE
+                mat[:, j] = codes
         return mat
 
     def useForest(self, row: PandasSeriesRow) -> LeafDict:
@@ -293,8 +345,10 @@ class RandomForestMC(BaseRandomForestMC):
             return self.predict_proba(row_or_matrix, prob_output=True)
         if isinstance(row_or_matrix, (PandasSeriesRow, dict)):
             probs = self.useForest(row_or_matrix)
-            return self.maxProbClas(probs)
+            return self._decide(probs)
         if isinstance(row_or_matrix, pd.DataFrame):
+            if self.decision_threshold is not None:
+                return [self._decide(dist) for dist in self.predict_proba(row_or_matrix)]
             mat = self._df_to_c_matrix(row_or_matrix)
             class_indices = self._cpp_engine.predict_batch(mat, self.n_threads)
             return [self.idx_to_class[idx] for idx in class_indices]
@@ -397,31 +451,88 @@ class RandomForestMC(BaseRandomForestMC):
     ) -> Tuple[Tuple[float, float, int, int], List[int]]:
         return self.featCount(self.sampleClass2trees(row=row, Class=Class))
 
-    def model2dict(self) -> dict:
-        return self._cpp_engine.to_dict(__version__)
+    # --- Serialization (category values in the dict, codes inside the C++ engine) ---
+
+    def _map_split_values(self, node: dict, mapping: Dict[str, Dict[Any, Any]]) -> dict:
+        """Copy of a tree-dict with categorical split values translated through `mapping`."""
+        if "leaf" in node:
+            return dict(node)
+        feat = next(iter(node.keys()))
+        split = dict(node[feat]["split"])
+        if split["feat_type"] in ("categorical", "categorical_set") and feat in mapping:
+            table = mapping[feat]
+            if split["feat_type"] == "categorical_set":
+                split["split_val"] = [table.get(v, v) for v in split["split_val"]]
+            else:
+                split["split_val"] = table.get(split["split_val"], split["split_val"])
+        split[">="] = self._map_split_values(split[">="], mapping)
+        split["<"] = self._map_split_values(split["<"], mapping)
+        return {feat: {"split": split}}
+
+    def _engine_dict(self) -> dict:
+        """Engine dict with category values (instead of codes) in the categorical splits."""
+        out = _clean_dict(self._cpp_engine.to_dict(__version__))
+        for tree in out.get("Forest", []):
+            if tree.get("data"):
+                tree["data"] = self._map_split_values(tree["data"], self.code_to_cat)
+        return out
+
+    def _register_categories(self, node: dict) -> None:
+        """Adds codes for categorical split values not yet in `cat_to_code` (models loaded from a dict)."""
+        if "leaf" in node:
+            return
+        feat = next(iter(node.keys()))
+        split = node[feat]["split"]
+        if split["feat_type"] in ("categorical", "categorical_set"):
+            values = split["split_val"] if split["feat_type"] == "categorical_set" else [split["split_val"]]
+            c2code = self.cat_to_code.setdefault(feat, {})
+            code2c = self.code_to_cat.setdefault(feat, {})
+            for val in values:
+                if val not in c2code:
+                    code = float(len(c2code))
+                    c2code[val] = code
+                    code2c[code] = val
+        self._register_categories(split[">="])
+        self._register_categories(split["<"])
+
+    def model2dict(self, include_candidates: bool = False) -> dict:
+        out = self._engine_dict()
+        out.update({attr: getattr(self, attr, None) for attr in self.attr_to_save_optional})
+        if include_candidates:
+            out["candidate_log"] = self.candidate_log
+        return out
 
     def dict2model(self, dict_model: dict, add: bool = False) -> None:
         dict_model = _clean_dict(dict_model)
-        self._cpp_engine.from_dict(dict_model)
+        new_trees = dict_model.get("Forest", [])
+        if add:
+            new_trees = self.model2dict()["Forest"] + new_trees
+        for tree in new_trees:
+            if tree.get("data"):
+                self._register_categories(tree["data"])
+        engine_dict = dict(dict_model)
+        engine_dict["Forest"] = [
+            dict(tree, data=self._map_split_values(tree["data"], self.cat_to_code) if tree.get("data") else tree.get("data"))
+            for tree in new_trees
+        ]
+        self._cpp_engine.from_dict(engine_dict)
         for attr in self.attr_to_save:
-            if attr in dict_model and attr != "Forest":
+            if attr in dict_model and attr not in ("Forest", "survived_scores"):
                 setattr(self, attr, dict_model[attr])
+        for attr in self.attr_to_save_optional:
+            if attr in dict_model:
+                setattr(self, attr, dict_model[attr])
+        self.tree_format = dict_model.get("tree_format", 1)
+        if "candidate_log" in dict_model:
+            self.candidate_log = dict_model["candidate_log"]
         self.class_vals = dict_model.get("class_vals", [])
         self.class_to_idx = {c: i for i, c in enumerate(self.class_vals)}
         self.idx_to_class = {i: c for i, c in enumerate(self.class_vals)}
         self.feature_cols = dict_model.get("feature_cols", [])
         self.numeric_cols = dict_model.get("numeric_cols", [])
         self.survived_scores = list(self._cpp_engine.survived_scores)
-        self.data = [
-            DecisionTreeMC(
-                Tree["data"],
-                Tree["class_vals"],
-                Tree["survived_score"],
-                Tree["features"],
-                Tree["used_features"],
-            )
-            for Tree in dict_model.get("Forest", [])
-        ]
+        self.data = [DecisionTreeMC.from_dict(Tree) for Tree in new_trees]
+        self._sync_params_to_cpp()
 
     @staticmethod
     def _fill_row_missing(row: PandasSeriesRow, dict_values: DictValues) -> pd.DataFrame:

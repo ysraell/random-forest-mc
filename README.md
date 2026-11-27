@@ -37,6 +37,47 @@ clf_py  = RandomForestMC(n_trees=16, engine="python")
 
 Models are **100% interchangeable**: a model trained in C++ can be serialized via `model2dict()` and loaded into the pure Python model via `dict2model()`, and vice-versa!
 
+## What changed in v1.6.0
+
+v1.6.0 fixes three correctness problems in the method and adds opt-in method improvements. Both engines implement every option identically.
+
+**Fixed by default** (`legacy_v150=True` restores the v1.5.0 behavior):
+
+| Parameter | Default | Legacy value | What it fixes |
+| :-- | :-- | :-- | :-- |
+| `split_rule` | `"midpoint"` | `"legacy"` | Numeric thresholds sit midway between two distinct values, so the inference rule `x >= θ` always reproduces the training partition and every leaf is reachable. |
+| `missing_strategy` | `"weighted"` | `"uniform_leaves"` | A missing feature (absent or NaN) sends the row down both branches weighted by their training fractions (C4.5-style). The pure-Python engine previously used only the first branch. |
+| `tau_floor_eps`, `max_tree_attempts` | `0.05`, `"auto"` | `None`, `None` | Trees must score at least `1/K + tau_floor_eps`; if they cannot, the slot draws new batches, and after `max_tree_attempts` candidates it keeps the best one and warns. |
+
+**Opt-in improvements** (the defaults reproduce v1.5.0):
+
+| Parameter | Default | Purpose |
+| :-- | :-- | :-- |
+| `val_pool_pclass`, `score_split` | `None`, `0.0` | Validate on a larger out-of-batch pool and compute the reported tree score on a separate scoring part (less optimistic `survived_scores`). |
+| `feature_sampling` | `"uniform"` | `"effective_depth"` limits the feature count to the depth trees actually reach (`L_eff`). |
+| `n_train_frac`, `n_train_cap` | `None` | Let the training batch grow with the data. |
+| `selection`, `ensemble_pool_pclass`, `ensemble_init`, `ensemble_metric` | `"per_tree"`, `100`, `3`, `"balanced_accuracy"` | Experimental: `"ensemble"` keeps every candidate tree and builds the forest by greedy ensemble selection (Caruana et al., 2004) on a global holdout. Prefer `ensemble_metric="logloss"` (see `changelog.md`). |
+| `split_supervision`, `split_lookahead` | `0`, `2` | Label-aware splits: `1` picks the lowest-Gini cut among the quartile cuts; `2` also compares the next `split_lookahead` features of the queue. |
+| `categorical_split` | `"mode"` | `"ordered"` sorts categories by class share and splits that ordering at its median (set split). |
+| `leaf_alpha` | `0.0` | Laplace smoothing of leaf probabilities. |
+| `class_priors` | `None` | `"train"` or a dict: corrects probabilities for the real class frequencies (training uses balanced batches). Combine with `tune_decision_threshold` when you need class decisions. |
+| `tree_weighting` | `"score"` | `"samme"` uses log-odds weights when `setWeightedTrees(True)`. |
+
+New methods: `featImportanceMC()` and `featPairImportanceMC()` (importance from every Monte Carlo candidate, with bootstrap CIs), `depthReport()`, `tune_decision_threshold(df)`, and `model2dict(include_candidates=True)`.
+
+Serialized trees now carry `tree_format` (1 = v1.5.0 and older, 2 = v1.6.0). Older models load in both engines. `mergeForest` and `drop_duplicated_trees` refuse to mix formats unless `allow_mixed_formats=True`.
+
+```python
+clf = RandomForestMC(
+    target_col="Survived",
+    val_pool_pclass=200, score_split=0.5,   # less noisy tree scores
+    leaf_alpha=1.0, class_priors="train",    # calibrated probabilities
+)
+clf.fit(dataset)
+clf.setSoftVoting(True)
+clf.featImportanceMC()                       # importance from all candidates
+```
+
 ## Install:
 
 Install using `pip`:
@@ -305,7 +346,7 @@ Run unit test for the current version of Python (your current shell):
 
 - For each tree:
 
-    - fallowing the sequence of a given list of features, the data is splited half/half based on meadian value;
+    - following the sequence of a given list of features, the data is split half/half at the midpoint between the two values closest to the median;
 
     - the splitting process ends when the samples have one only class;
 
@@ -323,7 +364,7 @@ Run unit test for the current version of Python (your current shell):
 
     - robustness for unbalanced and missing data, in case of missing data, the feature could be skipped without degrade the optimization process;
 
-    - in prediction process, a missing value could be dealt with a tree replication considering the two possible paths;
+    - in prediction process, a missing value is dealt with by following both paths, weighted by the training fraction of each branch;
 
     - the survived trees have a potential information about feature importance.
 

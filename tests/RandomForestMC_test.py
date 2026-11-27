@@ -35,7 +35,7 @@ path_dict = Path(f"{path_to_dataset}/model_dict.json")
 def test_version():
     from random_forest_mc import __version__
 
-    assert __version__ == "1.5.0"
+    assert __version__ == "1.6.0"
 
 
 # @pytest.mark.skip()
@@ -555,7 +555,7 @@ def test_RandomForestMC_save_load_model():
     cls.process_dataset(dataset)
     cls.dict2model(ModelDict)
     cls.dict2model(ModelDict, add=True)
-    check.equal(cls.Forest_size, Forest_size)
+    check.equal(cls.Forest_size, 2 * Forest_size)
     check.almost_equal(sum(cls.survived_scores), 2 * sum_survived_scores)
 
 
